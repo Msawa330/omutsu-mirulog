@@ -291,6 +291,14 @@
   .baby-bar-row .baby-summary .unset{color:var(--sub); font-weight:700;}
   .baby-bar-row .btn-ghost{flex:0 0 auto; background:transparent; color:var(--sub); font-weight:700; font-size:13px; border:1px solid var(--divider); border-radius:999px; padding:8px 14px;}
   .baby-weight-tap{background:transparent; padding:0; font:inherit; font-weight:800; color:inherit; cursor:pointer; text-align:left; max-width:100%;}
+  /* TOPの体重は、その場（赤ちゃん設定ブロック内）で編集する */
+  .top-weight-editor{margin-top:8px;}
+  .top-weight-editor input{
+    width:100%; background:var(--panel); border:1px solid var(--divider); border-radius:10px;
+    color:var(--text); font-size:16px; padding:10px 12px; font-family:inherit; color-scheme:dark;
+  }
+  .top-weight-editor .btn-primary{margin-top:8px;}
+  .set-editor .btn-primary{margin-top:8px;}
 
   /* ===== 前回行の次回目安 ===== */
   .prevrow .next-time{margin-left:auto; flex:0 1 auto; min-width:0; color:var(--accent); font-size:13px; font-weight:800; white-space:nowrap; padding-left:6px; display:inline-flex; align-items:center; gap:4px;}
@@ -366,10 +374,6 @@
     color:var(--text); font-size:16px; padding:10px 12px; font-family:inherit;
   }
   .sheet-sec-label{font-size:13px; font-weight:700; color:var(--sub); margin:12px 0 0;}
-  .sheet .solo-input{
-    width:100%; background:var(--bg); border:1px solid var(--divider); border-radius:10px;
-    color:var(--text); font-size:16px; padding:10px 12px; font-family:inherit; color-scheme:dark;
-  }
 
   /* ===== 狭幅端末（〜430px）：はみ出し防止のサイズ調整 ===== */
   @media (max-width:430px){
@@ -438,6 +442,11 @@
     <div class="baby-bar-row">
       <span class="baby-summary" id="babySummary"><span class="unset">赤ちゃん設定を入力</span></span>
       <button class="btn-ghost" id="babySettingsBtn" type="button">設定</button>
+    </div>
+    <div class="top-weight-editor hidden" id="topWeightEditor">
+      <input type="number" id="inputWeightTop" inputmode="numeric" min="500" max="20000" step="10" placeholder="例：3800" aria-label="現在の体重（g）">
+      <button class="btn-primary" id="weightSaveBtn" type="button">保存する</button>
+      <button class="btn-sub" id="weightCloseBtn" type="button">閉じる</button>
     </div>
   </section>
 
@@ -526,6 +535,7 @@
     </button>
     <div class="set-editor hidden" id="editor-birthWeight">
       <input type="number" id="inputBirthWeight" inputmode="numeric" min="500" max="6000" step="10" placeholder="例：3200">
+      <button class="btn-primary" id="saveBirthWeightBtn" type="button">保存する</button>
     </div>
 
     <button class="set-row" type="button" data-edit="weight">
@@ -535,6 +545,7 @@
     </button>
     <div class="set-editor hidden" id="editor-weight">
       <input type="number" id="inputWeight" inputmode="numeric" min="500" max="20000" step="10" placeholder="例：3800">
+      <button class="btn-primary" id="saveWeightBtn" type="button">保存する</button>
     </div>
 
     <div class="guide-box" style="margin-top:12px;">
@@ -565,15 +576,6 @@
       <button class="btn-primary" id="saveSettingsBtn" type="button">保存してサインインへ</button>
       <button class="btn-sub" id="cancelSettingsBtn" type="button">閉じる</button>
     </div>
-  </div>
-</div>
-
-<!-- 体重だけの編集シート（TOPの体重タップ用） -->
-<div class="overlay hidden" id="weightOverlay">
-  <div class="sheet" role="dialog" aria-modal="true">
-    <h3>現在の体重<button class="close-x" id="weightCloseBtn" type="button" aria-label="閉じる">×</button></h3>
-    <input class="solo-input" type="number" id="inputWeightTop" inputmode="numeric" min="500" max="20000" step="10" placeholder="例：3800">
-    <button class="btn-primary" id="weightSaveBtn" type="button">保存する</button>
   </div>
 </div>
 
@@ -1256,16 +1258,26 @@ function closeAllSetEditors(){
   var eds = document.querySelectorAll('.set-editor');
   for(var k=0;k<eds.length;k++) eds[k].classList.add('hidden');
 }
-/* TOPの体重タップ：設定シート全体は出さず、体重だけの小さいシートを見せる。
+/* TOPの体重タップ：画面下のシートは出さず、体重が表示されている
+   その場所（赤ちゃん設定ブロックの中）に、入力欄と保存ボタンを
+   そのまま開く。フォーカス時もスクロールさせない（preventScroll）。
    保存は設定画面と同じフロー（babySettings.weight → scheduleBabySave）で、
-   保存完了と同時にシートごと閉じるので入力欄が残ることはない */
+   保存と同時に閉じるので入力欄が残ることはない。もう一度タップすると閉じる */
 function openWeightEditorFromTop(){
+  var ed = $('topWeightEditor');
+  if(!ed.classList.contains('hidden')){ closeWeightEditor(); return; }
   $('inputWeightTop').value = babySettings.weight || '';
-  $('weightOverlay').classList.remove('hidden');
+  ed.classList.remove('hidden');
   var inp = $('inputWeightTop');
-  if(inp){ try{ inp.focus(); }catch(e){} }
+  if(inp){
+    try{ inp.focus({ preventScroll:true }); }
+    catch(e){ try{ inp.focus(); }catch(e2){} }
+  }
 }
-function closeWeightEditor(){ $('weightOverlay').classList.add('hidden'); }
+function closeWeightEditor(){
+  var ed = $('topWeightEditor');
+  if(ed) ed.classList.add('hidden');
+}
 $('weightSaveBtn').addEventListener('click', function(){
   var v = $('inputWeightTop').value.trim();
   babySettings.weight = v === '' ? '' : parseInt(v, 10);
@@ -1274,7 +1286,6 @@ $('weightSaveBtn').addEventListener('click', function(){
   closeWeightEditor();
 });
 $('weightCloseBtn').addEventListener('click', closeWeightEditor);
-$('weightOverlay').addEventListener('click', function(e){ if(e.target===this) closeWeightEditor(); });
 function renderBabySettingsUI(){
   var bd = $('valBirthDate'), bw = $('valBirthWeight'), wt = $('valWeight');
   if(bd){
@@ -2138,7 +2149,13 @@ for(var sr=0; sr<setRowBtns.length; sr++){
     if(wasHidden){
       ed.classList.remove('hidden');
       var inp = ed.querySelector('input');
-      if(inp){ try{ inp.focus(); if(inp.showPicker) inp.showPicker(); }catch(e){} }
+      if(inp){
+        /* フォーカスでシートがスクロールしないよう preventScroll を使う。
+           日付ピッカーは生年月日のときだけ開く */
+        try{ inp.focus({ preventScroll:true }); }
+        catch(e){ try{ inp.focus(); }catch(e2){} }
+        if(inp.type === 'date'){ try{ if(inp.showPicker) inp.showPicker(); }catch(e){} }
+      }
     }
   });
 }
@@ -2151,14 +2168,17 @@ $('inputBirthDate').addEventListener('change', function(){
   scheduleBabySave();
   closeSetEditor('birthDate');
 });
-$('inputBirthWeight').addEventListener('change', function(){
-  var v = this.value.trim();
+/* 出生体重・現在の体重は、TOPの体重と同じく「保存する」ボタンを
+   押したときにだけ保存し、保存と同時に入力欄を閉じる
+   （入力しただけ・フォーカスを外しただけでは保存しない） */
+$('saveBirthWeightBtn').addEventListener('click', function(){
+  var v = $('inputBirthWeight').value.trim();
   babySettings.birthWeight = v === '' ? '' : parseInt(v, 10);
   scheduleBabySave();
   closeSetEditor('birthWeight');
 });
-$('inputWeight').addEventListener('change', function(){
-  var v = this.value.trim();
+$('saveWeightBtn').addEventListener('click', function(){
+  var v = $('inputWeight').value.trim();
   babySettings.weight = v === '' ? '' : parseInt(v, 10);
   if(v !== '') pushWeightLog(parseInt(v, 10));
   scheduleBabySave();
@@ -2230,7 +2250,7 @@ function autoRefresh(){
   if(!$('editOverlay').classList.contains('hidden')) return;
   if(!$('dayOverlay').classList.contains('hidden')) return;
   if(!$('babyOverlay').classList.contains('hidden')) return;
-  if(!$('weightOverlay').classList.contains('hidden')) return;
+  if(!$('topWeightEditor').classList.contains('hidden')) return;
   if(!$('monthOverlay').classList.contains('hidden')) return;
   if(!$('allMonthsOverlay').classList.contains('hidden')) return;
   if(!$('viewerOverlay').classList.contains('hidden')) return;
