@@ -192,6 +192,9 @@
     background:var(--bg); border:1px solid var(--divider); border-radius:14px;
     max-height:calc(92vh - 150px); min-width:0;
   }
+  .viewer-nav{display:flex; gap:8px; margin-top:12px;}
+  .viewer-nav .btn-sub{margin-top:0; flex:1 1 0; width:auto; padding:9px 4px; font-size:13px; white-space:nowrap;}
+  .viewer-nav .viewer-close{flex:1.2 1 0; font-weight:800; color:var(--text);}
   .viewer-grid{display:grid; grid-template-columns:2.3rem repeat(7,minmax(0,1fr)); min-width:0;}
   .v-head{
     position:sticky; top:0; z-index:3; background:var(--dark);
@@ -271,6 +274,7 @@
   }
   .btn-danger.confirm{background:#c0392b; color:#fff; border-color:#c0392b;}
   .day-total{display:flex; gap:14px; flex-wrap:wrap; font-size:13.5px; color:var(--sub); margin-bottom:8px; font-weight:700;}
+  .day-total:empty{display:none;}
   .day-total .hl{color:var(--accent); font-weight:800;}
   footer{margin-top:16px; text-align:center;}
 
@@ -593,7 +597,11 @@
     <div class="viewer-scroll" id="viewerScroll">
       <div class="viewer-grid" id="viewerGrid"></div>
     </div>
-    <button class="btn-sub" id="viewerCloseBtn" type="button" style="margin-top:12px;">閉じる</button>
+    <div class="viewer-nav">
+      <button class="btn-sub" id="viewerPrevBtn" type="button">‹ 前のログ</button>
+      <button class="btn-sub viewer-close" id="viewerCloseBtn" type="button">閉じる</button>
+      <button class="btn-sub" id="viewerNextBtn" type="button">次のログ ›</button>
+    </div>
   </div>
 </div>
 
@@ -1385,10 +1393,8 @@ function openDay(date, src){
   var st = dayStatsFrom(src || records, date);
   $('dayTitle').innerHTML = '<svg viewBox="0 0 48 48" fill="none" stroke="#e8c87a" stroke-width="3" aria-hidden="true"><rect x="7" y="11" width="34" height="30" rx="5"/><path d="M7 21h34M16 6v8M32 6v8"/></svg>' +
     (date.getMonth()+1) + '月' + date.getDate() + '日（' + WD[date.getDay()] + '）の記録';
-  $('dayTotal').innerHTML =
-    '<span>おしっこ ' + st.pee + '回</span><span>うんち ' + st.poop + '回</span>' +
-    '<span>母乳 <span class="hl">' + st.breast + '回</span></span>' +
-    '<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:18px;height:18px;display:inline-block;color:#ffd94d;">' + IC.milk + '</span>ミルク <span class="hl">' + st.milk + 'ml</span></span>';
+  /* 回数のまとめは出さず、その日の記録を「今日のログ」と同じ並びで出す */
+  $('dayTotal').innerHTML = '';
   if(!st.list.length){
     $('dayList').innerHTML = '<div class="empty">この日の記録はありません</div>';
   } else {
@@ -1416,13 +1422,20 @@ function viewerChipLabel(rec){
   if(rec.kind==='breast') return '母乳';
   return (rec.amount || 0) + 'ml';
 }
+/* 表示中の週：0=今日までの7日間、-1=その前の7日間、+側は今日より先には進まない */
+var viewerWeekOffset = 0;
 function renderViewer(){
-  var today = startOfDay(new Date());
+  var endDay = startOfDay(new Date());
+  endDay.setDate(endDay.getDate() + viewerWeekOffset * 7);
+  var realToday = startOfDay(new Date());
   var days = [];
   for(var i=6;i>=0;i--){
-    var d = new Date(today); d.setDate(d.getDate() - i);
+    var d = new Date(endDay); d.setDate(d.getDate() - i);
     days.push(d);
   }
+  var prevB = $('viewerPrevBtn'), nextB = $('viewerNextBtn');
+  if(nextB) nextB.disabled = viewerWeekOffset >= 0;
+  if(prevB) prevB.disabled = false;
   $('viewerTitle').firstChild.textContent =
     fmtMD(days[0]) + '（' + WD[days[0].getDay()] + '）〜' + fmtMD(days[6]) + '（' + WD[days[6].getDay()] + '）';
   /* 日×1時間枠 → 記録リスト */
@@ -1444,14 +1457,14 @@ function renderViewer(){
   });
   var html = '<div class="v-corner"></div>';
   days.forEach(function(d, di){
-    html += '<div class="v-head' + (di===6 ? ' today' : '') + '"><span class="v-md">' + fmtMD(d) +
+    html += '<div class="v-head' + (sameDay(d, realToday) ? ' today' : '') + '"><span class="v-md">' + fmtMD(d) +
       '</span><span class="v-wd">（' + WD[d.getDay()] + '）</span></div>';
   });
   for(var s=0; s<24; s++){
     html += '<div class="v-time hour" data-slot="' + s + '">' + s + ':00</div>';
     for(var c=0; c<7; c++){
       var list = slots[c*24 + s] || [];
-      html += '<div class="v-slot hour' + (c===6 ? ' today' : '') + '">';
+      html += '<div class="v-slot hour' + (sameDay(days[c], realToday) ? ' today' : '') + '">';
       list.forEach(function(r){
         html += '<button class="v-chip ' + r.kind + '" type="button" data-eid="' + r.id + '">' +
           IC[r.kind] + '<span>' + viewerChipLabel(r) + '</span></button>';
@@ -1479,21 +1492,40 @@ function renderViewer(){
     });
   }
 }
-function openViewer(){
-  renderViewer();
-  $('viewerOverlay').classList.remove('hidden');
-  /* 現在時刻あたりが最初に見える位置へスクロール */
+function scrollViewerToNow(){
+  /* 現在時刻あたりが見える位置へスクロール */
   var now = new Date();
   var curSlot = now.getHours();
   requestAnimationFrame(function(){
     var sc = $('viewerScroll');
+    if(!sc) return;
     var row = sc.querySelector('.v-time[data-slot="' + Math.max(0, curSlot - 1) + '"]');
-    if(row && sc){
+    if(row){
       sc.scrollTop = Math.max(0, row.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 40);
     }
   });
 }
+function openViewer(){
+  viewerWeekOffset = 0;
+  renderViewer();
+  $('viewerOverlay').classList.remove('hidden');
+  scrollViewerToNow();
+}
 $('viewerBtn').addEventListener('click', openViewer);
+$('viewerPrevBtn').addEventListener('click', function(){
+  viewerWeekOffset--;
+  renderViewer();
+  /* 古い週は通常表示分（31日）より前になることがあるのでアーカイブも広げて取る */
+  loadArchive((0 - viewerWeekOffset) * 7 + 14);
+  var sc = $('viewerScroll'); if(sc) sc.scrollTop = 0;
+});
+$('viewerNextBtn').addEventListener('click', function(){
+  if(viewerWeekOffset >= 0) return;
+  viewerWeekOffset++;
+  renderViewer();
+  if(viewerWeekOffset === 0) scrollViewerToNow();
+  else { var sc = $('viewerScroll'); if(sc) sc.scrollTop = 0; }
+});
 $('viewerCloseBtn').addEventListener('click', function(){ $('viewerOverlay').classList.add('hidden'); });
 $('viewerCloseX').addEventListener('click', function(){ $('viewerOverlay').classList.add('hidden'); });
 $('viewerOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
@@ -1705,6 +1737,7 @@ function loadArchive(daysBack){
     archiveFetchedAt = Date.now();
     renderMonths();
     if(!$('allMonthsOverlay').classList.contains('hidden')) renderAllMonths();
+    if(!$('viewerOverlay').classList.contains('hidden')) renderViewer();
   }).catch(function(){
   }).then(function(){ archiveLoading = false; });
 }
