@@ -670,6 +670,7 @@ try{
 var accessToken = null, tokenExpiry = 0, tokenClient = null;
 var silentAuth = false;
 var records = []; /* {id, start:Date, kind, amount} 新しい順 */
+var recordsLoaded = false; /* 初回の記録読み込みが終わるまでリマインド同期をしないためのフラグ */
 var busy = false;
 var editing = null; /* {rec, kind, amount} */
 var deleteArmed = false;
@@ -881,6 +882,18 @@ function playChime(){
 }
 
 /* ================= 描画 ================= */
+/* 次の授乳の目安時刻（前回行の「次 HH:MM」とリマインド予定で共用）。
+   最新の授乳記録＋目安の間隔から出し、5分単位に丸める。対象が無ければ null */
+function getNextFeedDate(){
+  var dg = displayGuide();
+  if(!dg) return null;
+  var rec = null;
+  for(var i=0;i<records.length;i++){ if(KIND[records[i].kind].cat==='feed'){ rec = records[i]; break; } }
+  if(!rec) return null;
+  var intervalMs = (24 / dg.guide.times) * 3600000;
+  var next = new Date(rec.start.getTime() + intervalMs);
+  return new Date(Math.round(next.getTime() / 300000) * 300000);
+}
 function prevHTML(cat){
   var now = new Date();
   var rec = null;
@@ -889,12 +902,9 @@ function prevHTML(cat){
   if(!rec){ s += '<span class="none">まだなし</span>'; return s; }
   s += '<span class="elapsed">' + fmtElapsed(rec.start, now) + '</span>';
   if(cat === 'feed'){
-    var dg = displayGuide();
-    if(dg){
-      var intervalMs = (24 / dg.guide.times) * 3600000;
-      var next = new Date(rec.start.getTime() + intervalMs);
-      var rounded = new Date(Math.round(next.getTime() / 300000) * 300000);
-      s += '<span class="next-time">次 ' + fmtTime(rounded) + '</span>';
+    var nextFeed = getNextFeedDate();
+    if(nextFeed){
+      s += '<span class="next-time">次 ' + fmtTime(nextFeed) + '</span>';
     }
   }
   return s;
@@ -1296,6 +1306,8 @@ function applyBabySettings(obj){
   if(Array.isArray(obj.weightLog)) babySettings.weightLog = cleanWeightLog(obj.weightLog);
   saveBabyLocal();
   renderBabyUI();
+  /* 相手がリマインドを切り替えた場合も、この端末から予定を追随させる */
+  scheduleSyncReminder();
 }
 function loadBabySettingsFromCal(){
   if(!accessToken) return Promise.resolve();
@@ -1636,7 +1648,9 @@ function loadRecords(silent){
       records = items.map(parseEvent).filter(function(r){ return !!r; });
       records.sort(function(a,b){ return b.start - a.start; });
       if(records.length > 300) records = records.slice(0, 300);
+      recordsLoaded = true;
       renderAll();
+      scheduleSyncReminder();
       loadArchive(100);
       if(!silent) setStatus('');
     })
@@ -1737,6 +1751,115 @@ function deleteRecord(rec){
   }).catch(function(err){
     setStatus('削除できませんでした：' + err.message, true);
   }).then(function(){ setBusy(false); });
+}
+
+/* ================= リマインド（Googleカレンダーの予定＋通知） =================
+   リマインドONのときだけ、共有カレンダーに「次の授乳の目安時刻」の予定を
+   1件だけ登録する。繰り返し予定にはしない。
+   - 授乳を記録すると、前の（まだ来ていない）リマインド予定を消して
+     新しい目安時刻の予定に差し替える
+   - 予定には時刻ちょうど（0分前）のポップアップ通知を付ける
+   - OFFにしたら登録済みの予定も消す
+   - タイトルとマーカーを記録と区別し、parseEventでは記録として数えない */
+var REMIND_TITLE = 'リマインド：次の授乳の目安';
+var REMIND_MARKER = 'muse-baby-remind:';
+var remindSyncing = false;
+var remindSyncQueued = false;
+var remindSyncTimer = null;
+function scheduleSyncReminder(){
+  if(remindSyncTimer) clearTimeout(remindSyncTimer);
+  remindSyncTimer = setTimeout(function(){
+    remindSyncTimer = null;
+    syncReminder();
+  }, 800);
+}
+function isReminderEvent(ev){
+  if(!ev) return false;
+  var desc = ev.description || '';
+  if(desc.indexOf(REMIND_MARKER) >= 0) return true;
+  return (ev.summary || '') === REMIND_TITLE;
+}
+function fetchReminderEvents(){
+  var now = new Date();
+  var from = startOfDay(now); from.setDate(from.getDate() - 2);
+  var to = startOfDay(now); to.setDate(to.getDate() + 3);
+  var qs = '?timeMin=' + encodeURIComponent(from.toISOString()) +
+           '&timeMax=' + encodeURIComponent(to.toISOString()) +
+           '&maxResults=250&singleEvents=true&orderBy=startTime';
+  return apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events' + qs)
+    .then(function(data){
+      var items = (data && data.items) || [];
+      var out = [];
+      for(var i=0;i<items.length;i++){
+        var ev = items[i];
+        if(!isReminderEvent(ev) || !ev.start || !ev.start.dateTime) continue;
+        var st = new Date(ev.start.dateTime);
+        if(!isNaN(st.getTime())) out.push({ id: ev.id, start: st });
+      }
+      return out;
+    });
+}
+function deleteReminderEvent(id){
+  return apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events/' + encodeURIComponent(id), {
+    method: 'DELETE'
+  }).catch(function(){});
+}
+function createReminderEvent(when){
+  var end = new Date(when.getTime() + 30*60000);
+  var body = {
+    summary: REMIND_TITLE,
+    description: REMIND_MARKER + JSON.stringify({ v:1, target: when.toISOString() }),
+    start: { dateTime: when.toISOString(), timeZone: 'Asia/Tokyo' },
+    end:   { dateTime: end.toISOString(),  timeZone: 'Asia/Tokyo' },
+    reminders: { useDefault: false, overrides: [ { method: 'popup', minutes: 0 } ] }
+  };
+  return apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events', {
+    method: 'POST', body: JSON.stringify(body)
+  });
+}
+function syncReminder(){
+  if(!accessToken) return Promise.resolve();
+  /* ONのときは目安時刻の計算に記録が必要なので、初回読み込み前は見送る
+     （読み込み完了後に loadRecords 側から改めて呼ばれる） */
+  if(babySettings.remind && !recordsLoaded) return Promise.resolve();
+  if(remindSyncing){ remindSyncQueued = true; return Promise.resolve(); }
+  remindSyncing = true;
+  return fetchReminderEvents().then(function(list){
+    var nowMs = Date.now();
+    /* まだ時刻が来ていない予定だけが差し替え・削除の対象 */
+    var futures = list.filter(function(r){ return r.start.getTime() > nowMs; });
+    var chain = Promise.resolve();
+    function delAll(arr){
+      arr.forEach(function(r){
+        chain = chain.then(function(){ return deleteReminderEvent(r.id); });
+      });
+    }
+    if(!babySettings.remind){
+      delAll(futures);
+      return chain;
+    }
+    var target = getNextFeedDate();
+    if(!target || target.getTime() <= nowMs){
+      /* 目安が無い／既に過ぎている場合は新しい予定を作らず、残っている未来の予定を消す */
+      delAll(futures);
+      return chain;
+    }
+    var match = null;
+    futures.forEach(function(r){
+      if(!match && Math.abs(r.start.getTime() - target.getTime()) < 60000) match = r;
+    });
+    if(match){
+      /* 同じ時刻の予定が既にあればそれを残し、余分な未来の予定だけ消す */
+      delAll(futures.filter(function(r){ return r.id !== match.id; }));
+      return chain;
+    }
+    delAll(futures);
+    return chain.then(function(){ return createReminderEvent(target); });
+  }).catch(function(){
+  }).then(function(){
+    remindSyncing = false;
+    if(remindSyncQueued){ remindSyncQueued = false; syncReminder(); }
+  });
 }
 
 /* ================= 認証（Google Identity Services） ================= */
@@ -1895,6 +2018,8 @@ $('inputWeight').addEventListener('change', function(){
 $('remindToggle').addEventListener('click', function(){
   babySettings.remind = !babySettings.remind;
   scheduleBabySave();
+  /* ONなら目安時刻の予定を登録、OFFなら登録済みの予定を消す */
+  scheduleSyncReminder();
 });
 $('cancelSettingsBtn').addEventListener('click', function(){ closeBabySettings(); });
 $('saveSettingsBtn').addEventListener('click', function(){
