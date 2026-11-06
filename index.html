@@ -1726,6 +1726,9 @@ function createRecord(kind, amount){
   }).then(function(){
     playChime();
     setStatus('');
+    /* リマインド登録は60秒デバウンス後（scheduleDelayedReminderSync）。
+       ここでの読み込みは画面表示用で、待機中はリマインド同期しない */
+    scheduleDelayedReminderSync();
     return loadRecords(true);
   }).catch(function(err){
     setStatus('記録できませんでした：' + err.message, true);
@@ -1741,6 +1744,8 @@ function saveEdit(rec, when, updated){
   }).then(function(){
     setStatus('');
     closeEdit();
+    /* リマインド登録は60秒デバウンス後。ここでの読み込みは画面表示用 */
+    scheduleDelayedReminderSync();
     return loadRecords(true);
   }).catch(function(err){
     setStatus('保存できませんでした：' + err.message, true);
@@ -1755,6 +1760,8 @@ function deleteRecord(rec){
   }).then(function(){
     setStatus('');
     closeEdit();
+    /* リマインド登録は60秒デバウンス後。ここでの読み込みは画面表示用 */
+    scheduleDelayedReminderSync();
     return loadRecords(true);
   }).catch(function(err){
     setStatus('削除できませんでした：' + err.message, true);
@@ -1764,25 +1771,57 @@ function deleteRecord(rec){
 /* ================= リマインド（Googleカレンダーの予定＋通知） =================
    リマインドONのときだけ、共有カレンダーに「次の授乳の目安時刻」の予定を
    1件だけ登録する。繰り返し予定にはしない。
-   - 授乳を記録するたびに、その記録から計算した新しい目安時刻で通知を
-     上書きする（記録したらそこから数え直す）
+   - 記録の追加・編集・削除があったら、すぐには登録せず60秒待ってから
+     記録を再読み込みし、リマインド予定を1回だけ登録・上書き更新する。
+     続けて記録が入りやすい（母乳のあとにミルク追加、量の直し等）ためで、
+     待っている間にまた記録が入ったら、その時点から60秒に数え直す
+     （デバウンス）。画面表示のための読み込みはすぐに行うが、その際の
+     リマインド同期は行わない。30秒ごとの自動更新・フォーカス時の
+     読み込みでも、待機中はリマインド同期を先行させない
+   - アプリを開いたとき・フォーカス時の追いつき同期は従来どおり即時に行う
+     （待機中のデバウンスが無い場合）。待機中にアプリを閉じた場合は、
+     次に開いたときの同期で登録される
    - 既に未来のリマインド予定がある場合は、消して作り直さず、その予定を
      新しい目安時刻へ更新（PUT）する。予定が無い場合だけ新規作成する。
      重複した未来の予定があれば、残す1件以外を消す
    - 予定には時刻ちょうど（0分前）のポップアップ通知を付ける
-   - OFFにしたら登録済みの予定も消す
+   - OFFにしたら登録済みの予定も消す（トグルの切り替えは待たずに即時）
    - タイトルとマーカーを記録と区別し、parseEventでは記録として数えない */
 var REMIND_TITLE = 'リマインド：次の授乳の目安';
 var REMIND_MARKER = 'muse-baby-remind:';
+var REMIND_DEBOUNCE_MS = 60000;
 var remindSyncing = false;
 var remindSyncQueued = false;
 var remindSyncTimer = null;
+var remindDebounceTimer = null;
+var remindDebouncePending = false;
 function scheduleSyncReminder(){
+  /* 記録変更後の60秒デバウンス待機中は、自動更新・フォーカス・設定同期
+     などからの同期で先に登録しない。登録はデバウンス満了時の1回だけ */
+  if(remindDebouncePending) return;
   if(remindSyncTimer) clearTimeout(remindSyncTimer);
   remindSyncTimer = setTimeout(function(){
     remindSyncTimer = null;
     syncReminder();
   }, 800);
+}
+/* 記録の追加・編集・削除のたびに呼ぶ：その時点から60秒数え直し、
+   満了したら記録を再読み込みしてからリマインド予定を1回だけ同期する */
+function scheduleDelayedReminderSync(){
+  remindDebouncePending = true;
+  if(remindSyncTimer){ clearTimeout(remindSyncTimer); remindSyncTimer = null; }
+  if(remindDebounceTimer) clearTimeout(remindDebounceTimer);
+  remindDebounceTimer = setTimeout(function(){
+    remindDebounceTimer = null;
+    remindDebouncePending = false;
+    /* 最新の記録を読み込み直してから同期する（loadRecords完了後に
+       scheduleSyncReminder経由で1回だけ同期される） */
+    loadRecords(true);
+  }, REMIND_DEBOUNCE_MS);
+}
+function cancelDelayedReminderSync(){
+  if(remindDebounceTimer){ clearTimeout(remindDebounceTimer); remindDebounceTimer = null; }
+  remindDebouncePending = false;
 }
 function isReminderEvent(ev){
   if(!ev) return false;
@@ -2044,7 +2083,10 @@ $('inputWeight').addEventListener('change', function(){
 $('remindToggle').addEventListener('click', function(){
   babySettings.remind = !babySettings.remind;
   scheduleBabySave();
-  /* ONなら目安時刻の予定を登録、OFFなら登録済みの予定を消す */
+  /* トグルの切り替えは60秒待たずに即時反映する：
+     ONなら目安時刻の予定を登録、OFFなら登録済みの予定を消す。
+     記録変更のデバウンス待機が残っていれば取り消す */
+  cancelDelayedReminderSync();
   scheduleSyncReminder();
 });
 $('cancelSettingsBtn').addEventListener('click', function(){ closeBabySettings(); });
