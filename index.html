@@ -191,7 +191,13 @@
     overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
     background:var(--bg); border:1px solid var(--divider); border-radius:14px;
     max-height:calc(92vh - 150px); min-width:0;
+    overscroll-behavior:contain; touch-action:pan-y;
   }
+  /* ===== ビューワー表示中は背景ページをロックする ===== */
+  html.viewer-locked, body.viewer-locked{overflow:hidden !important; overscroll-behavior:none;}
+  body.viewer-locked{position:fixed; left:0; right:0; width:100%;}
+  #viewerOverlay{overscroll-behavior:none;}
+  .viewer-sheet{overscroll-behavior:contain;}
   .viewer-nav{display:flex; gap:8px; margin-top:12px;}
   .viewer-nav .btn-sub{margin-top:0; flex:1 1 0; width:auto; padding:9px 4px; font-size:13px; white-space:nowrap;}
   .viewer-nav .viewer-close{flex:1.2 1 0; font-weight:800; color:var(--text);}
@@ -462,7 +468,7 @@
   <div class="gauge-head" id="gaugeHead"><span>今日のミルク</span></div>
   <section class="panel" id="milkGaugeWrap" aria-label="今日のミルク">
     <div class="gauge-bar" id="gaugeBar"></div>
-    <div class="gauge-foot"><span id="gaugeTotal">約0ml</span><span id="gaugeGoal">目標 640ml</span></div>
+    <div class="gauge-foot"><span id="gaugeTotal">0ml</span><span id="gaugeGoal">目標 640ml</span></div>
   </section>
 
   <!-- 今日のログ -->
@@ -976,7 +982,7 @@ function renderGauge(){
   }
   $('gaugeBar').innerHTML = html;
   /* 合計と目標は同じ色（白）で統一する */
-  $('gaugeTotal').textContent = '約' + total + 'ml';
+  $('gaugeTotal').textContent = total + 'ml';
   $('gaugeTotal').style.color = '';
   $('gaugeTotal').style.fontWeight = '';
   $('gaugeGoal').textContent = '目標 ' + goal + 'ml';
@@ -1486,7 +1492,7 @@ function renderViewer(){
         for(k=0;k<archiveRecords.length;k++){ if(archiveRecords[k].id===id){ found = archiveRecords[k]; break; } }
       }
       if(found){
-        $('viewerOverlay').classList.add('hidden');
+        closeViewer();
         openEdit(found);
       }
     });
@@ -1505,10 +1511,55 @@ function scrollViewerToNow(){
     }
   });
 }
+/* ビューワー表示中だけ背景ページを固定し、背後のスクロールを止める。
+   ビューワー内の時間スクロール（viewerScroll）はそのまま動く */
+var viewerLocked = false;
+var viewerLockedY = 0;
+var viewerLastTouchY = null;
+function lockViewerBackground(){
+  if(viewerLocked) return;
+  viewerLocked = true;
+  viewerLockedY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  document.documentElement.classList.add('viewer-locked');
+  document.body.classList.add('viewer-locked');
+  document.body.style.top = (-viewerLockedY) + 'px';
+}
+function unlockViewerBackground(){
+  if(!viewerLocked) return;
+  viewerLocked = false;
+  viewerLastTouchY = null;
+  document.documentElement.classList.remove('viewer-locked');
+  document.body.classList.remove('viewer-locked');
+  document.body.style.top = '';
+  window.scrollTo(0, viewerLockedY);
+}
+function closeViewer(){
+  $('viewerOverlay').classList.add('hidden');
+  unlockViewerBackground();
+}
+document.addEventListener('touchstart', function(e){
+  if(viewerLocked && e.touches.length === 1) viewerLastTouchY = e.touches[0].clientY;
+}, { passive:true });
+document.addEventListener('touchmove', function(e){
+  if(!viewerLocked) return;
+  var sc = $('viewerScroll');
+  /* スクロール領域の外（背面・タイトル・ボタン帯）のドラッグは背景へ伝えない */
+  if(!sc || !sc.contains(e.target)){ e.preventDefault(); return; }
+  if(viewerLastTouchY === null || !e.touches.length) return;
+  var y = e.touches[0].clientY;
+  var dy = y - viewerLastTouchY;
+  viewerLastTouchY = y;
+  /* 上端・下端でのドラッグも背景へ伝えない（スクロール連鎖の防止） */
+  var maxTop = sc.scrollHeight - sc.clientHeight;
+  if(maxTop <= 0 || (sc.scrollTop <= 0 && dy > 0) || (sc.scrollTop >= maxTop - 1 && dy < 0)){
+    e.preventDefault();
+  }
+}, { passive:false });
 function openViewer(){
   viewerWeekOffset = 0;
   renderViewer();
   $('viewerOverlay').classList.remove('hidden');
+  lockViewerBackground();
   scrollViewerToNow();
 }
 $('viewerBtn').addEventListener('click', openViewer);
@@ -1526,9 +1577,9 @@ $('viewerNextBtn').addEventListener('click', function(){
   if(viewerWeekOffset === 0) scrollViewerToNow();
   else { var sc = $('viewerScroll'); if(sc) sc.scrollTop = 0; }
 });
-$('viewerCloseBtn').addEventListener('click', function(){ $('viewerOverlay').classList.add('hidden'); });
-$('viewerCloseX').addEventListener('click', function(){ $('viewerOverlay').classList.add('hidden'); });
-$('viewerOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
+$('viewerCloseBtn').addEventListener('click', closeViewer);
+$('viewerCloseX').addEventListener('click', closeViewer);
+$('viewerOverlay').addEventListener('click', function(e){ if(e.target===this) closeViewer(); });
 
 /* ================= 編集シート ================= */
 function openEdit(rec){
