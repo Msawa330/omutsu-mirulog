@@ -283,7 +283,9 @@
   .baby-weight-tap{background:transparent; padding:0; font:inherit; font-weight:800; color:inherit; cursor:pointer; text-align:left; max-width:100%;}
 
   /* ===== 前回行の次回目安 ===== */
-  .prevrow .next-time{margin-left:auto; flex:0 1 auto; min-width:0; color:var(--accent); font-size:13px; font-weight:800; white-space:nowrap; padding-left:6px;}
+  .prevrow .next-time{margin-left:auto; flex:0 1 auto; min-width:0; color:var(--accent); font-size:13px; font-weight:800; white-space:nowrap; padding-left:6px; display:inline-flex; align-items:center; gap:4px;}
+  .prevrow .next-time .next-bell{flex:0 0 auto; width:15px; height:15px; display:inline-flex; align-items:center; justify-content:center; color:var(--accent);}
+  .prevrow .next-time .next-bell svg{width:15px; height:15px;}
 
   /* ===== おすすめバッジ（哺乳瓶） ===== */
   .f-milk{position:relative;}
@@ -370,7 +372,9 @@
     .prevrow{gap:5px;}
     .prevrow .plabel{font-size:11px;}
     .prevrow .elapsed{font-size:12px;}
-    .prevrow .next-time{font-size:12px; padding-left:4px;}
+    .prevrow .next-time{font-size:12px; padding-left:4px; gap:3px;}
+    .prevrow .next-time .next-bell{width:13px; height:13px;}
+    .prevrow .next-time .next-bell svg{width:13px; height:13px;}
     .diaper-grid{gap:5px;}
     .d-btn{font-size:18px; min-height:64px; border-radius:20px;}
     .d-btn svg{width:32px; height:32px;}
@@ -634,7 +638,8 @@ var IC = {
   breast: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="16.5"/><circle cx="18.2" cy="21.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="29.8" cy="21.5" r="1.4" fill="currentColor" stroke="none"/><path d="M17.5 28.5c2 2.6 4.2 3.9 6.5 3.9s4.5-1.3 6.5-3.9"/><path d="M13.5 15.5c2.5-3.4 6.2-5.2 10.5-5.2 3 0 5.7.9 7.9 2.6"/></svg>',
   milk: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="rotate(14 24 24)"><path d="M20 4.5h8l1.2 4.2c.2.9-.4 1.8-1.3 2l-1.4.3v3.2h-5V11l-1.4-.3c-.9-.2-1.5-1.1-1.3-2L20 4.5Z"/><path d="M17.8 14.2h12.4l1.6 4.6c.2.7.4 1.5.4 2.3V40a3.6 3.6 0 0 1-3.6 3.6H19.4a3.6 3.6 0 0 1-3.6-3.6V21.1c0-.8.1-1.6.4-2.3l1.6-4.6Z"/><path d="M20.5 26h6M20.5 31.5h6M20.5 37h4"/></g></svg>',
   scale: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="6.5" width="35" height="35" rx="8"/><rect x="16" y="11" width="16" height="8" rx="2.4"/><path d="M20.5 15h7"/><path d="M17.6 24.6c2 0 3.4 1.6 3.4 3.8v4.9c0 2.2-1.4 3.8-3.4 3.8s-3.4-1.6-3.4-3.8v-4.9c0-2.2 1.4-3.8 3.4-3.8Z"/><path d="M30.4 24.6c2 0 3.4 1.6 3.4 3.8v4.9c0 2.2-1.4 3.8-3.4 3.8s-3.4-1.6-3.4-3.8v-4.9c0-2.2 1.4-3.8 3.4-3.8Z"/></svg>',
-  diaper: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 8.5h37l-2.5 12.3c-1 4.7-3.9 7.2-7.5 8.9-3.2 1.5-5.2 3.7-6 7.4l-.5 2.4h-4l-.5-2.4c-.8-3.7-2.8-5.9-6-7.4-3.6-1.7-6.5-4.2-7.5-8.9L5.5 8.5Z"/><path d="M6.8 15.8h34.4"/><path d="M13 11.8h.01M35 11.8h.01" stroke-width="3.8"/></svg>'
+  diaper: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 8.5h37l-2.5 12.3c-1 4.7-3.9 7.2-7.5 8.9-3.2 1.5-5.2 3.7-6 7.4l-.5 2.4h-4l-.5-2.4c-.8-3.7-2.8-5.9-6-7.4-3.6-1.7-6.5-4.2-7.5-8.9L5.5 8.5Z"/><path d="M6.8 15.8h34.4"/><path d="M13 11.8h.01M35 11.8h.01" stroke-width="3.8"/></svg>',
+  bell: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 7.5a13.5 13.5 0 0 1 13.5 13.5c0 5.8 1.7 8.2 3 10.5H7.5c1.3-2.3 3-4.7 3-10.5A13.5 13.5 0 0 1 24 7.5Z"/><path d="M19.2 38.5a5 5 0 0 0 9.6 0"/><path d="M24 7.5V5"/></svg>'
 };
 var KIND = {
   pee:    { label:'おしっこ', cat:'diaper' },
@@ -904,7 +909,10 @@ function prevHTML(cat){
   if(cat === 'feed'){
     var nextFeed = getNextFeedDate();
     if(nextFeed){
-      s += '<span class="next-time">次 ' + fmtTime(nextFeed) + '</span>';
+      /* リマインドONのときだけ、次回時刻の左にベルを付けて
+         その時刻にカレンダーの通知が来ることを知らせる */
+      var bell = babySettings.remind ? '<span class="next-bell" role="img" aria-label="通知あり">' + IC.bell + '</span>' : '';
+      s += '<span class="next-time">' + bell + '<span>次 ' + fmtTime(nextFeed) + '</span></span>';
     }
   }
   return s;
@@ -1756,8 +1764,11 @@ function deleteRecord(rec){
 /* ================= リマインド（Googleカレンダーの予定＋通知） =================
    リマインドONのときだけ、共有カレンダーに「次の授乳の目安時刻」の予定を
    1件だけ登録する。繰り返し予定にはしない。
-   - 授乳を記録すると、前の（まだ来ていない）リマインド予定を消して
-     新しい目安時刻の予定に差し替える
+   - 授乳を記録するたびに、その記録から計算した新しい目安時刻で通知を
+     上書きする（記録したらそこから数え直す）
+   - 既に未来のリマインド予定がある場合は、消して作り直さず、その予定を
+     新しい目安時刻へ更新（PUT）する。予定が無い場合だけ新規作成する。
+     重複した未来の予定があれば、残す1件以外を消す
    - 予定には時刻ちょうど（0分前）のポップアップ通知を付ける
    - OFFにしたら登録済みの予定も消す
    - タイトルとマーカーを記録と区別し、parseEventでは記録として数えない */
@@ -1804,17 +1815,28 @@ function deleteReminderEvent(id){
     method: 'DELETE'
   }).catch(function(){});
 }
-function createReminderEvent(when){
+function reminderEventBody(when){
   var end = new Date(when.getTime() + 30*60000);
-  var body = {
+  return {
     summary: REMIND_TITLE,
     description: REMIND_MARKER + JSON.stringify({ v:1, target: when.toISOString() }),
     start: { dateTime: when.toISOString(), timeZone: 'Asia/Tokyo' },
     end:   { dateTime: end.toISOString(),  timeZone: 'Asia/Tokyo' },
     reminders: { useDefault: false, overrides: [ { method: 'popup', minutes: 0 } ] }
   };
+}
+function createReminderEvent(when){
   return apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events', {
-    method: 'POST', body: JSON.stringify(body)
+    method: 'POST', body: JSON.stringify(reminderEventBody(when))
+  });
+}
+/* 既存のリマインド予定を新しい目安時刻へ上書き更新する。
+   更新対象が消えていた等で更新できなければ、新規作成に切り替える */
+function updateReminderEvent(id, when){
+  return apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events/' + encodeURIComponent(id), {
+    method: 'PUT', body: JSON.stringify(reminderEventBody(when))
+  }).catch(function(){
+    return createReminderEvent(when);
   });
 }
 function syncReminder(){
@@ -1844,16 +1866,20 @@ function syncReminder(){
       delAll(futures);
       return chain;
     }
-    var match = null;
+    /* 予定ありの場合は更新する：残す1件（同じ時刻の予定があればそれ、
+       無ければ最も近い未来の予定）を新しい目安時刻へ上書き更新し、
+       余分な未来の予定だけ消す。予定が無ければ新規作成する。
+       これにより、授乳を記録するたびに通知はその記録起点の時刻へ移る */
+    futures.sort(function(a,b){ return a.start - b.start; });
+    var keeper = null;
     futures.forEach(function(r){
-      if(!match && Math.abs(r.start.getTime() - target.getTime()) < 60000) match = r;
+      if(!keeper && Math.abs(r.start.getTime() - target.getTime()) < 60000) keeper = r;
     });
-    if(match){
-      /* 同じ時刻の予定が既にあればそれを残し、余分な未来の予定だけ消す */
-      delAll(futures.filter(function(r){ return r.id !== match.id; }));
-      return chain;
+    if(!keeper && futures.length) keeper = futures[0];
+    if(keeper){
+      delAll(futures.filter(function(r){ return r.id !== keeper.id; }));
+      return chain.then(function(){ return updateReminderEvent(keeper.id, target); });
     }
-    delAll(futures);
     return chain.then(function(){ return createReminderEvent(target); });
   }).catch(function(){
   }).then(function(){
