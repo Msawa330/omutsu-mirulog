@@ -37,14 +37,13 @@
   input,select,textarea{max-width:100%; min-width:0;}
   button{font-family:inherit; cursor:pointer; border:none; color:inherit;}
   button:disabled{opacity:.45; cursor:not-allowed;}
-  .wrap{max-width:672px; width:100%; margin:0 auto; padding:14px 12px 40px; overflow-x:clip;}
+  .wrap{max-width:672px; width:100%; margin:0 auto; padding:calc(env(safe-area-inset-top, 0px) + 4px) 12px 32px; overflow-x:clip;}
 
   /* ===== header (パネルの外) ===== */
-  h1{font-size:18px; font-weight:700; text-align:center; margin:2px 0 2px; letter-spacing:.04em;}
-  .now-row{position:relative; margin:0 0 10px; min-height:34px; display:flex; align-items:center; justify-content:center; min-width:0;}
-  .now{font-size:16px; text-align:center; color:var(--text); margin:0; font-weight:500; white-space:nowrap; min-width:0; overflow:hidden; text-overflow:ellipsis;}
-  .btn-reload{position:absolute; right:0; top:50%; transform:translateY(-50%); padding:6px 12px; font-size:12px; white-space:nowrap;}
-  .topbar{display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;}
+  .now-row{position:relative; margin:0 0 4px; min-height:26px; display:flex; align-items:center; justify-content:center; min-width:0;}
+  .now{font-size:13px; text-align:center; color:var(--text); margin:0; font-weight:500; white-space:nowrap; min-width:0; overflow:hidden; text-overflow:ellipsis; line-height:1.2;}
+  .btn-reload{position:absolute; right:0; top:50%; transform:translateY(-50%); padding:4px 10px; font-size:11px; white-space:nowrap;}
+  .topbar{display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px;}
   .btn-signin{
     background:#ffffff; color:var(--dark); font-weight:800; font-size:14px;
     border-radius:999px; padding:9px 18px; display:inline-flex; align-items:center; gap:8px;
@@ -56,22 +55,21 @@
   .signed{display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--sub);}
   .signed .dot{width:8px;height:8px;border-radius:50%;background:#7ee2a0;display:inline-block;}
   .authbar{display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap;}
-  .status{font-size:13px; color:var(--sub); text-align:center; min-height:18px; margin:0 0 4px;}
+  .status{font-size:13px; color:var(--sub); text-align:center; min-height:18px; margin:0 0 2px;}
   .status:empty{min-height:0; margin:0;}
   .status.err{color:#ff9d9d;}
 
   /* ===== panels ===== */
-  .panel{background:var(--bg); border-radius:28px; padding:8px 14px; margin-bottom:8px; min-width:0; max-width:100%;}
-  .prevrow{display:flex; align-items:center; gap:8px; padding:2px 0 6px; min-height:36px; flex-wrap:nowrap; overflow:hidden; min-width:0; max-width:100%;}
-  .prevrow .plabel{font-size:14px; color:var(--sub); font-weight:700; flex:0 0 auto;}
-  .prevrow .elapsed{font-size:30px; font-weight:800; line-height:1; flex:0 1 auto; white-space:nowrap; min-width:0;}
-  .prevrow .pdetail{font-size:16px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1 1 auto; min-width:0;}
-  .prevrow .none{font-size:16px; color:var(--sub);}
+  .panel{background:var(--bg); border-radius:14px; padding:6px 12px; margin-bottom:6px; min-width:0; max-width:100%;}
+  .prevrow{display:flex; align-items:center; gap:6px; padding:1px 0 4px; min-height:22px; flex-wrap:nowrap; overflow:hidden; min-width:0; max-width:100%;}
+  .prevrow .plabel{font-size:12px; color:var(--sub); font-weight:700; flex:0 0 auto;}
+  .prevrow .elapsed{font-size:14px; font-weight:800; line-height:1.1; flex:0 1 auto; white-space:nowrap; min-width:0;}
+  .prevrow .none{font-size:13px; color:var(--sub);}
 
-  .diaper-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; min-width:0;}
+  .diaper-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:6px; min-width:0;}
   .d-btn{
-    min-width:0; border-radius:24px; padding:6px 6px; min-height:76px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    min-width:0; border-radius:24px; padding:4px 6px; min-height:68px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
     font-size:20px; font-weight:800; color:#fff;
   }
   .d-btn svg{width:36px; height:36px;}
@@ -79,7 +77,7 @@
   .d-btn.poop{background:var(--poop);}
   .d-btn:active{filter:brightness(1.12);}
 
-  .feed-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:60px 60px; gap:8px; min-width:0;}
+  .feed-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:54px 54px; gap:6px; min-width:0;}
   .f-breast{
     min-width:0; grid-row:1 / span 2; background:var(--breast); color:var(--dark);
     border-radius:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
@@ -94,7 +92,7 @@
   .f-milk:active,.f-breast:active{filter:brightness(1.07);}
 
   /* ===== sections ===== */
-  .sec-head{display:flex; align-items:center; gap:7px; margin:10px 2px 5px; font-size:13px; font-weight:700; color:var(--sub);}
+  .sec-head{display:flex; align-items:center; gap:7px; margin:6px 2px 3px; font-size:13px; font-weight:700; color:var(--sub);}
   .sec-head svg{width:20px; height:20px;}
   .sec-head .spacer{flex:1;}
   .milk-total{display:inline-flex; align-items:center; gap:5px; color:var(--accent); font-weight:800; font-size:15px;}
@@ -103,7 +101,7 @@
   .rec-list{display:flex; flex-direction:column;}
   .rec-row{
     display:flex; align-items:center; gap:10px; width:100%; max-width:100%; min-width:0; text-align:left;
-    background:transparent; padding:7px 2px; border-bottom:1px solid var(--divider);
+    background:transparent; padding:5px 2px; border-bottom:1px solid var(--divider);
   }
   .rec-row:last-child{border-bottom:none;}
   .badge{flex:0 0 auto; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
@@ -115,7 +113,7 @@
   .rec-time{font-size:16px; font-weight:800; white-space:nowrap;}
   .rec-time .pdate{color:var(--past); font-weight:800; margin-right:5px;}
   .rec-time.past{color:var(--past);}
-  .empty{font-size:14px; color:var(--sub); padding:8px 2px;}
+  .empty{font-size:14px; color:var(--sub); padding:5px 2px;}
 
   /* ===== 7 days ===== */
   .day-row{
@@ -123,7 +121,7 @@
   }
   .day-row>*{min-width:0;}
   .day-row{
-    width:100%; background:transparent; text-align:center; padding:8px 2px;
+    width:100%; background:transparent; text-align:center; padding:5px 2px;
     border-bottom:1px solid var(--divider); font-size:15px; font-weight:700; color:var(--text);
   }
   .day-row:last-child{border-bottom:none;}
@@ -138,7 +136,7 @@
   .month-row{
     display:grid; grid-template-columns:7rem repeat(3,minmax(0,1fr)); gap:12px; align-items:center; min-width:0;
     width:100%; background:transparent; text-align:left;
-    padding:8px 2px; border-bottom:1px solid var(--divider); color:var(--text);
+    padding:5px 2px; border-bottom:1px solid var(--divider); color:var(--text);
   }
   .month-row:last-child{border-bottom:none;}
   .month-row:active{background:rgba(255,255,255,0.06);}
@@ -148,13 +146,13 @@
   /* ===== 列見出しアイコン行（7日間・月間 共通） ===== */
   .days-head{
     display:grid; grid-template-columns:3.4rem repeat(4,minmax(0,1fr)); align-items:center; min-width:0;
-    padding:2px 2px 6px; border-bottom:1px solid var(--divider);
+    padding:1px 2px 4px; border-bottom:1px solid var(--divider);
   }
   .days-head .hcell{display:flex; align-items:center; justify-content:center; min-width:0;}
   .days-head svg{width:22px; height:22px;}
   .months-head{
     display:grid; grid-template-columns:7rem repeat(3,minmax(0,1fr)); gap:12px; align-items:center; min-width:0;
-    padding:2px 2px 6px; border-bottom:1px solid var(--divider);
+    padding:1px 2px 4px; border-bottom:1px solid var(--divider);
   }
   .months-head .hcell{display:flex; align-items:center; justify-content:center; min-width:0;}
   .months-head .hcell:first-child{justify-content:flex-start;}
@@ -180,12 +178,59 @@
     border:1px solid var(--divider); border-radius:10px; padding:9px 14px; width:100%; margin-top:8px;
   }
   .btn-more{
-    display:block; width:50%; margin:4px auto 4px;
+    display:block; width:50%; margin:3px auto 3px;
     background:var(--bg); color:var(--text); font-weight:700; font-size:13px;
-    border:1px solid var(--divider); border-radius:999px; padding:9px 14px;
+    border:1px solid var(--divider); border-radius:999px; padding:7px 14px;
   }
   .btn-more:active{background:#232f4f;}
   .hidden{display:none !important;}
+
+  /* ===== 週間ビューワー ===== */
+  .viewer-sheet{display:flex; flex-direction:column; max-height:92vh;}
+  .viewer-scroll{
+    overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
+    background:var(--bg); border:1px solid var(--divider); border-radius:14px;
+    max-height:calc(92vh - 150px); min-width:0;
+  }
+  .viewer-grid{display:grid; grid-template-columns:2.3rem repeat(7,minmax(0,1fr)); min-width:0;}
+  .v-head{
+    position:sticky; top:0; z-index:3; background:var(--dark);
+    text-align:center; padding:6px 1px 5px; border-bottom:1px solid rgba(255,255,255,.3);
+    line-height:1.2; min-width:0;
+  }
+  .v-head .v-md{display:block; font-size:12px; font-weight:800; white-space:nowrap;}
+  .v-head .v-wd{display:block; font-size:10px; font-weight:700; color:var(--sub); white-space:nowrap;}
+  .v-head.today .v-md,.v-head.today .v-wd{color:var(--accent);}
+  .v-corner{position:sticky; top:0; z-index:3; background:var(--dark); border-bottom:1px solid rgba(255,255,255,.3);}
+  .v-time{
+    font-size:10px; font-weight:700; color:var(--sub); text-align:right;
+    padding:2px 4px 0 0; line-height:1.1; min-width:0; white-space:nowrap;
+  }
+  .v-time.hour{border-top:1px solid rgba(255,255,255,.30);}
+  .v-slot{
+    min-height:26px; padding:1px 1px; display:flex; flex-direction:column; gap:2px;
+    border-left:1px solid rgba(255,255,255,.07); min-width:0;
+  }
+  .v-slot.hour{border-top:1px solid rgba(255,255,255,.30);}
+  .v-slot.today{background:rgba(255,217,77,.05);}
+  .v-chip{
+    width:100%; min-width:0; border-radius:6px; padding:2px 1px;
+    display:flex; align-items:center; justify-content:center; gap:1px;
+    font-size:9px; font-weight:800; line-height:1.15; white-space:nowrap; overflow:hidden;
+  }
+  .v-chip svg{width:13px; height:13px; flex:0 0 auto;}
+  .v-chip span{overflow:hidden; text-overflow:ellipsis;}
+  .v-chip.pee{background:var(--pee); color:#fff;}
+  .v-chip.poop{background:var(--poop); color:#fff;}
+  .v-chip.breast{background:var(--breast); color:var(--dark);}
+  .v-chip.milk{background:var(--milk-bg); color:var(--dark);}
+  .v-chip:active{filter:brightness(1.12);}
+  @media (max-width:430px){
+    .viewer-grid{grid-template-columns:2rem repeat(7,minmax(0,1fr));}
+    .v-head .v-md{font-size:11px;}
+    .v-chip{font-size:8.5px;}
+    .v-chip svg{width:12px; height:12px;}
+  }
 
   /* ===== modals ===== */
   .overlay{
@@ -227,10 +272,10 @@
   .btn-danger.confirm{background:#c0392b; color:#fff; border-color:#c0392b;}
   .day-total{display:flex; gap:14px; flex-wrap:wrap; font-size:13.5px; color:var(--sub); margin-bottom:8px; font-weight:700;}
   .day-total .hl{color:var(--accent); font-weight:800;}
-  footer{margin-top:26px; text-align:center;}
+  footer{margin-top:16px; text-align:center;}
 
   /* ===== 赤ちゃん設定ブロック ===== */
-  .baby-bar{padding:8px 14px;}
+  .baby-bar{padding:6px 12px;}
   .baby-bar-row{display:flex; align-items:center; gap:10px; min-width:0;}
   .baby-bar-row .baby-summary{flex:1; min-width:0; font-size:15px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .baby-bar-row .baby-summary .unset{color:var(--sub); font-weight:700;}
@@ -238,7 +283,7 @@
   .baby-weight-tap{background:transparent; padding:0; font:inherit; font-weight:800; color:inherit; cursor:pointer; text-align:left; max-width:100%;}
 
   /* ===== 前回行の次回目安 ===== */
-  .prevrow .next-time{margin-left:auto; flex:0 1 auto; min-width:0; color:var(--accent); font-size:15px; font-weight:800; white-space:nowrap; padding-left:6px;}
+  .prevrow .next-time{margin-left:auto; flex:0 1 auto; min-width:0; color:var(--accent); font-size:13px; font-weight:800; white-space:nowrap; padding-left:6px;}
 
   /* ===== おすすめバッジ（哺乳瓶） ===== */
   .f-milk{position:relative;}
@@ -250,9 +295,9 @@
   .rec-badge svg{width:13px; height:13px;}
 
   /* ===== 今日のミルク ゲージ ===== */
-  .gauge-head{font-size:13px; font-weight:700; margin:10px 2px 5px; color:var(--sub); display:flex; align-items:baseline; gap:8px;}
+  .gauge-head{font-size:13px; font-weight:700; margin:6px 2px 3px; color:var(--sub); display:flex; align-items:baseline; gap:8px;}
   .gauge-bar{
-    display:flex; height:30px; border-radius:10px; overflow:hidden; background:#3a4152; max-width:100%; min-width:0;
+    display:flex; height:26px; border-radius:10px; overflow:hidden; background:#3a4152; max-width:100%; min-width:0;
   }
   .gauge-foot>span{min-width:0;}
   .gauge-seg{
@@ -261,7 +306,7 @@
   }
   .gauge-seg.milk{background:var(--accent); color:var(--dark);}
   .gauge-seg.breast{background:var(--breast); color:var(--dark);}
-  .gauge-foot{display:flex; justify-content:space-between; align-items:baseline; margin-top:5px; font-size:12px; font-weight:700; color:var(--text);}
+  .gauge-foot{display:flex; justify-content:space-between; align-items:baseline; margin-top:3px; font-size:12px; font-weight:700; color:var(--text);}
   .gauge-foot .over{color:var(--accent); font-weight:800;}
 
   /* ===== 赤ちゃん設定シート ===== */
@@ -316,28 +361,27 @@
 
   /* ===== 狭幅端末（〜430px）：はみ出し防止のサイズ調整 ===== */
   @media (max-width:430px){
-    .wrap{padding:12px 10px 36px;}
-    .panel{padding:8px 10px; border-radius:24px;}
-    .baby-bar{padding:8px 12px;}
-    .now{font-size:15px;}
-    .btn-reload{padding:5px 9px; font-size:11px;}
+    .wrap{padding:calc(env(safe-area-inset-top, 0px) + 2px) 10px 28px;}
+    .panel{padding:5px 10px; border-radius:12px;}
+    .baby-bar{padding:5px 10px;}
+    .now{font-size:12px;}
+    .btn-reload{padding:3px 8px; font-size:11px;}
     .baby-bar-row .baby-summary{font-size:14px;}
-    .prevrow{gap:6px;}
-    .prevrow .plabel{font-size:13px;}
-    .prevrow .elapsed{font-size:26px;}
-    .prevrow .pdetail{font-size:14px;}
-    .prevrow .next-time{font-size:13px; padding-left:4px;}
-    .diaper-grid{gap:6px;}
-    .d-btn{font-size:18px; min-height:72px; border-radius:20px;}
+    .prevrow{gap:5px;}
+    .prevrow .plabel{font-size:11px;}
+    .prevrow .elapsed{font-size:12px;}
+    .prevrow .next-time{font-size:12px; padding-left:4px;}
+    .diaper-grid{gap:5px;}
+    .d-btn{font-size:18px; min-height:64px; border-radius:20px;}
     .d-btn svg{width:32px; height:32px;}
-    .feed-grid{gap:6px; grid-template-rows:56px 56px;}
+    .feed-grid{gap:5px; grid-template-rows:50px 50px;}
     .f-breast{font-size:16px; border-radius:20px;}
     .f-breast svg{width:34px; height:34px;}
     .f-milk{font-size:15px; border-radius:16px;}
     .f-milk small{font-size:11px;}
     .rec-badge{width:18px; height:18px; top:3px; right:3px;}
     .gauge-seg{font-size:10px;}
-    .day-row{font-size:14px; padding:8px 0;}
+    .day-row{font-size:14px; padding:5px 0;}
     .month-row .mvalue{font-size:14px;}
     .month-row .month-name{font-size:14px;}
     .month-row{grid-template-columns:6.4rem repeat(3,minmax(0,1fr)); gap:8px;}
@@ -351,11 +395,9 @@
     .day-total{gap:10px;}
   }
   @media (max-width:360px){
-    h1{font-size:17px;}
-    .now{font-size:14px;}
-    .prevrow .elapsed{font-size:23px;}
-    .prevrow .pdetail{font-size:13px;}
-    .prevrow .next-time{font-size:12px;}
+    .now{font-size:11px;}
+    .prevrow .elapsed{font-size:11px;}
+    .prevrow .next-time{font-size:11px;}
     .f-milk{font-size:14px;}
     .day-row{grid-template-columns:2.9rem repeat(4,minmax(0,1fr));}
     .days-head{grid-template-columns:2.9rem repeat(4,minmax(0,1fr));}
@@ -372,7 +414,6 @@
 <body>
 <div class="wrap">
 
-  <h1>おむつミルログ</h1>
   <div class="now-row">
     <p class="now" id="nowLine">—</p>
     <button class="btn-ghost btn-reload hidden" id="reloadBtn" type="button">再読み込み</button>
@@ -431,6 +472,7 @@
   <section class="panel" aria-label="7日間のログ">
     <div id="daysBody"></div>
   </section>
+  <button class="btn-more" id="viewerBtn" type="button">ビューワーで見る</button>
 
   <!-- 月間のログ -->
   <div class="sec-head">
@@ -537,6 +579,17 @@
     <h3 id="monthTitle">—</h3>
     <div id="monthDays"></div>
     <button class="btn-sub" id="monthCloseBtn" type="button" style="margin-top:14px;">閉じる</button>
+  </div>
+</div>
+
+<!-- 週間ビューワー -->
+<div class="overlay hidden" id="viewerOverlay">
+  <div class="sheet viewer-sheet" role="dialog" aria-modal="true">
+    <h3 id="viewerTitle">—<button class="close-x" id="viewerCloseX" type="button" aria-label="閉じる">×</button></h3>
+    <div class="viewer-scroll" id="viewerScroll">
+      <div class="viewer-grid" id="viewerGrid"></div>
+    </div>
+    <button class="btn-sub" id="viewerCloseBtn" type="button" style="margin-top:12px;">閉じる</button>
   </div>
 </div>
 
@@ -654,8 +707,8 @@ var AGE_BANDS = [
   { label:'5〜6か月',     minD:150, maxD:180, minMl:200, maxMl:220, times:5, disp:'200〜220ml × 5回・離乳食1回' },
   { label:'6〜9か月',     minD:180, maxD:270, minMl:150, maxMl:200, times:5, disp:'150〜200ml × 4〜5回・離乳食2〜3回' },
   { label:'9〜12か月',    minD:270, maxD:365, minMl:100, maxMl:150, times:4, disp:'100〜150ml × 3〜4回・離乳食3回' },
-  { label:'1〜2歳',       minD:365, maxD:730, minMl:0,   maxMl:0,   times:0, disp:'食事中心・牛乳など1日300〜400ml' },
-  { label:'2〜3歳',       minD:730, maxD:1095,minMl:0,   maxMl:0,   times:0, disp:'食事中心・牛乳など1日300ml前後' }
+  { label:'1〜2歳',       minD:365, maxD:730, minMl:120, maxMl:120, times:3, disp:'食事中心・牛乳など1日300〜400ml' },
+  { label:'2〜3歳',       minD:730, maxD:1095,minMl:100, maxMl:100, times:3, disp:'食事中心・牛乳など1日300ml前後' }
 ];
 function parseBirthDate(){
   if(!babySettings.birthDate) return null;
@@ -682,6 +735,10 @@ function ageBand(){
 function getGuide(){
   var band = ageBand();
   if(!band || !band.times) return null;
+  /* 1歳以上は体重換算を使わず固定値（月齢表の範囲内） */
+  if(band.minD >= 365){
+    return { perFeed: band.minMl, times: band.times, daily: band.minMl * band.times, band: band };
+  }
   var per;
   var w = parseFloat(babySettings.weight);
   if(w && w > 0){
@@ -698,14 +755,14 @@ function getGuide(){
 }
 /* 表示用目安：個人の目安が無い（未設定・出産前）間は月齢表の最初の区分
    「0〜2週間（80ml × 8回 = 1日640ml）」で表示し、ゲージ・おすすめ
-   バッジ・次回時刻が常に見えるようにする。1歳以上は対象外として null */
+   バッジ・次回時刻が常に見えるようにする。3歳以上は対象外として null */
 function displayGuide(){
   var g = getGuide();
   if(g) return { guide: g, fallback: false };
   var days = ageDays();
   if(days !== null && days >= 0){
     var b = ageBand();
-    if(!b || !b.times) return null; /* 対象外の月齢では無理に表示しない */
+    if(!b || !b.times) return null; /* 対象外の月齢（3歳以上）では無理に表示しない */
   }
   var fb = AGE_BANDS[0];
   return { guide: { perFeed: fb.minMl, times: fb.times, daily: fb.minMl * fb.times, band: fb }, fallback: true };
@@ -831,7 +888,6 @@ function prevHTML(cat){
   var s = '<span class="plabel">前回</span>';
   if(!rec){ s += '<span class="none">まだなし</span>'; return s; }
   s += '<span class="elapsed">' + fmtElapsed(rec.start, now) + '</span>';
-  s += '<span class="pdetail">（' + fmtTime(rec.start) + '）' + labelOf(rec) + '</span>';
   if(cat === 'feed'){
     var dg = displayGuide();
     if(dg){
@@ -1010,7 +1066,11 @@ function monthWeightGain(y, m){
     else if(e.d <= endStr){ if(!firstIn) firstIn = e; last = e; }
   }
   if(!last) return null;
-  if(!base) base = firstIn;
+  if(!base){
+    /* 月より前の記録が無い場合、月内に2件以上ないと増加分は出せない（―表示） */
+    if(!firstIn || firstIn === last) return null;
+    base = firstIn;
+  }
   return last.w - base.w;
 }
 function fmtGain(g){
@@ -1135,8 +1195,15 @@ function renderBabySummary(){
   if(days !== null && days >= 0){
     if(days < 365) ageText = '生後' + days + '日';
     else {
-      var y = Math.floor(days/365);
-      var m = Math.floor((days - y*365)/30);
+      /* カレンダー基準で歳・か月を出す（日数÷30だと「1歳12か月」になるため） */
+      var bAge = parseBirthDate();
+      var nowAge = new Date();
+      var y = nowAge.getFullYear() - bAge.getFullYear();
+      var m = nowAge.getMonth() - bAge.getMonth();
+      if(nowAge.getDate() < bAge.getDate()) m--;
+      if(m < 0){ y--; m += 12; }
+      if(y <= 0){ y = 1; m = 0; }
+      if(m >= 12){ y += Math.floor(m/12); m = m % 12; }
       ageText = y + '歳' + (m ? m + 'か月' : '');
     }
   }
@@ -1321,6 +1388,95 @@ $('allMonthsBtn').addEventListener('click', function(){
 });
 $('allMonthsCloseBtn').addEventListener('click', function(){ $('allMonthsOverlay').classList.add('hidden'); });
 $('allMonthsOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
+
+/* ================= 週間ビューワー（7日並列・1時間単位） ================= */
+function viewerChipLabel(rec){
+  if(rec.kind==='pee') return 'おし';
+  if(rec.kind==='poop') return 'うんち';
+  if(rec.kind==='breast') return '母乳';
+  return (rec.amount || 0) + 'ml';
+}
+function renderViewer(){
+  var today = startOfDay(new Date());
+  var days = [];
+  for(var i=6;i>=0;i--){
+    var d = new Date(today); d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+  $('viewerTitle').firstChild.textContent =
+    fmtMD(days[0]) + '（' + WD[days[0].getDay()] + '）〜' + fmtMD(days[6]) + '（' + WD[days[6].getDay()] + '）';
+  /* 日×1時間枠 → 記録リスト */
+  var src = logSource();
+  var slots = {}; /* key: dayIndex*24+hour */
+  src.forEach(function(r){
+    for(var di=0; di<7; di++){
+      if(sameDay(r.start, days[di])){
+        var slot = r.start.getHours();
+        var key = di*24 + slot;
+        if(!slots[key]) slots[key] = [];
+        slots[key].push(r);
+        break;
+      }
+    }
+  });
+  Object.keys(slots).forEach(function(k){
+    slots[k].sort(function(a,b){ return a.start - b.start; });
+  });
+  var html = '<div class="v-corner"></div>';
+  days.forEach(function(d, di){
+    html += '<div class="v-head' + (di===6 ? ' today' : '') + '"><span class="v-md">' + fmtMD(d) +
+      '</span><span class="v-wd">（' + WD[d.getDay()] + '）</span></div>';
+  });
+  for(var s=0; s<24; s++){
+    html += '<div class="v-time hour" data-slot="' + s + '">' + s + ':00</div>';
+    for(var c=0; c<7; c++){
+      var list = slots[c*24 + s] || [];
+      html += '<div class="v-slot hour' + (c===6 ? ' today' : '') + '">';
+      list.forEach(function(r){
+        html += '<button class="v-chip ' + r.kind + '" type="button" data-eid="' + r.id + '">' +
+          IC[r.kind] + '<span>' + viewerChipLabel(r) + '</span></button>';
+      });
+      html += '</div>';
+    }
+  }
+  /* 24:00 の終端ライン */
+  html += '<div class="v-time hour">24:00</div>';
+  for(var e=0; e<7; e++){ html += '<div class="v-slot hour" style="min-height:0;padding:0;"></div>'; }
+  $('viewerGrid').innerHTML = html;
+  var chips = $('viewerGrid').querySelectorAll('.v-chip');
+  for(var j=0;j<chips.length;j++){
+    chips[j].addEventListener('click', function(){
+      var id = this.getAttribute('data-eid');
+      var found = null, k;
+      for(k=0;k<records.length;k++){ if(records[k].id===id){ found = records[k]; break; } }
+      if(!found && archiveRecords){
+        for(k=0;k<archiveRecords.length;k++){ if(archiveRecords[k].id===id){ found = archiveRecords[k]; break; } }
+      }
+      if(found){
+        $('viewerOverlay').classList.add('hidden');
+        openEdit(found);
+      }
+    });
+  }
+}
+function openViewer(){
+  renderViewer();
+  $('viewerOverlay').classList.remove('hidden');
+  /* 現在時刻あたりが最初に見える位置へスクロール */
+  var now = new Date();
+  var curSlot = now.getHours();
+  requestAnimationFrame(function(){
+    var sc = $('viewerScroll');
+    var row = sc.querySelector('.v-time[data-slot="' + Math.max(0, curSlot - 1) + '"]');
+    if(row && sc){
+      sc.scrollTop = Math.max(0, row.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 40);
+    }
+  });
+}
+$('viewerBtn').addEventListener('click', openViewer);
+$('viewerCloseBtn').addEventListener('click', function(){ $('viewerOverlay').classList.add('hidden'); });
+$('viewerCloseX').addEventListener('click', function(){ $('viewerOverlay').classList.add('hidden'); });
+$('viewerOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
 
 /* ================= 編集シート ================= */
 function openEdit(rec){
@@ -1800,6 +1956,7 @@ function autoRefresh(){
   if(!$('weightOverlay').classList.contains('hidden')) return;
   if(!$('monthOverlay').classList.contains('hidden')) return;
   if(!$('allMonthsOverlay').classList.contains('hidden')) return;
+  if(!$('viewerOverlay').classList.contains('hidden')) return;
   if(accessToken && Date.now() < tokenExpiry){
     loadRecords(true);
     loadBabySettingsFromCal();
