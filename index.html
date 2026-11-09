@@ -24,6 +24,7 @@
     --divider:rgba(255,255,255,0.14);
     --pee:#6e93b8; --poop:#9a7e6d; --breast:#de9aa4;
     --milk-bg:#fde08a; --accent:#ffd94d; --dark:#1d2a47; --past:#7dd3fc; --cal:#e8c87a;
+    --coral:#ff8a75;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0; overflow-x:hidden; max-width:100%;}
@@ -129,6 +130,9 @@
   .day-row .dcell{text-align:left; line-height:1.25; padding-left:2px;}
   .day-row .dcell .md{font-size:15px; font-weight:800; display:block;}
   .day-row .dcell .wd{font-size:12px; color:var(--sub); font-weight:700; display:block;}
+  .day-row .dcell .wline{font-size:10.5px; color:var(--text); font-weight:700; display:block; white-space:nowrap; letter-spacing:-0.03em; margin-top:1px;}
+  .day-row .dcell .wline .wdiff{color:var(--sub); font-weight:700;}
+  .day-row .dcell .wline .wdiff.neg{color:var(--coral);}
   .day-row .num{text-align:center;}
   .day-row .hl{color:var(--accent); font-weight:800;}
 
@@ -282,6 +286,7 @@
   .day-total{display:flex; gap:14px; flex-wrap:wrap; font-size:13.5px; color:var(--sub); margin-bottom:8px; font-weight:700;}
   .day-total:empty{display:none;}
   .day-total .hl{color:var(--accent); font-weight:800;}
+  .day-total .neg{color:var(--coral); font-weight:800;}
   footer{margin-top:16px; text-align:center;}
 
   /* ===== 赤ちゃん設定ブロック ===== */
@@ -423,6 +428,7 @@
     .months-head{grid-template-columns:5.9rem repeat(3,minmax(0,1fr)); gap:6px;}
     .month-row .month-name{font-size:13px;}
     .day-row .dcell .md{font-size:14px;}
+    .day-row .dcell .wline{font-size:9.5px;}
     .age-row .age-label{flex-basis:5.4em;}
     .rec-title{font-size:13px;}
     .rec-time{font-size:15px;}
@@ -1024,9 +1030,38 @@ function dayStatsFrom(src, date){
   });
   return st;
 }
+/* その日の体重（weightLogの当日分）と前日比。前日の記録が無ければ diff は null */
+function dayWeightInfo(d){
+  var log = babySettings.weightLog || [];
+  if(!log.length) return null;
+  var ds = fmtDateStr(d);
+  var w = null;
+  for(var i=0;i<log.length;i++){ if(log[i].d === ds) w = log[i].w; }
+  if(w === null) return null;
+  var prev = new Date(d); prev.setDate(prev.getDate() - 1);
+  var ps = fmtDateStr(prev);
+  var pw = null;
+  for(var j=0;j<log.length;j++){ if(log[j].d === ps) pw = log[j].w; }
+  return { w: w, diff: (pw === null ? null : w - pw) };
+}
+function fmtDayDiff(diff){
+  if(diff > 0) return '+' + diff;
+  if(diff < 0) return '−' + Math.abs(diff);
+  return '±0';
+}
+/* 7日間ログの日付下に重ねる体重行（記録が無い日は空文字＝行なし） */
+function dayWeightLineHTML(d){
+  var info = dayWeightInfo(d);
+  if(!info) return '';
+  var diff = '';
+  if(info.diff !== null){
+    diff = ' <span class="wdiff' + (info.diff < 0 ? ' neg' : '') + '">' + fmtDayDiff(info.diff) + '</span>';
+  }
+  return '<span class="wline">' + info.w.toLocaleString('ja-JP') + diff + '</span>';
+}
 function dayRowHTML(d, st){
   return '<button class="day-row" type="button" data-day="' + d.getTime() + '">' +
-    '<span class="dcell"><span class="md">' + fmtMD(d) + '</span><span class="wd">（' + WD[d.getDay()] + '）</span></span>' +
+    '<span class="dcell"><span class="md">' + fmtMD(d) + '</span><span class="wd">（' + WD[d.getDay()] + '）</span>' + dayWeightLineHTML(d) + '</span>' +
     '<span class="num">' + (st.pee || '—') + '</span>' +
     '<span class="num">' + (st.poop || '—') + '</span>' +
     '<span class="num ' + (st.breast ? 'hl' : '') + '">' + (st.breast || '—') + '</span>' +
@@ -1410,8 +1445,17 @@ function openDay(date, src){
   var st = dayStatsFrom(src || records, date);
   $('dayTitle').innerHTML = '<svg viewBox="0 0 48 48" fill="none" stroke="#e8c87a" stroke-width="3" aria-hidden="true"><rect x="7" y="11" width="34" height="30" rx="5"/><path d="M7 21h34M16 6v8M32 6v8"/></svg>' +
     (date.getMonth()+1) + '月' + date.getDate() + '日（' + WD[date.getDay()] + '）の記録';
-  /* 回数のまとめは出さず、その日の記録を「今日のログ」と同じ並びで出す */
-  $('dayTotal').innerHTML = '';
+  /* 回数のまとめは出さず、その日の記録を「今日のログ」と同じ並びで出す。体重がある日は体重と前日比だけ出す */
+  var winfo = dayWeightInfo(date);
+  if(winfo){
+    var wdiff = '';
+    if(winfo.diff !== null){
+      wdiff = ' <span class="' + (winfo.diff < 0 ? 'neg' : 'hl') + '">（前日比 ' + fmtDayDiff(winfo.diff) + '）</span>';
+    }
+    $('dayTotal').innerHTML = '<span>体重 <span class="hl">' + winfo.w.toLocaleString('ja-JP') + '</span>' + wdiff + '</span>';
+  } else {
+    $('dayTotal').innerHTML = '';
+  }
   if(!st.list.length){
     $('dayList').innerHTML = '<div class="empty">この日の記録はありません</div>';
   } else {
