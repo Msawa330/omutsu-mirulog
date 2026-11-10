@@ -297,7 +297,7 @@
   .baby-bar-row .btn-ghost{flex:0 0 auto; background:transparent; color:var(--sub); font-weight:700; font-size:13px; border:1px solid var(--divider); border-radius:999px; padding:8px 14px;}
   .baby-bar-row .btn-weight-record{white-space:nowrap;}
   .baby-bar-row .btn-weight-record.recorded{color:#7ee2a0; border-color:rgba(126,226,160,.6);}
-  .baby-weight-tap{background:transparent; padding:0; font:inherit; font-weight:800; color:inherit; cursor:pointer; text-align:left; max-width:100%;}
+  .baby-weight-display{font-weight:800; color:inherit;}
   /* TOPの体重は、その場（赤ちゃん設定ブロック内）で編集する */
   .top-weight-editor{margin-top:8px;}
   .top-weight-editor input{
@@ -1287,9 +1287,8 @@ function renderBabySummary(){
   }
   var html = '';
   if(ageText) html += '<span>' + ageText + '</span>　';
-  html += '<button class="baby-weight-tap" id="babyWeightTap" type="button">体重 ' + (w || '未設定') + '</button>';
+  html += '<span class="baby-weight-display">体重 ' + (w || '未設定') + '</span>';
   el.innerHTML = html;
-  $('babyWeightTap').addEventListener('click', openWeightEditorFromTop);
   renderWeightRecordBtn();
 }
 /* 【ルール】設定の入力欄は、どの入口・どの項目でも、開くたびに閉じた
@@ -1298,11 +1297,12 @@ function closeAllSetEditors(){
   var eds = document.querySelectorAll('.set-editor');
   for(var k=0;k<eds.length;k++) eds[k].classList.add('hidden');
 }
-/* TOPの体重タップ：画面下のシートは出さず、体重が表示されている
+/* TOPの「体重を記録」ボタン：画面下のシートは出さず、体重が表示されている
    その場所（赤ちゃん設定ブロックの中）に、入力欄と保存ボタンを
    そのまま開く。フォーカス時もスクロールさせない（preventScroll）。
    保存は設定画面と同じフロー（babySettings.weight → scheduleBabySave）で、
-   保存と同時に閉じるので入力欄が残ることはない。もう一度タップすると閉じる */
+   保存と同時に閉じるので入力欄が残ることはない。もう一度押すと閉じる。
+   TOPの体重の数字自体は表示専用で、タップしても開かない */
 function openWeightEditorFromTop(){
   var ed = $('topWeightEditor');
   if(!ed.classList.contains('hidden')){ closeWeightEditor(); return; }
@@ -1329,7 +1329,7 @@ $('weightSaveBtn').addEventListener('click', function(){
 });
 $('weightCloseBtn').addEventListener('click', closeWeightEditor);
 /* 「体重を記録」ボタン：日付は選ばず、押したその日の体重として記録する。
-   入力欄は体重タップと同じインライン編集（その場で開き、スクロールなし、
+   入力欄はその場で開くインライン編集（スクロールなし、
    保存は weightSaveBtn のフローで weight と今日の weightLog を更新して閉じる） */
 $('weightRecordBtn').addEventListener('click', openWeightEditorFromTop);
 function renderBabySettingsUI(){
