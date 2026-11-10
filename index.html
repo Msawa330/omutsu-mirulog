@@ -483,7 +483,7 @@
   <div class="gauge-head" id="gaugeHead"><span>今日のミルク</span></div>
   <section class="panel" id="milkGaugeWrap" aria-label="今日のミルク">
     <div class="gauge-bar" id="gaugeBar"></div>
-    <div class="gauge-foot"><span id="gaugeTotal">0ml</span><span id="gaugeGoal">目標 640ml</span></div>
+    <div class="gauge-foot"><span id="gaugeTotal">0ml</span><span id="gaugeGoal">目標 400ml</span></div>
   </section>
 
   <!-- 今日のログ -->
@@ -759,31 +759,20 @@ function ageBand(){
   }
   return null;
 }
-/* 目安：{perFeed, times, daily, band} / 対象外・未設定は null */
+/* 目安：{perFeed, times, daily, band} / 対象外・未設定は null
+   おすすめ量は50ml固定として扱う（哺乳瓶バッジ・母乳推定・
+   「今日のミルク」の目標はすべてこの値を使う）。
+   回数だけは月齢区分の回数を使い、目標は 50ml × 回数 とする */
+var RECOMMENDED_ML = 50;
 function getGuide(){
   var band = ageBand();
   if(!band || !band.times) return null;
-  /* 1歳以上は体重換算を使わず固定値（月齢表の範囲内） */
-  if(band.minD >= 365){
-    return { perFeed: band.minMl, times: band.times, daily: band.minMl * band.times, band: band };
-  }
-  var per;
-  var w = parseFloat(babySettings.weight);
-  if(w && w > 0){
-    var raw = (w/1000) * 165 / band.times;
-    per = Math.round(raw/20)*20;
-    if(per < band.minMl) per = band.minMl;
-    if(per > band.maxMl) per = band.maxMl;
-  } else {
-    per = Math.round(((band.minMl + band.maxMl)/2)/20)*20;
-    if(per < band.minMl) per = band.minMl;
-    if(per > band.maxMl) per = band.maxMl;
-  }
-  return { perFeed: per, times: band.times, daily: per * band.times, band: band };
+  return { perFeed: RECOMMENDED_ML, times: band.times, daily: RECOMMENDED_ML * band.times, band: band };
 }
 /* 表示用目安：個人の目安が無い（未設定・出産前）間は月齢表の最初の区分
-   「0〜2週間（80ml × 8回 = 1日640ml）」で表示し、ゲージ・おすすめ
-   バッジ・次回時刻が常に見えるようにする。3歳以上は対象外として null */
+   の回数（8回）とおすすめ50mlで表示し（50ml × 8回 = 1日400ml）、
+   ゲージ・おすすめバッジ・次回時刻が常に見えるようにする。
+   3歳以上は対象外として null */
 function displayGuide(){
   var g = getGuide();
   if(g) return { guide: g, fallback: false };
@@ -793,25 +782,12 @@ function displayGuide(){
     if(!b || !b.times) return null; /* 対象外の月齢（3歳以上）では無理に表示しない */
   }
   var fb = AGE_BANDS[0];
-  return { guide: { perFeed: fb.minMl, times: fb.times, daily: fb.minMl * fb.times, band: fb }, fallback: true };
+  return { guide: { perFeed: RECOMMENDED_ML, times: fb.times, daily: RECOMMENDED_ML * fb.times, band: fb }, fallback: true };
 }
+/* ミルクボタンの選択肢は固定の6個（120・140は入れない）。
+   おすすめ（バッジ対象）は50ml */
 function milkAmounts(){
-  var g = getGuide();
-  if(!g) return [20,40,60,80,100,120];
-  var arr = [], v;
-  var steps = [-40,-20,0,20,40,60];
-  for(var i=0;i<steps.length;i++){
-    v = g.perFeed + steps[i];
-    if(v > 0 && arr.indexOf(v) < 0) arr.push(v);
-  }
-  var extra = 80;
-  while(arr.length < 6){
-    v = g.perFeed + extra;
-    if(arr.indexOf(v) < 0) arr.push(v);
-    extra += 20;
-  }
-  arr.sort(function(a,b){ return a-b; });
-  return arr.slice(0,6);
+  return [40,50,60,70,80,100];
 }
 function fmtGram(v){
   var n = parseFloat(v);
