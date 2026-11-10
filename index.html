@@ -908,14 +908,15 @@ function playChime(){
 
 /* ================= 描画 ================= */
 /* 次の授乳の目安時刻（前回行の「次 HH:MM」とリマインド予定で共用）。
-   最新の授乳記録＋目安の間隔から出し、5分単位に丸める。対象が無ければ null */
+   最新の授乳記録＋目安の間隔から授乳にかかる約30分を差し引いて出し、
+   5分単位に丸める。対象が無ければ null */
 function getNextFeedDate(){
   var dg = displayGuide();
   if(!dg) return null;
   var rec = null;
   for(var i=0;i<records.length;i++){ if(KIND[records[i].kind].cat==='feed'){ rec = records[i]; break; } }
   if(!rec) return null;
-  var intervalMs = (24 / dg.guide.times) * 3600000;
+  var intervalMs = (24 / dg.guide.times) * 3600000 - 30 * 60 * 1000;
   var next = new Date(rec.start.getTime() + intervalMs);
   return new Date(Math.round(next.getTime() / 300000) * 300000);
 }
