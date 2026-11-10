@@ -295,6 +295,8 @@
   .baby-bar-row .baby-summary{flex:1; min-width:0; font-size:15px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .baby-bar-row .baby-summary .unset{color:var(--sub); font-weight:700;}
   .baby-bar-row .btn-ghost{flex:0 0 auto; background:transparent; color:var(--sub); font-weight:700; font-size:13px; border:1px solid var(--divider); border-radius:999px; padding:8px 14px;}
+  .baby-bar-row .btn-weight-record{white-space:nowrap;}
+  .baby-bar-row .btn-weight-record.recorded{color:#7ee2a0; border-color:rgba(126,226,160,.6);}
   .baby-weight-tap{background:transparent; padding:0; font:inherit; font-weight:800; color:inherit; cursor:pointer; text-align:left; max-width:100%;}
   /* TOPの体重は、その場（赤ちゃん設定ブロック内）で編集する */
   .top-weight-editor{margin-top:8px;}
@@ -387,7 +389,9 @@
     .baby-bar{padding:5px 10px;}
     .now{font-size:12px;}
     .btn-reload{padding:3px 8px; font-size:11px;}
-    .baby-bar-row .baby-summary{font-size:14px;}
+    .baby-bar-row{gap:6px;}
+    .baby-bar-row .baby-summary{font-size:13.5px;}
+    .baby-bar-row .btn-ghost{padding:7px 10px; font-size:12px;}
     .prevrow{gap:5px;}
     .prevrow .plabel{font-size:11px;}
     .prevrow .elapsed{font-size:12px;}
@@ -447,6 +451,7 @@
   <section class="panel baby-bar" aria-label="赤ちゃん設定">
     <div class="baby-bar-row">
       <span class="baby-summary" id="babySummary"><span class="unset">赤ちゃん設定を入力</span></span>
+      <button class="btn-ghost btn-weight-record" id="weightRecordBtn" type="button">体重を記録</button>
       <button class="btn-ghost" id="babySettingsBtn" type="button">設定</button>
     </div>
     <div class="top-weight-editor hidden" id="topWeightEditor">
@@ -827,6 +832,13 @@ function pushWeightLog(w){
   log.sort(function(a,b){ return a.d < b.d ? -1 : (a.d > b.d ? 1 : 0); });
   if(log.length > 500) log = log.slice(log.length - 500);
   babySettings.weightLog = log;
+}
+/* 今日の体重記録（weightLogの当日分）。無ければ null */
+function todayWeightEntry(){
+  var log = babySettings.weightLog || [];
+  var today = fmtDateStr(new Date());
+  for(var i=0;i<log.length;i++){ if(log[i].d === today) return log[i]; }
+  return null;
 }
 
 var $ = function(id){ return document.getElementById(id); };
@@ -1233,6 +1245,21 @@ function fmtBirthLabel(){
   if(!b) return '';
   return b.getFullYear() + '年' + (b.getMonth()+1) + '月' + b.getDate() + '日';
 }
+/* 「体重を記録」ボタンの表示：今日分が記録済みならチェック付き＋緑にして分かるようにする */
+function renderWeightRecordBtn(){
+  var btn = $('weightRecordBtn');
+  if(!btn) return;
+  var e = todayWeightEntry();
+  if(e){
+    btn.textContent = '体重を記録 ✓';
+    btn.classList.add('recorded');
+    btn.setAttribute('aria-label', '体重を記録（今日は記録済み）');
+  } else {
+    btn.textContent = '体重を記録';
+    btn.classList.remove('recorded');
+    btn.setAttribute('aria-label', '体重を記録');
+  }
+}
 function renderBabySummary(){
   var el = $('babySummary');
   var days = ageDays();
@@ -1255,6 +1282,7 @@ function renderBabySummary(){
   var w = fmtGram(babySettings.weight);
   if(!ageText && !w){
     el.innerHTML = '<span class="unset">赤ちゃん設定を入力</span>';
+    renderWeightRecordBtn();
     return;
   }
   var html = '';
@@ -1262,6 +1290,7 @@ function renderBabySummary(){
   html += '<button class="baby-weight-tap" id="babyWeightTap" type="button">体重 ' + (w || '未設定') + '</button>';
   el.innerHTML = html;
   $('babyWeightTap').addEventListener('click', openWeightEditorFromTop);
+  renderWeightRecordBtn();
 }
 /* 【ルール】設定の入力欄は、どの入口・どの項目でも、開くたびに閉じた
    状態から始める。開くのは明示的にタップされた項目だけ */
@@ -1277,7 +1306,9 @@ function closeAllSetEditors(){
 function openWeightEditorFromTop(){
   var ed = $('topWeightEditor');
   if(!ed.classList.contains('hidden')){ closeWeightEditor(); return; }
-  $('inputWeightTop').value = babySettings.weight || '';
+  /* 今日分が既にある場合はその値を初期値にする（上書き保存用） */
+  var te = todayWeightEntry();
+  $('inputWeightTop').value = (te ? te.w : babySettings.weight) || '';
   ed.classList.remove('hidden');
   var inp = $('inputWeightTop');
   if(inp){
@@ -1297,6 +1328,10 @@ $('weightSaveBtn').addEventListener('click', function(){
   closeWeightEditor();
 });
 $('weightCloseBtn').addEventListener('click', closeWeightEditor);
+/* 「体重を記録」ボタン：日付は選ばず、押したその日の体重として記録する。
+   入力欄は体重タップと同じインライン編集（その場で開き、スクロールなし、
+   保存は weightSaveBtn のフローで weight と今日の weightLog を更新して閉じる） */
+$('weightRecordBtn').addEventListener('click', openWeightEditorFromTop);
 function renderBabySettingsUI(){
   var bd = $('valBirthDate'), bw = $('valBirthWeight'), wt = $('valWeight');
   if(bd){
@@ -2296,6 +2331,7 @@ window.addEventListener('focus', function(){ autoRefresh(); });
 setInterval(function(){
   $('nowLine').textContent = fmtNow(new Date());
   renderPrev();
+  renderWeightRecordBtn();
 }, 30000);
 
 /* ================= 初期化 ================= */
