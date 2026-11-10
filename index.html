@@ -701,6 +701,16 @@ try{
 }catch(e){}
 var accessToken = null, tokenExpiry = 0, tokenClient = null;
 var silentAuth = false;
+/* サイレント再取得の先行更新・再試行まわり。
+   期限までの残りが REFRESH_MARGIN_MS 以下になったら、切れる前に裏で取り直す。
+   失敗したら間隔を置いて SILENT_RETRY_DELAYS の回数まで自動で再試行し、
+   それでもダメなときだけ従来どおりサインインを求める */
+var REFRESH_MARGIN_MS = 10 * 60 * 1000;
+var SILENT_RETRY_DELAYS = [5000, 15000, 45000];
+var silentRetryCount = 0;
+var silentRetryTimer = null;
+var silentInFlight = false;
+var silentGaveUp = false;
 var records = []; /* {id, start:Date, kind, amount} 新しい順 */
 var recordsLoaded = false; /* 初回の記録読み込みが終わるまでリマインド同期をしないためのフラグ */
 var busy = false;
@@ -2104,6 +2114,57 @@ function clearSession(){
     localStorage.removeItem(LS_AUTO);
   }catch(e){}
 }
+/* ============ サイレント再取得：先行更新と再試行 ============ */
+function tokenValid(){
+  return !!accessToken && Date.now() < tokenExpiry;
+}
+/* 期限切れ、または期限までの残りが REFRESH_MARGIN_MS 以下なら更新対象 */
+function tokenNeedsRefresh(){
+  if(!tokenValid()) return true;
+  return (tokenExpiry - Date.now()) <= REFRESH_MARGIN_MS;
+}
+function resetSilentRetry(){
+  silentRetryCount = 0;
+  silentGaveUp = false;
+  if(silentRetryTimer){ clearTimeout(silentRetryTimer); silentRetryTimer = null; }
+}
+/* サイレント再取得を1回試みる（実行中・再試行待ち・打ち切り後は除く） */
+function requestSilentToken(){
+  if(silentInFlight || silentGaveUp || silentRetryTimer) return;
+  if(!tokenClient && !initTokenClient()) return;
+  silentInFlight = true;
+  silentAuth = true;
+  try{
+    tokenClient.requestAccessToken({prompt:''});
+  }catch(e){
+    silentInFlight = false;
+    silentAuth = false;
+    onSilentAuthFailure();
+  }
+}
+/* サイレント再取得が失敗したとき：すぐにはサインインへ落とさず、
+   間隔を置いて数回まで自動で再試行する。再試行を使い切り、
+   なおトークンが切れている場合に限り従来どおりサインインを求める */
+function onSilentAuthFailure(){
+  silentInFlight = false;
+  if(silentRetryTimer) return;
+  if(silentRetryCount < SILENT_RETRY_DELAYS.length){
+    var delay = SILENT_RETRY_DELAYS[silentRetryCount];
+    silentRetryCount++;
+    silentRetryTimer = setTimeout(function(){
+      silentRetryTimer = null;
+      /* 非表示のまま失敗が続いた分は、復帰時の autoRefresh に任せる */
+      if(document.hidden) return;
+      requestSilentToken();
+    }, delay);
+    return;
+  }
+  if(!tokenValid()){
+    accessToken = null; tokenExpiry = 0;
+    silentGaveUp = true;
+    updateAuthUI();
+  }
+}
 function restoreSession(){
   if(sessionRestored) return;
   sessionRestored = true;
@@ -2122,12 +2183,7 @@ function restoreSession(){
     return;
   }
   if(auto === '1' && tokenClient){
-    silentAuth = true;
-    try{
-      tokenClient.requestAccessToken({prompt:''});
-    }catch(e){
-      silentAuth = false;
-    }
+    requestSilentToken();
   }
 }
 function initTokenClient(){
@@ -2138,19 +2194,23 @@ function initTokenClient(){
     callback: function(resp){
       var wasSilent = silentAuth;
       silentAuth = false;
+      silentInFlight = false;
       if(resp && resp.access_token){
+        resetSilentRetry();
         accessToken = resp.access_token;
         tokenExpiry = Date.now() + (parseInt(resp.expires_in, 10) || 3600) * 1000 - 60000;
         persistSession();
         updateAuthUI();
         loadRecords(wasSilent);
         loadBabySettingsFromCal();
+      } else if(wasSilent){
+        onSilentAuthFailure();
       } else {
-        if(!wasSilent) setStatus('サインインできませんでした', true);
+        setStatus('サインインできませんでした', true);
       }
     },
     error_callback: function(err){
-      if(silentAuth){ silentAuth = false; return; }
+      if(silentAuth){ silentAuth = false; silentInFlight = false; onSilentAuthFailure(); return; }
       setStatus('サインインでエラーが発生しました' + (err && err.message ? '：' + err.message : ''), true);
     }
   });
@@ -2158,6 +2218,7 @@ function initTokenClient(){
 }
 function signIn(){
   ensureAudio();
+  resetSilentRetry();
   if(!clientId){
     openBabySettings();
     return;
@@ -2180,6 +2241,7 @@ $('signoutBtn').addEventListener('click', function(){
     google.accounts.oauth2.revoke(accessToken, function(){});
   }
   clearSession();
+  resetSilentRetry();
   accessToken = null; tokenExpiry = 0; records = [];
   renderAll(); updateAuthUI(); setStatus('');
 });
@@ -2259,6 +2321,7 @@ $('saveSettingsBtn').addEventListener('click', function(){
     localStorage.setItem(LS_CAL, calendarId);
   }catch(e){}
   clearSession();
+  resetSilentRetry();
   accessToken = null; tokenExpiry = 0; tokenClient = null;
   settingsEventId = null; settingsEventRaw = null;
   closeBabySettings();
@@ -2309,16 +2372,14 @@ function autoRefresh(){
   if(!$('monthOverlay').classList.contains('hidden')) return;
   if(!$('allMonthsOverlay').classList.contains('hidden')) return;
   if(!$('viewerOverlay').classList.contains('hidden')) return;
-  if(accessToken && Date.now() < tokenExpiry){
+  if(tokenValid()){
+    /* 期限までの残りが少ないときは、切れる前に先に裏で取り直す。
+       その間も今のトークンで読み込みは続ける */
+    if(tokenNeedsRefresh()) requestSilentToken();
     loadRecords(true);
     loadBabySettingsFromCal();
   } else if(tokenClient){
-    silentAuth = true;
-    try{
-      tokenClient.requestAccessToken({prompt:''});
-    }catch(e){
-      silentAuth = false;
-    }
+    requestSilentToken();
   }
 }
 setInterval(autoRefresh, 30000);
