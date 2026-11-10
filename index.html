@@ -213,7 +213,8 @@
   }
   .v-head .v-md{display:block; font-size:12px; font-weight:800; white-space:nowrap;}
   .v-head .v-wd{display:block; font-size:10px; font-weight:700; color:var(--sub); white-space:nowrap;}
-  .v-head.today .v-md,.v-head.today .v-wd{color:var(--accent);}
+  .v-head .v-w{display:block; font-size:10px; font-weight:700; white-space:nowrap; line-height:1.2; min-height:1.2em; margin-top:1px;}
+  .v-head.today .v-md,.v-head.today .v-wd,.v-head.today .v-w{color:var(--accent);}
   .v-corner{position:sticky; top:0; z-index:3; background:var(--dark); border-bottom:1px solid rgba(255,255,255,.3);}
   .v-time{
     font-size:10px; font-weight:700; color:var(--sub); text-align:right;
@@ -332,7 +333,6 @@
     font-size:11px; font-weight:800; white-space:nowrap; min-width:0;
   }
   .gauge-seg.milk{background:var(--accent); color:var(--dark);}
-  .gauge-seg.breast{background:var(--breast); color:var(--dark);}
   .gauge-foot{display:flex; justify-content:space-between; align-items:baseline; margin-top:3px; font-size:12px; font-weight:700; color:var(--text);}
   .gauge-foot .over{color:var(--accent); font-weight:800;}
 
@@ -775,8 +775,8 @@ function ageBand(){
   return null;
 }
 /* 目安：{perFeed, times, daily, band} / 対象外・未設定は null
-   おすすめ量は50ml固定として扱う（哺乳瓶バッジ・母乳推定・
-   「今日のミルク」の目標はすべてこの値を使う）。
+   おすすめ量は50ml固定として扱う（哺乳瓶バッジと
+   「今日のミルク」の目標はこの値を使う）。
    回数だけは月齢区分の回数を使い、目標は 50ml × 回数 とする */
 var RECOMMENDED_ML = 50;
 function getGuide(){
@@ -962,29 +962,22 @@ function renderGauge(){
   if(!dg){ wrap.classList.add('hidden'); $('gaugeHead').classList.add('hidden'); return; }
   var g = dg.guide;
   var now = new Date();
-  var milkSum = 0, breastCount = 0;
+  var milkSum = 0;
   records.forEach(function(r){
     if(!sameDay(r.start, now)) return;
     if(r.kind==='milk') milkSum += (r.amount||0);
-    else if(r.kind==='breast') breastCount++;
   });
-  var breastEst = breastCount * g.perFeed;
-  var total = milkSum + breastEst;
+  var total = milkSum;
   var goal = g.daily;
-  var milkPct, breastPct;
+  var milkPct;
   if(total <= goal){
     milkPct = goal ? (milkSum/goal*100) : 0;
-    breastPct = goal ? (breastEst/goal*100) : 0;
   } else {
-    milkPct = total ? (milkSum/total*100) : 0;
-    breastPct = total ? (breastEst/total*100) : 0;
+    milkPct = 100;
   }
   var html = '';
   if(milkSum > 0){
     html += '<div class="gauge-seg milk" style="width:' + milkPct + '%;">' + (milkPct >= 20 ? 'ミルク ' + milkSum + 'ml' : '') + '</div>';
-  }
-  if(breastEst > 0){
-    html += '<div class="gauge-seg breast" style="width:' + breastPct + '%;">' + (breastPct >= 26 ? '母乳 推定 ' + breastEst + 'ml' : '') + '</div>';
   }
   $('gaugeBar').innerHTML = html;
   /* 合計と目標は同じ色（白）で統一する */
@@ -1539,8 +1532,11 @@ function renderViewer(){
   });
   var html = '<div class="v-corner"></div>';
   days.forEach(function(d, di){
+    /* 体重は列ヘッダー（M/D・曜日の下）に数値だけ1行。記録が無い日は空行で高さをそろえる */
+    var wInfo = dayWeightInfo(d);
+    var wText = wInfo ? wInfo.w.toLocaleString('ja-JP') : '&nbsp;';
     html += '<div class="v-head' + (sameDay(d, realToday) ? ' today' : '') + '"><span class="v-md">' + fmtMD(d) +
-      '</span><span class="v-wd">（' + WD[d.getDay()] + '）</span></div>';
+      '</span><span class="v-wd">（' + WD[d.getDay()] + '）</span><span class="v-w">' + wText + '</span></div>';
   });
   for(var s=0; s<24; s++){
     html += '<div class="v-time hour" data-slot="' + s + '">' + s + ':00</div>';
