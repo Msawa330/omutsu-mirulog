@@ -278,6 +278,12 @@
   .opt.pee{background:var(--pee); color:#fff;}
   .opt.poop{background:var(--poop); color:#fff;}
   .opt.milk{background:var(--milk-bg); color:var(--dark);}
+  .milk-custom{display:flex; align-items:center; gap:8px; margin-top:10px;}
+  .milk-custom input{
+    flex:1; min-width:0; background:var(--bg); border:1px solid var(--divider); border-radius:10px;
+    color:var(--text); font-size:16px; padding:10px 12px; font-family:inherit; color-scheme:dark;
+  }
+  .milk-custom .milk-unit{font-size:15px; font-weight:800; color:var(--text); flex:0 0 auto;}
   .sheet .btn-primary{margin-top:18px;}
   .btn-danger{
     background:transparent; color:#ff9d9d; border:1px solid rgba(255,157,157,.5);
@@ -648,6 +654,10 @@
     <div id="editOptsWrap">
       <label id="editOptsLabel">内容</label>
       <div class="opt-row" id="editOpts"></div>
+      <div class="milk-custom hidden" id="editMilkCustom">
+        <input type="number" id="editMilkAmount" inputmode="numeric" pattern="[0-9]*" min="1" step="1" aria-label="ミルクの量（ml）">
+        <span class="milk-unit">ml</span>
+      </div>
     </div>
     <button class="btn-primary" id="editSaveBtn" type="button">保存する</button>
     <button class="btn-danger" id="editDeleteBtn" type="button">この記録を削除</button>
@@ -1669,6 +1679,8 @@ function openEdit(rec){
 }
 function renderEditOpts(){
   var wrap = $('editOptsWrap'), box = $('editOpts');
+  var milkCustom = $('editMilkCustom');
+  var milkInput = $('editMilkAmount');
   var rec = editing.rec;
   var html = '';
   if(rec.kind==='pee' || rec.kind==='poop'){
@@ -1677,6 +1689,7 @@ function renderEditOpts(){
       return '<button class="opt ' + k + (editing.kind===k?' sel':'') + '" type="button" data-k="' + k + '">' + IC[k] + KIND[k].label + '</button>';
     }).join('');
     wrap.classList.remove('hidden'); box.innerHTML = html;
+    if(milkCustom) milkCustom.classList.add('hidden');
   } else if(rec.kind==='milk'){
     $('editOptsLabel').textContent = 'ミルクの量';
     var amounts = milkAmounts().slice();
@@ -1685,8 +1698,11 @@ function renderEditOpts(){
       return '<button class="opt milk' + (editing.amount===v?' sel':'') + '" type="button" data-v="' + v + '">' + IC.milk + v + 'ml</button>';
     }).join('');
     wrap.classList.remove('hidden'); box.innerHTML = html;
+    if(milkCustom) milkCustom.classList.remove('hidden');
+    if(milkInput) milkInput.value = editing.amount ? String(editing.amount) : '';
   } else {
     wrap.classList.add('hidden'); box.innerHTML = '';
+    if(milkCustom) milkCustom.classList.add('hidden');
     return;
   }
   var opts = box.querySelectorAll('.opt');
@@ -1698,6 +1714,25 @@ function renderEditOpts(){
     });
   }
 }
+(function(){
+  var milkInputEl = $('editMilkAmount');
+  if(!milkInputEl) return;
+  milkInputEl.addEventListener('input', function(){
+    if(!editing || !editing.rec || editing.rec.kind !== 'milk') return;
+    var raw = String(milkInputEl.value || '').trim();
+    if(raw === '') return;
+    var parsed = Number(raw);
+    if(!isFinite(parsed) || Math.floor(parsed) !== parsed || parsed <= 0) return;
+    editing.amount = parsed;
+    var box = $('editOpts');
+    if(!box) return;
+    var opts = box.querySelectorAll('.opt');
+    for(var i=0;i<opts.length;i++){
+      var v = opts[i].getAttribute('data-v');
+      if(v !== null) opts[i].classList.toggle('sel', parseInt(v, 10) === parsed);
+    }
+  });
+})();
 var presets = $('presetRow').querySelectorAll('.preset');
 for(var pi=0; pi<presets.length; pi++){
   presets[pi].addEventListener('click', function(){
@@ -1714,6 +1749,21 @@ $('editSaveBtn').addEventListener('click', function(){
   if(!v){ setStatus('日時を入力してください', true); return; }
   var when = new Date(v);
   if(isNaN(when.getTime())){ setStatus('日時が正しくありません', true); return; }
+  if(editing.rec && editing.rec.kind === 'milk'){
+    var milkInputEl = $('editMilkAmount');
+    var raw = milkInputEl ? String(milkInputEl.value || '').trim() : '';
+    if(raw !== ''){
+      var parsed = Number(raw);
+      if(!isFinite(parsed) || Math.floor(parsed) !== parsed || parsed <= 0){
+        setStatus('ミルクの量は1以上の整数で入力してください', true);
+        return;
+      }
+      editing.amount = parsed;
+    } else if(!editing.amount || editing.amount <= 0){
+      setStatus('ミルクの量を入力してください', true);
+      return;
+    }
+  }
   var updated = { kind: editing.kind, amount: editing.amount };
   saveEdit(editing.rec, when, updated);
 });
