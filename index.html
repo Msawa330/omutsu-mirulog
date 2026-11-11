@@ -110,11 +110,24 @@
   .badge.pee{background:var(--pee);} .badge.poop{background:var(--poop);}
   .badge.breast{background:var(--breast);}
   .badge.milk{background:var(--milk-bg);}
+  .badge.memo{background:#8494ab;}
   .rec-title{font-size:14px; font-weight:700; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .rec-time{font-size:16px; font-weight:800; white-space:nowrap;}
   .rec-time .pdate{color:var(--past); font-weight:800; margin-right:5px;}
   .rec-time.past{color:var(--past);}
   .empty{font-size:14px; color:var(--sub); padding:5px 2px;}
+
+  /* ===== メモ入力 ===== */
+  .memo-row{display:flex; gap:8px; align-items:center; padding:4px 0;}
+  .memo-row input{
+    flex:1; min-width:0; background:var(--panel); border:1px solid var(--divider); border-radius:10px;
+    color:var(--text); font-size:16px; padding:10px 12px; font-family:inherit; color-scheme:dark;
+  }
+  .memo-btn{
+    flex:0 0 auto; background:var(--accent); color:var(--dark); font-weight:800; font-size:14px;
+    border-radius:10px; padding:11px 16px;
+  }
+  .memo-btn:disabled{opacity:.45;}
 
   /* ===== 7 days ===== */
   .day-row{
@@ -260,6 +273,10 @@
   .sheet .close-x{margin-left:auto; background:transparent; color:var(--sub); font-size:20px; line-height:1; padding:4px 8px;}
   .sheet label{display:block; font-size:13px; font-weight:700; color:var(--sub); margin:10px 0 6px;}
   .sheet input[type="datetime-local"]{
+    width:100%; background:var(--bg); border:1px solid var(--divider); border-radius:10px;
+    color:var(--text); font-size:16px; padding:10px 12px; font-family:inherit; color-scheme:dark;
+  }
+  .sheet input[type="text"]{
     width:100%; background:var(--bg); border:1px solid var(--divider); border-radius:10px;
     color:var(--text); font-size:16px; padding:10px 12px; font-family:inherit; color-scheme:dark;
   }
@@ -476,7 +493,7 @@
     <div class="top-weight-editor hidden" id="topWeightEditor">
       <input type="number" id="inputWeightTop" inputmode="numeric" min="500" max="20000" step="10" placeholder="例：3800" aria-label="現在の体重（g）">
       <button class="btn-primary" id="weightSaveBtn" type="button">保存する</button>
-      <button class="btn-sub" id="weightCloseBtn" type="button">閉じる</button>
+      <button class="btn-sub" id="weightCloseBtn" type="button">キャンセル</button>
     </div>
   </section>
 
@@ -516,6 +533,14 @@
   </div>
   <section class="panel" aria-label="今日のログ">
     <div class="rec-list" id="todayList"></div>
+  </section>
+
+  <!-- メモ入力 -->
+  <section class="panel" aria-label="メモ">
+    <div class="memo-row">
+      <input type="text" id="memoInput" placeholder="メモ" aria-label="メモ" autocomplete="off">
+      <button class="memo-btn" id="memoAddBtn" type="button">書き込む</button>
+    </div>
   </section>
 
   <!-- 7日間のログ -->
@@ -566,6 +591,7 @@
     <div class="set-editor hidden" id="editor-birthWeight">
       <input type="number" id="inputBirthWeight" inputmode="numeric" min="500" max="6000" step="10" placeholder="例：3200">
       <button class="btn-primary" id="saveBirthWeightBtn" type="button">保存する</button>
+      <button class="btn-sub" id="cancelBirthWeightBtn" type="button">キャンセル</button>
     </div>
 
     <button class="set-row" type="button" data-edit="weight">
@@ -576,6 +602,7 @@
     <div class="set-editor hidden" id="editor-weight">
       <input type="number" id="inputWeight" inputmode="numeric" min="500" max="20000" step="10" placeholder="例：3800">
       <button class="btn-primary" id="saveWeightBtn" type="button">保存する</button>
+      <button class="btn-sub" id="cancelWeightBtn" type="button">キャンセル</button>
     </div>
 
     <p class="sheet-sec-label">目標</p>
@@ -597,14 +624,6 @@
       </div>
       <button class="btn-primary" id="saveGoalBtn" type="button">保存する</button>
       <button class="btn-sub" id="clearGoalBtn" type="button">自動に戻す</button>
-    </div>
-
-    <div class="guide-box" style="margin-top:12px;">
-      <div class="guide-title"><span class="gicon" id="guideIcon"></span><span>ミルクの目安</span></div>
-      <div id="guideBody">
-        <div class="guide-line" id="guideDaily">1日 約—ml</div>
-        <div class="guide-line" id="guidePer">—ml × —回</div>
-      </div>
     </div>
 
     <p class="sheet-sec-label">月齢別の目安</p>
@@ -685,6 +704,10 @@
       <button class="preset" type="button" data-min="90">1時間30分前</button>
       <button class="preset" type="button" data-min="120">2時間前</button>
     </div>
+    <div id="editMemoWrap" class="hidden">
+      <label for="editMemoText">メモ</label>
+      <input type="text" id="editMemoText" autocomplete="off">
+    </div>
     <div id="editOptsWrap">
       <label id="editOptsLabel">内容</label>
       <div class="opt-row" id="editOpts"></div>
@@ -710,16 +733,24 @@ var IC = {
   milk: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="rotate(14 24 24)"><path d="M20 4.5h8l1.2 4.2c.2.9-.4 1.8-1.3 2l-1.4.3v3.2h-5V11l-1.4-.3c-.9-.2-1.5-1.1-1.3-2L20 4.5Z"/><path d="M17.8 14.2h12.4l1.6 4.6c.2.7.4 1.5.4 2.3V40a3.6 3.6 0 0 1-3.6 3.6H19.4a3.6 3.6 0 0 1-3.6-3.6V21.1c0-.8.1-1.6.4-2.3l1.6-4.6Z"/><path d="M20.5 26h6M20.5 31.5h6M20.5 37h4"/></g></svg>',
   scale: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="6.5" width="35" height="35" rx="8"/><rect x="16" y="11" width="16" height="8" rx="2.4"/><path d="M20.5 15h7"/><path d="M17.6 24.6c2 0 3.4 1.6 3.4 3.8v4.9c0 2.2-1.4 3.8-3.4 3.8s-3.4-1.6-3.4-3.8v-4.9c0-2.2 1.4-3.8 3.4-3.8Z"/><path d="M30.4 24.6c2 0 3.4 1.6 3.4 3.8v4.9c0 2.2-1.4 3.8-3.4 3.8s-3.4-1.6-3.4-3.8v-4.9c0-2.2 1.4-3.8 3.4-3.8Z"/></svg>',
   diaper: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 8.5h37l-2.5 12.3c-1 4.7-3.9 7.2-7.5 8.9-3.2 1.5-5.2 3.7-6 7.4l-.5 2.4h-4l-.5-2.4c-.8-3.7-2.8-5.9-6-7.4-3.6-1.7-6.5-4.2-7.5-8.9L5.5 8.5Z"/><path d="M6.8 15.8h34.4"/><path d="M13 11.8h.01M35 11.8h.01" stroke-width="3.8"/></svg>',
-  bell: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 7.5a13.5 13.5 0 0 1 13.5 13.5c0 5.8 1.7 8.2 3 10.5H7.5c1.3-2.3 3-4.7 3-10.5A13.5 13.5 0 0 1 24 7.5Z"/><path d="M19.2 38.5a5 5 0 0 0 9.6 0"/><path d="M24 7.5V5"/></svg>'
+  bell: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 7.5a13.5 13.5 0 0 1 13.5 13.5c0 5.8 1.7 8.2 3 10.5H7.5c1.3-2.3 3-4.7 3-10.5A13.5 13.5 0 0 1 24 7.5Z"/><path d="M19.2 38.5a5 5 0 0 0 9.6 0"/><path d="M24 7.5V5"/></svg>',
+  memo: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5h19l8 8v30H11z"/><path d="M30 5v8h8"/><path d="M18 24h13M18 31h13M18 17h6"/></svg>'
 };
 var KIND = {
   pee:    { label:'おしっこ', cat:'diaper' },
   poop:   { label:'うんち',   cat:'diaper' },
   breast: { label:'母乳',     cat:'feed' },
-  milk:   { label:'ミルク',   cat:'feed' }
+  milk:   { label:'ミルク',   cat:'feed' },
+  memo:   { label:'メモ',     cat:'memo' }
 };
 function icon(kind, cls){ return IC[kind]; }
+function escHTML(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
 function labelOf(rec){
+  if(rec.kind==='memo') return escHTML(rec.text || 'メモ');
   if(rec.kind==='milk') return 'ミルク ' + (rec.amount||0) + 'ml';
   return KIND[rec.kind].label;
 }
@@ -727,6 +758,7 @@ function titleOf(rec){
   if(rec.kind==='pee') return 'オムツ：おしっこ';
   if(rec.kind==='poop') return 'オムツ：うんち';
   if(rec.kind==='breast') return '授乳：母乳';
+  if(rec.kind==='memo') return rec.text ? 'メモ：' + rec.text : 'メモ';
   return '授乳：ミルク ' + (rec.amount||0) + 'ml';
 }
 
@@ -1163,6 +1195,7 @@ function monthStats(y, m){
   var src = logSource();
   var milk = 0, diaper = 0, count = 0;
   src.forEach(function(r){
+    if(r.kind==='memo') return; /* メモは集計に数えない */
     if(r.start.getFullYear()===y && r.start.getMonth()===m){
       count++;
       if(r.kind==='milk') milk += (r.amount||0);
@@ -1246,6 +1279,7 @@ function renderAllMonths(){
   var seen = {}, list = [], i;
   for(i=0;i<src.length;i++){
     var r = src[i];
+    if(r.kind==='memo') continue;
     var key = r.start.getFullYear() * 12 + r.start.getMonth();
     if(!seen[key]){ seen[key] = true; list.push([r.start.getFullYear(), r.start.getMonth()]); }
   }
@@ -1374,9 +1408,8 @@ function closeAllSetEditors(){
 function openWeightEditorFromTop(){
   var ed = $('topWeightEditor');
   if(!ed.classList.contains('hidden')){ closeWeightEditor(); return; }
-  /* 今日分が既にある場合はその値を初期値にする（上書き保存用） */
-  var te = todayWeightEntry();
-  $('inputWeightTop').value = (te ? te.w : babySettings.weight) || '';
+  /* 開いたときは現在の体重が入った状態にし、元の値から修正できるようにする */
+  $('inputWeightTop').value = babySettings.weight || '';
   ed.classList.remove('hidden');
   var inp = $('inputWeightTop');
   if(inp){
@@ -1421,17 +1454,6 @@ function renderBabySettingsUI(){
   tog.classList.toggle('on', !!babySettings.remind);
   tog.setAttribute('aria-checked', babySettings.remind ? 'true' : 'false');
   $('remindState').textContent = babySettings.remind ? 'ON' : 'OFF';
-  $('guideIcon').innerHTML = IC.milk;
-  var g = getGuide();
-  if(g){
-    $('guideDaily').textContent = '1日 約' + g.daily + 'ml';
-    $('guideDaily').classList.remove('hidden');
-    $('guidePer').textContent = g.perFeed + 'ml × ' + g.times + '回';
-    $('guidePer').classList.remove('hidden');
-  } else {
-    $('guideDaily').classList.add('hidden');
-    $('guidePer').classList.add('hidden');
-  }
   /* 目標の行と入力欄：設定済みならその値を、未設定なら「未設定」を出す。
      入力欄の初期値は設定済みの値、プレースホルダは今の目安の値 */
   var custom = customGoal();
@@ -1637,6 +1659,7 @@ function renderViewer(){
   var src = logSource();
   var slots = {}; /* key: dayIndex*24+hour */
   src.forEach(function(r){
+    if(r.kind==='memo') return; /* メモはビューワーのチップにしない */
     for(var di=0; di<7; di++){
       if(sameDay(r.start, days[di])){
         var slot = r.start.getHours();
@@ -1776,7 +1799,7 @@ $('viewerOverlay').addEventListener('click', function(e){ if(e.target===this) cl
 /* ================= 編集シート ================= */
 function openEdit(rec){
   if(!accessToken){ setStatus('サインインしてください', true); return; }
-  editing = { rec: rec, kind: rec.kind, amount: rec.amount || 0 };
+  editing = { rec: rec, kind: rec.kind, amount: rec.amount || 0, text: rec.text || '' };
   deleteArmed = false;
   var del = $('editDeleteBtn');
   del.textContent = 'この記録を削除'; del.classList.remove('confirm');
@@ -1790,8 +1813,17 @@ function renderEditOpts(){
   var wrap = $('editOptsWrap'), box = $('editOpts');
   var milkCustom = $('editMilkCustom');
   var milkInput = $('editMilkAmount');
+  var memoWrap = $('editMemoWrap');
   var rec = editing.rec;
   var html = '';
+  if(rec.kind==='memo'){
+    wrap.classList.add('hidden'); box.innerHTML = '';
+    if(milkCustom) milkCustom.classList.add('hidden');
+    memoWrap.classList.remove('hidden');
+    $('editMemoText').value = editing.text || '';
+    return;
+  }
+  memoWrap.classList.add('hidden');
   if(rec.kind==='pee' || rec.kind==='poop'){
     $('editOptsLabel').textContent = '内容';
     html = ['pee','poop'].map(function(k){
@@ -1858,6 +1890,14 @@ $('editSaveBtn').addEventListener('click', function(){
   if(!v){ setStatus('日時を入力してください', true); return; }
   var when = new Date(v);
   if(isNaN(when.getTime())){ setStatus('日時が正しくありません', true); return; }
+  if(editing.rec && editing.rec.kind === 'memo'){
+    var memoText = $('editMemoText').value.trim();
+    if(!memoText){
+      setStatus('メモを入力してください', true);
+      return;
+    }
+    editing.text = memoText;
+  }
   if(editing.rec && editing.rec.kind === 'milk'){
     var milkInputEl = $('editMilkAmount');
     var raw = milkInputEl ? String(milkInputEl.value || '').trim() : '';
@@ -1873,7 +1913,7 @@ $('editSaveBtn').addEventListener('click', function(){
       return;
     }
   }
-  var updated = { kind: editing.kind, amount: editing.amount };
+  var updated = { kind: editing.kind, amount: editing.amount, text: editing.text };
   saveEdit(editing.rec, when, updated);
 });
 $('editDeleteBtn').addEventListener('click', function(){
@@ -1909,27 +1949,32 @@ function apiFetch(path, options){
     return res.json();
   });
 }
-function markerJSON(kind, amount){
+function markerJSON(kind, amount, text){
   var o = { v:1, kind:kind };
   if(kind==='milk') o.amount = amount;
+  if(kind==='memo') o.text = text || '';
   return 'muse-baby-log:' + JSON.stringify(o);
 }
 function parseEvent(ev){
   if(!ev || !ev.start || !ev.start.dateTime) return null;
   var start = new Date(ev.start.dateTime);
   if(isNaN(start.getTime())) return null;
-  var kind = null, amount = 0;
+  var kind = null, amount = 0, text = '';
   var desc = ev.description || '';
   var mi = desc.indexOf('muse-baby-log:');
   if(mi >= 0){
     try{
       var j = JSON.parse(desc.slice(mi + 'muse-baby-log:'.length).split('\n')[0]);
-      if(j && j.kind && KIND[j.kind]){ kind = j.kind; amount = j.amount || 0; }
+      if(j && j.kind && KIND[j.kind]){ kind = j.kind; amount = j.amount || 0; text = j.text || ''; }
     }catch(e){}
   }
   var title = (ev.summary || '').replace(/\s+/g, ' ').trim();
   if(!kind){
-    if(/^オムツ[:：]/.test(title)){
+    if(/^メモ/.test(title)){
+      kind = 'memo';
+      text = title.replace(/^メモ[:：]\s*/, '');
+      if(text === title) text = '';
+    } else if(/^オムツ[:：]/.test(title)){
       if(title.indexOf('おしっこ') >= 0) kind = 'pee';
       else if(title.indexOf('うんち') >= 0 || title.indexOf('両方') >= 0) kind = 'poop';
     } else if(/^授乳[:：]/.test(title)){
@@ -1945,13 +1990,13 @@ function parseEvent(ev){
     var m2 = title.match(/(\d+)\s*ml/i);
     if(m2) amount = parseInt(m2[1], 10);
   }
-  return { id: ev.id, start: start, kind: kind, amount: amount };
+  return { id: ev.id, start: start, kind: kind, amount: amount, text: text };
 }
-function eventBody(kind, amount, when){
+function eventBody(kind, amount, when, text){
   var end = new Date(when.getTime() + 5*60000);
   return {
-    summary: titleOf({kind:kind, amount:amount}),
-    description: markerJSON(kind, amount),
+    summary: titleOf({kind:kind, amount:amount, text:text}),
+    description: markerJSON(kind, amount, text),
     start: { dateTime: when.toISOString(), timeZone: 'Asia/Tokyo' },
     end:   { dateTime: end.toISOString(),  timeZone: 'Asia/Tokyo' }
   };
@@ -2050,11 +2095,38 @@ function createRecord(kind, amount){
     setStatus('記録できませんでした：' + err.message, true);
   }).then(function(){ setBusy(false); });
 }
+/* メモの書き込み：その時点の時刻でカレンダーにイベントとして保存する。
+   空のメモは書き込まない。書き込み後は入力欄を空にする。
+   メモは授乳ではないのでリマインド同期は行わない */
+function createMemo(){
+  var inp = $('memoInput');
+  var text = (inp.value || '').trim();
+  if(!text) return;
+  if(!accessToken || busy) return;
+  ensureAudio();
+  setBusy(true);
+  setStatus('記録中…');
+  var body = eventBody('memo', 0, new Date(), text);
+  apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events', {
+    method: 'POST', body: JSON.stringify(body)
+  }).then(function(){
+    playChime();
+    setStatus('');
+    inp.value = '';
+    return loadRecords(true);
+  }).catch(function(err){
+    setStatus('記録できませんでした：' + err.message, true);
+  }).then(function(){ setBusy(false); });
+}
+$('memoAddBtn').addEventListener('click', createMemo);
+$('memoInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){ e.preventDefault(); createMemo(); }
+});
 function saveEdit(rec, when, updated){
   if(busy) return;
   setBusy(true);
   setStatus('保存中…');
-  var body = eventBody(updated.kind, updated.amount, when);
+  var body = eventBody(updated.kind, updated.amount, when, updated.text);
   apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events/' + encodeURIComponent(rec.id), {
     method: 'PUT', body: JSON.stringify(body)
   }).then(function(){
@@ -2420,6 +2492,9 @@ for(var sr=0; sr<setRowBtns.length; sr++){
     var eds = document.querySelectorAll('.set-editor');
     for(var k=0;k<eds.length;k++) eds[k].classList.add('hidden');
     if(wasHidden){
+      /* 開くときは、その項目の現在の値を入力欄に入れた状態にする */
+      if(f === 'birthWeight') $('inputBirthWeight').value = babySettings.birthWeight || '';
+      if(f === 'weight') $('inputWeight').value = babySettings.weight || '';
       ed.classList.remove('hidden');
       var inp = ed.querySelector('input');
       if(inp){
@@ -2457,6 +2532,9 @@ $('saveWeightBtn').addEventListener('click', function(){
   scheduleBabySave();
   closeSetEditor('weight');
 });
+/* キャンセル：保存せずに入力欄を閉じるだけにする */
+$('cancelBirthWeightBtn').addEventListener('click', function(){ closeSetEditor('birthWeight'); });
+$('cancelWeightBtn').addEventListener('click', function(){ closeSetEditor('weight'); });
 /* 目標の直接入力：mlと回数の両方が正の整数のときだけ保存し、
    保存と同時に入力欄を閉じる（他の項目と同じルール）。
    どちらか不正なときは保存せず、入力欄を開いたままにする */
