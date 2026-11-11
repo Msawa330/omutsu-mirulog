@@ -363,10 +363,23 @@
   .guide-box .guide-title .gicon svg{width:24px; height:24px;}
   .guide-box .guide-line{font-size:16px; font-weight:800; line-height:1.5; overflow-wrap:anywhere;}
   .age-table{margin-top:6px; border:1px solid var(--divider); border-radius:16px; overflow:hidden; max-width:100%;}
-  .age-row{display:flex; gap:10px; padding:8px 14px; background:var(--bg); border-bottom:1px solid var(--divider); font-size:13.5px; align-items:baseline; min-width:0;}
+  .age-row{display:flex; gap:10px; padding:8px 14px; background:var(--bg); border-bottom:1px solid var(--divider); font-size:13.5px; align-items:center; min-width:0; width:100%; text-align:left; font-family:inherit; cursor:pointer;}
   .age-row:last-child{border-bottom:none;}
   .age-row .age-label{color:#b9c2d0; font-weight:700; flex:0 1 6.2em; min-width:0;}
   .age-row .age-value{color:#fff; font-weight:700; flex:1; min-width:0; overflow-wrap:anywhere;}
+  .age-row.sel{background:rgba(255,217,77,.18);}
+  .age-row.sel .age-label{color:var(--accent);}
+  .age-row.sel .age-value{color:var(--accent);}
+  .age-rec{
+    flex:0 0 auto; width:22px; height:22px; border-radius:50%;
+    background:var(--panel); color:var(--milk-bg); display:inline-flex; align-items:center; justify-content:center;
+    box-shadow:0 1px 3px rgba(0,0,0,.35);
+  }
+  .age-rec svg{width:14px; height:14px;}
+  .goal-inputs{display:flex; gap:8px;}
+  .goal-field{flex:1 1 0; min-width:0; display:flex; align-items:center; gap:6px;}
+  .goal-field input{flex:1; min-width:0;}
+  .goal-field .goal-unit{flex:0 0 auto; font-size:14px; font-weight:800; color:var(--sub);}
   .toggle-row{display:flex; align-items:center; gap:10px; margin-top:6px; background:var(--bg); border:1px solid var(--divider); border-radius:14px; padding:9px 12px;}
   .toggle-row .t-label{flex:1; min-width:0; font-size:15px; font-weight:700;}
   .toggle-row .t-state{font-size:13px; color:var(--sub); font-weight:700;}
@@ -565,6 +578,27 @@
       <button class="btn-primary" id="saveWeightBtn" type="button">保存する</button>
     </div>
 
+    <p class="sheet-sec-label">目標</p>
+    <button class="set-row" type="button" data-edit="goal">
+      <span class="set-label">目標</span>
+      <span class="set-value unset" id="valGoal">未設定</span>
+      <span class="set-chev">›</span>
+    </button>
+    <div class="set-editor hidden" id="editor-goal">
+      <div class="goal-inputs">
+        <div class="goal-field">
+          <input type="number" id="inputGoalMl" inputmode="numeric" pattern="[0-9]*" min="1" max="500" step="1" placeholder="50" aria-label="1回量（ml）">
+          <span class="goal-unit">ml</span>
+        </div>
+        <div class="goal-field">
+          <input type="number" id="inputGoalTimes" inputmode="numeric" pattern="[0-9]*" min="1" max="20" step="1" placeholder="8" aria-label="1日の回数">
+          <span class="goal-unit">回</span>
+        </div>
+      </div>
+      <button class="btn-primary" id="saveGoalBtn" type="button">保存する</button>
+      <button class="btn-sub" id="clearGoalBtn" type="button">自動に戻す</button>
+    </div>
+
     <div class="guide-box" style="margin-top:12px;">
       <div class="guide-title"><span class="gicon" id="guideIcon"></span><span>ミルクの目安</span></div>
       <div id="guideBody">
@@ -731,7 +765,7 @@ var deleteArmed = false;
 var LS_BABY = 'omutsumirulog.babySettings';
 var SETTINGS_TITLE = '赤ちゃん設定（アプリ用）';
 var SETTINGS_MARKER = 'muse-baby-settings:';
-var babySettings = { birthDate:'', birthWeight:'', weight:'', remind:false, weightLog:[] };
+var babySettings = { birthDate:'', birthWeight:'', weight:'', remind:false, weightLog:[], goalMl:'', goalTimes:'', goalBand:'' };
 try{
   var savedBaby = localStorage.getItem(LS_BABY);
   if(savedBaby){
@@ -741,6 +775,9 @@ try{
       if(parsedBaby.birthWeight !== undefined && parsedBaby.birthWeight !== null) babySettings.birthWeight = parsedBaby.birthWeight;
       if(parsedBaby.weight !== undefined && parsedBaby.weight !== null) babySettings.weight = parsedBaby.weight;
       babySettings.remind = !!parsedBaby.remind;
+      if(parsedBaby.goalMl !== undefined && parsedBaby.goalMl !== null) babySettings.goalMl = parsedBaby.goalMl;
+      if(parsedBaby.goalTimes !== undefined && parsedBaby.goalTimes !== null) babySettings.goalTimes = parsedBaby.goalTimes;
+      if(parsedBaby.goalBand !== undefined && parsedBaby.goalBand !== null) babySettings.goalBand = parsedBaby.goalBand;
       if(Array.isArray(parsedBaby.weightLog)) babySettings.weightLog = cleanWeightLog(parsedBaby.weightLog);
     }
   }
@@ -785,11 +822,28 @@ function ageBand(){
   return null;
 }
 /* 目安：{perFeed, times, daily, band} / 対象外・未設定は null
-   おすすめ量は50ml固定として扱う（哺乳瓶バッジと
-   「今日のミルク」の目標はこの値を使う）。
+   目標（goalMl・goalTimes）が設定されていればそれを最優先で使う。
+   未設定のときは従来どおり、おすすめ量は50ml固定として扱い
+   （哺乳瓶バッジと「今日のミルク」の目標はこの値を使う）、
    回数だけは月齢区分の回数を使い、目標は 50ml × 回数 とする */
 var RECOMMENDED_ML = 50;
+/* 月齢区分1行ぶんの目標値：1回量は区分の範囲の中央値
+   （範囲が無い区分はその値そのもの。例：1〜2歳=120ml、2〜3歳=100ml）、
+   回数は区分の標準回数を使う */
+function bandGoal(b){
+  if(!b) return null;
+  return { ml: Math.round((b.minMl + b.maxMl) / 2), times: b.times };
+}
+/* ユーザーが設定した目標（1回量ml・1日の回数）。未設定・不正値は null */
+function customGoal(){
+  var ml = parseInt(babySettings.goalMl, 10);
+  var times = parseInt(babySettings.goalTimes, 10);
+  if(!(ml > 0) || !(times > 0)) return null;
+  return { ml: ml, times: times };
+}
 function getGuide(){
+  var custom = customGoal();
+  if(custom) return { perFeed: custom.ml, times: custom.times, daily: custom.ml * custom.times, band: ageBand() };
   var band = ageBand();
   if(!band || !band.times) return null;
   return { perFeed: RECOMMENDED_ML, times: band.times, daily: RECOMMENDED_ML * band.times, band: band };
@@ -1378,10 +1432,62 @@ function renderBabySettingsUI(){
     $('guideDaily').classList.add('hidden');
     $('guidePer').classList.add('hidden');
   }
-  var tableHtml = AGE_BANDS.map(function(b){
-    return '<div class="age-row"><span class="age-label">' + b.label + '</span><span class="age-value">' + b.disp + '</span></div>';
+  /* 目標の行と入力欄：設定済みならその値を、未設定なら「未設定」を出す。
+     入力欄の初期値は設定済みの値、プレースホルダは今の目安の値 */
+  var custom = customGoal();
+  var vg = $('valGoal');
+  if(vg){
+    vg.textContent = custom ? (custom.ml + 'ml × ' + custom.times + '回') : '未設定';
+    vg.classList.toggle('unset', !custom);
+  }
+  var dgForGoal = displayGuide();
+  var inMl = $('inputGoalMl'), inTimes = $('inputGoalTimes');
+  if(inMl){
+    inMl.value = custom ? custom.ml : '';
+    inMl.placeholder = dgForGoal ? dgForGoal.guide.perFeed : 50;
+  }
+  if(inTimes){
+    inTimes.value = custom ? custom.times : '';
+    inTimes.placeholder = dgForGoal ? dgForGoal.guide.times : 8;
+  }
+  /* 月齢別一覧：現在の月齢の行には哺乳瓶のおすすめマークを付け、
+     設定中の目標と一致する行はハイライトする。タップでその行の
+     値（bandGoal）を目標として保存する */
+  var curBand = ageBand();
+  var curIdx = curBand ? AGE_BANDS.indexOf(curBand) : -1;
+  var selIdx = -1;
+  if(custom){
+    var gb = parseInt(babySettings.goalBand, 10);
+    if(!isNaN(gb) && AGE_BANDS[gb]){
+      var gbg = bandGoal(AGE_BANDS[gb]);
+      if(gbg.ml === custom.ml && gbg.times === custom.times) selIdx = gb;
+    }
+    if(selIdx < 0){
+      for(var si=0; si<AGE_BANDS.length; si++){
+        var sbg = bandGoal(AGE_BANDS[si]);
+        if(sbg.ml === custom.ml && sbg.times === custom.times){ selIdx = si; break; }
+      }
+    }
+  }
+  var tableHtml = AGE_BANDS.map(function(b, idx){
+    var rec = (idx === curIdx) ? '<span class="age-rec" role="img" aria-label="おすすめ">' + IC.milk + '</span>' : '';
+    return '<button class="age-row' + (idx === selIdx ? ' sel' : '') + '" type="button" data-age-idx="' + idx + '">' +
+      '<span class="age-label">' + b.label + '</span><span class="age-value">' + b.disp + '</span>' + rec + '</button>';
   }).join('');
   $('ageTable').innerHTML = tableHtml;
+  var ageRows = $('ageTable').querySelectorAll('.age-row');
+  for(var ai=0; ai<ageRows.length; ai++){
+    ageRows[ai].addEventListener('click', function(){
+      var idx = parseInt(this.getAttribute('data-age-idx'), 10);
+      var bg = bandGoal(AGE_BANDS[idx]);
+      if(!bg) return;
+      babySettings.goalMl = bg.ml;
+      babySettings.goalTimes = bg.times;
+      babySettings.goalBand = idx;
+      scheduleBabySave();
+      closeAllSetEditors();
+    });
+  }
 }
 function renderBabyUI(){
   renderBabySummary();
@@ -1396,6 +1502,9 @@ function applyBabySettings(obj){
   if(obj.birthWeight !== undefined && obj.birthWeight !== null) babySettings.birthWeight = obj.birthWeight;
   if(obj.weight !== undefined && obj.weight !== null) babySettings.weight = obj.weight;
   if(obj.remind !== undefined) babySettings.remind = !!obj.remind;
+  if(obj.goalMl !== undefined && obj.goalMl !== null) babySettings.goalMl = obj.goalMl;
+  if(obj.goalTimes !== undefined && obj.goalTimes !== null) babySettings.goalTimes = obj.goalTimes;
+  if(obj.goalBand !== undefined && obj.goalBand !== null) babySettings.goalBand = obj.goalBand;
   if(Array.isArray(obj.weightLog)) babySettings.weightLog = cleanWeightLog(obj.weightLog);
   saveBabyLocal();
   renderBabyUI();
@@ -2347,6 +2456,27 @@ $('saveWeightBtn').addEventListener('click', function(){
   if(v !== '') pushWeightLog(parseInt(v, 10));
   scheduleBabySave();
   closeSetEditor('weight');
+});
+/* 目標の直接入力：mlと回数の両方が正の整数のときだけ保存し、
+   保存と同時に入力欄を閉じる（他の項目と同じルール）。
+   どちらか不正なときは保存せず、入力欄を開いたままにする */
+$('saveGoalBtn').addEventListener('click', function(){
+  var ml = parseInt($('inputGoalMl').value, 10);
+  var times = parseInt($('inputGoalTimes').value, 10);
+  if(!(ml > 0) || !(times > 0)) return;
+  babySettings.goalMl = ml;
+  babySettings.goalTimes = times;
+  babySettings.goalBand = '';
+  scheduleBabySave();
+  closeSetEditor('goal');
+});
+/* 目標を未設定に戻す：従来どおり月齢から自動で決まる動作になる */
+$('clearGoalBtn').addEventListener('click', function(){
+  babySettings.goalMl = '';
+  babySettings.goalTimes = '';
+  babySettings.goalBand = '';
+  scheduleBabySave();
+  closeSetEditor('goal');
 });
 $('remindToggle').addEventListener('click', function(){
   babySettings.remind = !babySettings.remind;
