@@ -787,6 +787,10 @@ var silentRetryCount = 0;
 var silentRetryTimer = null;
 var silentInFlight = false;
 var silentGaveUp = false;
+/* 認証リクエストの1本化ガード：自動のサイレント再取得と手動サインインの
+   どちらが実行中でも、もう一方は requestAccessToken を新たに送らない。
+   重なって送ると Google が 400 を返すため、実行中はそちらに寄せる */
+var authInFlight = false;
 var records = []; /* {id, start:Date, kind, amount} 新しい順 */
 var recordsLoaded = false; /* 初回の記録読み込みが終わるまでリマインド同期をしないためのフラグ */
 var busy = false;
@@ -2356,15 +2360,20 @@ function resetSilentRetry(){
   silentGaveUp = false;
   if(silentRetryTimer){ clearTimeout(silentRetryTimer); silentRetryTimer = null; }
 }
-/* サイレント再取得を1回試みる（実行中・再試行待ち・打ち切り後は除く） */
+/* サイレント再取得を1回試みる（実行中・再試行待ち・打ち切り後は除く）。
+   手動サインインなど認証が実行中（authInFlight）のときも新たに送らず、
+   実行中のリクエストに寄せる */
 function requestSilentToken(){
-  if(silentInFlight || silentGaveUp || silentRetryTimer) return;
+  if(authInFlight || silentInFlight || silentGaveUp || silentRetryTimer) return;
   if(!tokenClient && !initTokenClient()) return;
+  if(authInFlight) return;
+  authInFlight = true;
   silentInFlight = true;
   silentAuth = true;
   try{
     tokenClient.requestAccessToken({prompt:''});
   }catch(e){
+    authInFlight = false;
     silentInFlight = false;
     silentAuth = false;
     onSilentAuthFailure();
@@ -2374,6 +2383,7 @@ function requestSilentToken(){
    間隔を置いて数回まで自動で再試行する。再試行を使い切り、
    なおトークンが切れている場合に限り従来どおりサインインを求める */
 function onSilentAuthFailure(){
+  authInFlight = false;
   silentInFlight = false;
   if(silentRetryTimer) return;
   if(silentRetryCount < SILENT_RETRY_DELAYS.length){
@@ -2423,6 +2433,7 @@ function initTokenClient(){
       var wasSilent = silentAuth;
       silentAuth = false;
       silentInFlight = false;
+      authInFlight = false;
       if(resp && resp.access_token){
         resetSilentRetry();
         accessToken = resp.access_token;
@@ -2438,7 +2449,8 @@ function initTokenClient(){
       }
     },
     error_callback: function(err){
-      if(silentAuth){ silentAuth = false; silentInFlight = false; onSilentAuthFailure(); return; }
+      if(silentAuth){ silentAuth = false; silentInFlight = false; authInFlight = false; onSilentAuthFailure(); return; }
+      authInFlight = false;
       setStatus('サインインでエラーが発生しました' + (err && err.message ? '：' + err.message : ''), true);
     }
   });
@@ -2446,6 +2458,12 @@ function initTokenClient(){
 }
 function signIn(){
   ensureAudio();
+  /* 認証が既に実行中なら新たに送らない（ボタン連打・自動再取得との重なり防止）。
+     実行中のリクエストに寄せ、処理中であることだけを一時表示する */
+  if(authInFlight || silentInFlight){
+    setStatus('サインイン処理中です。画面が変わるまでお待ちください');
+    return;
+  }
   resetSilentRetry();
   if(!clientId){
     openBabySettings();
@@ -2453,15 +2471,36 @@ function signIn(){
   }
   if(!tokenClient && !initTokenClient()){
     setStatus('Googleの準備中です。数秒待ってからもう一度押してください', true);
+    /* 準備待ちの間も認証実行中として扱い、この間に自動再取得や
+       再度のサインインが重なって送られないようにする */
+    authInFlight = true;
     var tries = 0;
     var iv = setInterval(function(){
       tries++;
-      if(initTokenClient()){ clearInterval(iv); tokenClient.requestAccessToken({prompt:''}); }
-      else if(tries > 20){ clearInterval(iv); setStatus('Googleに接続できませんでした。通信環境を確認してください', true); }
+      if(initTokenClient()){
+        clearInterval(iv);
+        silentAuth = false;
+        setStatus('サインイン処理中です。画面が変わるまでお待ちください');
+        try{
+          tokenClient.requestAccessToken({prompt:''});
+        }catch(e){
+          authInFlight = false;
+          setStatus('サインインでエラーが発生しました' + (e && e.message ? '：' + e.message : ''), true);
+        }
+      }
+      else if(tries > 20){ clearInterval(iv); authInFlight = false; setStatus('Googleに接続できませんでした。通信環境を確認してください', true); }
     }, 500);
     return;
   }
-  tokenClient.requestAccessToken({ prompt: '' });
+  authInFlight = true;
+  silentAuth = false;
+  setStatus('サインイン処理中です。画面が変わるまでお待ちください');
+  try{
+    tokenClient.requestAccessToken({ prompt: '' });
+  }catch(e){
+    authInFlight = false;
+    setStatus('サインインでエラーが発生しました' + (e && e.message ? '：' + e.message : ''), true);
+  }
 }
 $('signinBtn').addEventListener('click', signIn);
 $('signoutBtn').addEventListener('click', function(){
@@ -2470,6 +2509,7 @@ $('signoutBtn').addEventListener('click', function(){
   }
   clearSession();
   resetSilentRetry();
+  authInFlight = false; silentInFlight = false; silentAuth = false;
   accessToken = null; tokenExpiry = 0; records = [];
   renderAll(); updateAuthUI(); setStatus('');
 });
@@ -2577,6 +2617,7 @@ $('saveSettingsBtn').addEventListener('click', function(){
   }catch(e){}
   clearSession();
   resetSilentRetry();
+  authInFlight = false; silentInFlight = false; silentAuth = false;
   accessToken = null; tokenExpiry = 0; tokenClient = null;
   settingsEventId = null; settingsEventRaw = null;
   closeBabySettings();
