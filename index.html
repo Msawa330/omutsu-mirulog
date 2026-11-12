@@ -249,19 +249,18 @@
     min-height:21px; display:flex; flex-wrap:wrap; align-items:center; align-content:center;
     gap:2px; padding:2px 1px; min-width:0;
   }
-  .wk-cell.today-col{background:rgba(255,217,77,.13);}
-  /* 今日の列の見出し：黄色の淡い色付け＋日付は黄色文字で中程度に目立たせる */
-  .wk-head.today-col{background:rgba(255,217,77,.22); border-bottom-color:rgba(255,217,77,.32);}
+  .wk-cell.today-col{background:rgba(255,217,77,.04);}
+  /* 今日の列の見出し：背景の色付けはごく薄く、日付の黄色文字と太字でさりげなく示す */
+  .wk-head.today-col{background:rgba(255,217,77,.04); border-bottom-color:rgba(255,217,77,.14);}
   .wk-head.today-col .wk-md{color:var(--accent);}
-  .wk-head.today-col .wk-wd{color:rgba(255,217,77,.78);}
-  .wk-head.today-col .wk-sums{border-top-color:rgba(255,217,77,.25);}
-  .wk-head.today-col .wk-sumrow .none{color:rgba(255,217,77,.5);}
+  .wk-head.today-col .wk-wd{color:rgba(255,217,77,.65);}
+  .wk-head.today-col .wk-sums{border-top-color:rgba(255,217,77,.12);}
+  .wk-head.today-col .wk-sumrow .none{color:rgba(255,217,77,.4);}
   .wk-grid .wk-last{border-bottom:none;}
-  /* いまの時間帯の行：黄色18%の淡い色付け、時刻ラベルも同系の色付け＋黄色文字 */
-  .wk-axis.now-hour{color:var(--accent); background:rgba(255,217,77,.18); font-weight:800;}
-  .wk-cell.now-hour{background:rgba(255,217,77,.18);}
-  .wk-cell.now-hour.today-col{background:rgba(255,217,77,.30);}
-  .wk-cell.now-hour .wk-chip.milk{background:var(--accent); color:var(--dark);}
+  /* いまの時間帯の行：背景の色付けはごく薄く、時刻の数字の黄色文字と太字でさりげなく示す */
+  .wk-axis.now-hour{color:var(--accent); background:rgba(255,217,77,.04); font-weight:800;}
+  .wk-cell.now-hour{background:rgba(255,217,77,.04);}
+  .wk-cell.now-hour.today-col{background:rgba(255,217,77,.07);}
   /* 記録チップ：ミルク以外はアイコンのみ、ミルクはアイコン＋量 */
   .wk-chip{
     flex:0 0 auto; width:15px; height:15px; border-radius:5px; padding:0;
@@ -1313,6 +1312,8 @@ function dayRowHTML(d, st){
    その日の集計（おしっこ・うんち・母乳はアイコン＋回数、
    ミルクはアイコン＋総量、0件は―）。
    記録チップ：おしっこ・うんち・母乳はアイコンのみ、ミルクはアイコン＋量。
+   同じセル内のチップの並びは種類順（おしっこ→うんち→母乳→ミルク）で固定し、
+   同じ種類同士は時刻順。
    チップをタップすると編集シートが開く。メモはチップにしない */
 function wkSumRowHTML(kind, valHTML, color){
   return '<div class="wk-sumrow"><span style="color:' + color + ';">' + IC[kind] + '</span>' + valHTML + '</div>';
@@ -1341,7 +1342,7 @@ function renderDays(){
       wkSumRowHTML('milk', st.milk ? st.milk + 'ml' : wkNone(), 'var(--accent)') +
       '</div></div>';
   });
-  /* 日×1時間枠 → 記録リスト（時刻の早い順） */
+  /* 日×1時間枠 → 記録リスト（種類順：おしっこ→うんち→母乳→ミルク、同種内は時刻順） */
   var slots = {};
   records.forEach(function(r){
     if(r.kind==='memo') return;
@@ -1354,8 +1355,13 @@ function renderDays(){
       }
     }
   });
+  var WK_KIND_ORDER = { pee:0, poop:1, breast:2, milk:3 };
   Object.keys(slots).forEach(function(k){
-    slots[k].sort(function(a,b){ return a.start - b.start; });
+    slots[k].sort(function(a,b){
+      var d = (WK_KIND_ORDER[a.kind] || 0) - (WK_KIND_ORDER[b.kind] || 0);
+      if(d) return d;
+      return a.start - b.start;
+    });
   });
   for(var h=0; h<24; h++){
     var lastCls = (h===23) ? ' wk-last' : '';
