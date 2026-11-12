@@ -130,14 +130,7 @@
   }
   .settings-btn svg{width:14px; height:14px;}
   .settings-btn:active{background:rgba(255,255,255,.32);}
-  .top-weight-editor{margin-top:9px;}
-  .top-weight-editor input{
-    width:100%; background:#fff; border:none; border-radius:10px;
-    color:var(--ink); font-size:16px; padding:10px 12px; font-family:inherit;
-  }
-  .top-weight-editor .btn-primary{background:#fff; color:var(--green-dark); margin-top:8px;}
-  .top-weight-editor .btn-primary:active{background:var(--green-soft);}
-  .top-weight-editor .btn-sub{background:transparent; color:#fff; border-color:rgba(255,255,255,.55);}
+
 
   /* ===== サインイン・状態表示 ===== */
   .topbar{display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap; margin:2px 0 3px;}
@@ -177,25 +170,28 @@
     background:#fff; color:var(--ink-sub); font-weight:700; font-size:13px;
     border:1px solid var(--line); border-radius:10px; padding:9px 14px; width:100%; margin-top:8px; min-height:var(--btn-h);
   }
+  /* 「もっと見る」も副ボタン（白＋枠線・13px・角丸10・高さ36）に統一 */
   .btn-more{
     display:block; margin:8px auto 2px;
-    background:#fff; color:var(--green-dark); font-weight:800; font-size:12px;
-    border:1px solid var(--line); border-radius:999px;
-    padding:8px 18px; min-height:var(--btn-h);
+    background:#fff; color:var(--ink-sub); font-weight:700; font-size:13px;
+    border:1px solid var(--line); border-radius:10px;
+    padding:9px 14px; min-height:var(--btn-h);
   }
   .btn-more:active{background:var(--green-soft);}
+  /* 削除ボタンは副ボタンの寸法で、色だけ赤系にする例外 */
   .btn-danger{
     background:#fff; color:var(--coral); border:1px solid rgba(224,82,82,.5);
-    font-weight:800; font-size:14px; border-radius:12px; padding:11px 18px; width:100%; margin-top:10px; min-height:var(--btn-h-lg);
+    font-weight:700; font-size:13px; border-radius:10px; padding:9px 14px; width:100%; margin-top:8px; min-height:var(--btn-h);
   }
   .btn-danger.confirm{background:#c0392b; color:#fff; border-color:#c0392b;}
   .nav-row{display:flex; gap:8px; margin-top:10px;}
+  /* 週・月の前後ボタンも副ボタンの寸法・色に統一 */
   .nav-btn{
     flex:1; border:1px solid var(--line); background:#fff;
-    color:var(--green-dark); font-size:13px; font-weight:800;
-    border-radius:999px; padding:7px 10px; min-height:var(--btn-h);
+    color:var(--ink-sub); font-size:13px; font-weight:700;
+    border-radius:10px; padding:9px 14px; min-height:var(--btn-h);
   }
-  .nav-btn:active{background:var(--green); border-color:var(--green); color:#fff;}
+  .nav-btn:active{background:var(--green-soft);}
   .nav-btn:disabled{background:#f0f3f0; border-color:#f0f3f0; color:#b6bcb6; opacity:1;}
 
   /* ===== 記録時間ブロック ===== */
@@ -251,16 +247,26 @@
   .next-bell{flex:0 0 auto; width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; color:var(--today-ink);}
   .next-bell svg{width:14px; height:14px;}
 
-  /* ===== ミルクの量ポップアップ（小さな中央モーダル） ===== */
-  .milk-sheet{
-    background:#fff; color:var(--ink); width:100%; max-width:300px; min-width:0;
-    border-radius:var(--r-l); padding:20px 18px calc(18px + env(safe-area-inset-bottom));
+  /* ===== 小さなポップアップ（中央モーダル・全入力共通部品） =====
+     見出し＋×、エラー表示、フッター（保存系／キャンセル）の作法をここで統一する */
+  .pop-sheet{
+    background:#fff; color:var(--ink); width:100%; max-width:340px; min-width:0;
+    max-height:86vh; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
+    border-radius:var(--r-l); padding:18px 16px calc(16px + env(safe-area-inset-bottom));
     box-shadow:0 12px 32px rgba(60,80,60,.25);
   }
+  .pop-sheet.edit-pop{max-width:400px;}
+  .pop-head{display:flex; align-items:center; gap:8px; margin-bottom:12px;}
+  .pop-title{font-size:16px; font-weight:800;}
+  .pop-sheet .close-x{margin-left:auto; background:transparent; color:var(--ink-sub); font-size:20px; line-height:1; padding:4px 8px;}
+  .pop-sheet label{display:block; font-size:13px; font-weight:700; color:var(--ink-sub); margin:10px 0 6px;}
+  .pop-foot{margin-top:14px;}
+  .pop-foot .btn-primary{margin-top:0;}
+  .pop-foot .btn-sub, .pop-foot .btn-danger{margin-top:8px;}
+  /* ミルクの量ポップアップの中身 */
   .milk-step-row{display:flex; align-items:center; justify-content:center; gap:18px;}
   .milk-amt{font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; min-width:3ch; text-align:center; line-height:1.1;}
   .milk-amt .milk-amt-unit{font-size:14px; font-weight:800; margin-left:2px;}
-  .milk-sheet .btn-primary{margin-top:16px;}
 
   /* ===== 今日のミルク ゲージ ===== */
   .gauge-top{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;}
@@ -305,19 +311,18 @@
   .rec-title{font-size:13px; font-weight:800; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .empty{font-size:14px; color:var(--ink-sub); padding:5px 2px;}
 
-  /* ===== メモ入力 ===== */
-  .memo-row{display:flex; gap:8px; align-items:center;}
-  .memo-row input{
-    flex:1; min-width:0; background:var(--bg); border:1px solid var(--line); border-radius:10px;
-    color:var(--ink); font-size:16px; padding:10px 12px; font-family:inherit;
+  /* ===== メモ（TOPは細い1行だけに抑え、入力は小さなポップアップで） ===== */
+  .memo-panel{padding-top:6px; padding-bottom:6px;}
+  .memo-open{
+    display:flex; align-items:center; gap:8px; width:100%;
+    min-height:36px; padding:2px 0; text-align:left;
+    font-size:13px; font-weight:800; color:var(--ink);
   }
-  /* 「書き込む」も主ボタン（.btn-primary）と寸法・色を完全一致させる */
-  .memo-btn{
-    flex:0 0 auto; background:var(--green); color:#fff; font-weight:800; font-size:15px;
-    border-radius:12px; padding:11px 18px; min-height:var(--btn-h-lg);
-  }
-  .memo-btn:active{background:var(--green-dark);}
-  .memo-btn:disabled{opacity:.45;}
+  .memo-open .memo-ic{width:19px; height:19px; color:var(--ink-sub); display:inline-flex; flex:0 0 auto;}
+  .memo-open .memo-ic svg{width:19px; height:19px; display:block;}
+  .memo-open .memo-act{margin-left:auto; color:var(--green-dark); font-size:13px; font-weight:800; flex:0 0 auto;}
+  .memo-open .memo-chev{color:var(--ink-sub); font-size:18px; line-height:1; flex:0 0 auto;}
+  .memo-open:active{opacity:.65;}
 
   /* ===== 7日間ログ（グリッド：日付列×24時間行） ===== */
   .wk-grid{display:grid; grid-template-columns:26px repeat(7,minmax(0,1fr)); min-width:0;}
@@ -340,7 +345,7 @@
   .wk-head .wk-md{display:block; font-size:11px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.3;}
   .wk-head .wk-wd{display:block; font-size:9px; font-weight:700; color:var(--ink-sub); line-height:1.3;}
   .wk-head .wk-w{display:block; min-height:11px; font-size:9px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.3;}
-  .wk-head.today-col .wk-md{color:var(--today-ink);}
+  .wk-head.today-col .wk-md{color:var(--green-dark);}
   .wk-sums{display:flex; flex-direction:column; gap:2px; margin-top:4px; padding:0 1px;}
   .wk-sumrow{
     height:21px; border-radius:6px; padding:0;
@@ -359,15 +364,16 @@
     padding-top:2px; font-variant-numeric:tabular-nums;
     border-bottom:1px solid #f5f6f5; min-width:0; white-space:nowrap;
   }
-  .wk-axis.now-hour{color:var(--today-ink); font-weight:800;}
+  .wk-axis.now-hour{color:var(--green-dark); font-weight:800;}
   .wk-cell{
     min-height:17px; border-bottom:1px solid #f5f6f5;
     display:flex; flex-wrap:wrap; gap:2px;
     align-content:flex-start; padding:2px 1px; min-width:0;
   }
-  .wk-cell.today-col{background:var(--today-tint);}
-  .wk-cell.now-hour{background:var(--today-tint);}
-  .wk-cell.now-hour.today-col{background:rgba(255,205,40,.1);}
+  /* 今日の列と現在時刻の強調は、ミルクの黄色と混同しないよう緑系にする */
+  .wk-cell.today-col{background:rgba(63,191,79,.09);}
+  .wk-cell.now-hour{background:rgba(63,191,79,.09);}
+  .wk-cell.now-hour.today-col{background:rgba(63,191,79,.16);}
   .wk-grid .wk-last{border-bottom:none;}
   .wk-chip{
     flex:0 0 auto; height:13px; min-width:13px;
@@ -476,42 +482,29 @@
   .cat-ava.mii{background:radial-gradient(circle at 35% 30%, #fff6e8 0%, #ffe9cf 55%, #ffdfba 100%);}
   .cat-ava.nari{background:radial-gradient(circle at 35% 30%, #ffffff 0%, #f3f0ea 55%, #e9e2d4 100%);}
   .cat-ava svg{width:88%; height:88%; display:block;}
-  /* 猫の記録ボタン専用クラス（TOPの .btn-ghost とは分離） */
+  /* 猫の記録ボタンも副ボタン（白＋枠線・13px・角丸10・高さ36）に統一 */
   .cat-rec-btn{
     margin-left:auto; flex:0 0 auto;
-    border:1px solid var(--line); background:#fff; color:var(--green-dark);
-    font-size:12px; font-weight:800; border-radius:999px; padding:4px 14px; min-height:36px;
+    border:1px solid var(--line); background:#fff; color:var(--ink-sub);
+    font-size:13px; font-weight:700; border-radius:10px; padding:9px 14px; min-height:36px;
   }
   .cat-rec-btn:active{background:var(--green-soft);}
   .cat-name{font-size:13px; font-weight:800; flex:0 0 auto;}
   .cat-latest{font-size:12px; font-weight:800; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap;}
   .cat-latest.unset{font-weight:700;}
-  .cat-editor{margin-top:8px;}
-  .cat-editor input{ width:100%; }
-  .cat-kg-row{display:flex; align-items:center; gap:8px;}
-  .cat-kg-row input{flex:1 1 auto; min-width:0;}
-  .cat-kg-unit{font-size:15px; font-weight:800; flex:0 0 auto;}
-  .cat-birth-row{display:flex; align-items:center; gap:8px; margin-top:8px;}
-  .cat-birth-label{font-size:12px; font-weight:700; color:var(--ink-sub); flex:0 0 auto;}
-  .cat-birth-row input{flex:1 1 auto; min-width:0;}
 
-  /* ===== 入力欄の共通スタイル（設定・編集・接続設定・猫で統一） ===== */
-  .set-editor input,
-  .sheet .conn-box input,
-  .sheet input[type="datetime-local"],
-  .sheet input[type="text"],
-  .milk-custom input,
-  .cat-editor input,
-  .card input{
+  /* ===== 入力欄の共通スタイル（全ポップアップ・全シートで統一：
+     白背景・1px枠線・角丸10・16px） ===== */
+  .pop-sheet input,
+  .sheet input{
     background:#fff; border:1px solid var(--line); border-radius:10px;
     color:var(--ink); font-size:16px; padding:10px 12px; font-family:inherit;
   }
+  .pop-sheet input{ width:100%; }
   /* 数値欄＋単位の横並び */
   .num-unit-row{display:flex; align-items:center; gap:8px;}
   .num-unit-row input{flex:1 1 auto; min-width:0;}
   .num-unit-row .unit-label{font-size:15px; font-weight:800; flex:0 0 auto;}
-  /* 目標の「自動に戻す」は保存／キャンセルと分けた第3のボタン */
-  .goal-reset-btn{margin-top:14px;}
 
   /* ===== シート（モーダル） ===== */
   .overlay{
@@ -565,7 +558,7 @@
   .milk-custom .milk-unit{font-size:15px; font-weight:800; color:var(--ink); flex:0 0 auto;}
 
   /* ===== アップデートのお知らせ（中央モーダル） ===== */
-  .overlay.center{align-items:center; padding:20px 16px;}
+  .overlay.center{align-items:center; padding:20px 16px; overflow-y:auto;}
   .update-sheet{
     background:#fff; color:var(--ink); width:100%; max-width:480px; min-width:0;
     max-height:86vh; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
@@ -576,30 +569,39 @@
   .update-sheet .sheet-title{font-size:16px; font-weight:800;}
   .update-sheet .close-x{margin-left:auto; background:transparent; color:var(--ink-sub); font-size:20px; line-height:1; padding:4px 8px;}
   .update-sheet .sheet-foot{bottom:calc(-18px - env(safe-area-inset-bottom));}
-  .update-lines{font-size:15px; line-height:1.75; font-weight:700; overflow-wrap:anywhere;}
-  .update-lines p{margin:0 0 6px;}
-  .update-lines p:last-child{margin-bottom:0;}
+  /* お知らせはカテゴリごとに見出し（色つきアイコン）で区切って並べる */
+  .upd-cat{margin-top:14px;}
+  .upd-cat:first-child{margin-top:2px;}
+  .upd-cat-head{display:flex; align-items:center; gap:7px; font-size:13px; font-weight:800; color:var(--ink);}
+  .upd-cat-ic{width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .upd-cat-ic svg{width:15px; height:15px; display:block;}
+  .upd-list{list-style:none; margin:5px 0 0; padding:0;}
+  .upd-list li{
+    font-size:14px; font-weight:700; line-height:1.6; color:var(--ink);
+    padding:2px 0 2px 31px; position:relative; overflow-wrap:anywhere;
+  }
+  .upd-list li::before{content:""; position:absolute; left:11px; top:.74em; width:5px; height:5px; border-radius:50%; background:#c9cdc9;}
 
   /* ===== 設定シート ===== */
   .set-row{
     display:flex; align-items:center; gap:8px; width:100%; text-align:left;
-    background:#fff; border:1px solid var(--line); border-radius:14px;
-    padding:9px 12px; margin-top:6px; font-size:15px; color:var(--ink);
+    background:#fff; border:1px solid var(--line); border-radius:12px;
+    padding:10px 12px; margin-top:6px; font-size:15px; color:var(--ink);
   }
   .set-row .set-label{font-weight:700; color:var(--ink); flex:0 0 auto;}
   .set-row .set-value{flex:1; min-width:0; text-align:right; font-weight:800; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .set-row .set-value.unset{color:var(--ink-sub); font-weight:700;}
   .set-row .set-chev{color:var(--ink-sub); font-size:20px; line-height:1; flex:0 0 auto;}
-  .set-editor{margin-top:6px;}
-  .set-editor input{ width:100%; }
   .age-table{margin-top:6px; border:1px solid var(--line); border-radius:16px; overflow:hidden; max-width:100%;}
   .age-row{display:flex; gap:10px; padding:8px 14px; background:#fff; border-bottom:1px solid var(--line); font-size:13.5px; align-items:center; min-width:0; width:100%; text-align:left; font-family:inherit; cursor:pointer;}
   .age-row:last-child{border-bottom:none;}
   .age-row .age-label{color:var(--ink-sub); font-weight:700; flex:0 1 6.2em; min-width:0;}
   .age-row .age-value{color:var(--ink); font-weight:700; flex:1; min-width:0; overflow-wrap:anywhere;}
-  .age-row.sel{background:var(--green-soft);}
-  .age-row.sel .age-label{color:var(--green-dark);}
-  .age-row.sel .age-value{color:var(--green-dark);}
+  /* 選択中の行は緑の枠と太字＋✓で明確に分かるようにする */
+  .age-row.sel{background:var(--green-soft); box-shadow:inset 0 0 0 2px var(--green);}
+  .age-row.sel .age-label{color:var(--green-dark); font-weight:800;}
+  .age-row.sel .age-value{color:var(--green-dark); font-weight:800;}
+  .age-sel{flex:0 0 auto; color:var(--green-dark); font-size:15px; font-weight:800;}
   .age-rec{flex:0 0 auto; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center;}
   .age-rec svg{width:20px; height:20px; display:block;}
   .goal-inputs{display:flex; gap:8px;}
@@ -616,10 +618,6 @@
   }
   .switch.on{background:var(--green);}
   .switch.on .knob{left:25px;}
-  .sheet .conn-box{background:var(--bg); border:1px solid var(--line); border-radius:16px; padding:10px 14px; margin-top:6px;}
-  .sheet .conn-box h4{font-size:14px; font-weight:800; margin:0 0 6px;}
-  .sheet .conn-box label{margin:10px 0 5px;}
-  .sheet .conn-box input{ width:100%; }
   .sheet-sec-label{font-size:13px; font-weight:700; color:var(--ink-sub); margin:12px 0 0;}
 
 
@@ -649,6 +647,7 @@
     .month-row .mvalue{font-size:14px;}
     .month-row .mvalue.wt{font-size:10.5px;}
     .sheet{padding:16px 12px calc(16px + env(safe-area-inset-bottom));}
+    .pop-sheet{padding:16px 12px calc(14px + env(safe-area-inset-bottom));}
     .overlay.center{padding:16px 10px;}
     .update-sheet{padding:16px 12px calc(16px + env(safe-area-inset-bottom)); border-radius:var(--r-l);}
     .sheet > h3{top:-16px;}
@@ -685,6 +684,8 @@
   body.kb-open .wrap{padding-bottom:55vh;}
   body.kb-open .sheet{padding-bottom:48vh;}
   body.kb-open .update-sheet{padding-bottom:48vh;}
+  /* 入力中は中央ポップアップを上寄せにして、キーボードに隠れないようにする */
+  body.kb-open .overlay.center{align-items:flex-start;}
 </style>
 </head>
 <body>
@@ -714,11 +715,6 @@
           設定
         </button>
       </span>
-    </div>
-    <div class="top-weight-editor hidden" id="topWeightEditor">
-      <input type="number" id="inputWeightTop" inputmode="numeric" min="500" max="20000" step="10" placeholder="例：3800" aria-label="現在の体重（g）">
-      <button class="btn-primary" id="weightSaveBtn" type="button">保存する</button>
-      <button class="btn-sub" id="weightCloseBtn" type="button">キャンセル</button>
     </div>
   </header>
 
@@ -788,12 +784,14 @@
     <button class="btn-more hidden" id="todayMoreBtn" type="button">もっと見る</button>
   </section>
 
-  <!-- メモ入力 -->
-  <section class="panel" aria-label="メモ">
-    <div class="memo-row">
-      <input type="text" id="memoInput" placeholder="メモ" aria-label="メモ" autocomplete="off">
-      <button class="memo-btn" id="memoAddBtn" type="button">書き込む</button>
-    </div>
+  <!-- メモ（TOPは細い1行だけ。タップで小さなポップアップが開いて入力する） -->
+  <section class="panel memo-panel" aria-label="メモ">
+    <button class="memo-open" id="memoOpenBtn" type="button">
+      <span class="memo-ic"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5h19l8 8v30H11z"/><path d="M30 5v8h8"/><path d="M18 24h13M18 31h13M18 17h6"/></svg></span>
+      <span>メモ</span>
+      <span class="memo-act">書く</span>
+      <span class="memo-chev">›</span>
+    </button>
   </section>
 
   <!-- 7日間のログ -->
@@ -840,47 +838,24 @@
 <div class="overlay hidden" id="babyOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
     <h3>赤ちゃん設定<button class="close-x" id="babyCloseBtn" type="button" aria-label="閉じる">×</button></h3>
-    <div class="sheet-error hidden" role="alert"></div>
-    
 
     <button class="set-row" type="button" data-edit="birthDate">
       <span class="set-label">生年月日</span>
       <span class="set-value unset" id="valBirthDate">未設定</span>
       <span class="set-chev">›</span>
     </button>
-    <div class="set-editor hidden" id="editor-birthDate">
-      <input type="date" id="inputBirthDate" aria-label="生年月日">
-      <button class="btn-primary" id="saveBirthDateBtn" type="button">保存する</button>
-      <button class="btn-sub" id="cancelBirthDateBtn" type="button">キャンセル</button>
-    </div>
 
     <button class="set-row" type="button" data-edit="birthWeight">
       <span class="set-label">出生体重</span>
       <span class="set-value unset" id="valBirthWeight">未設定</span>
       <span class="set-chev">›</span>
     </button>
-    <div class="set-editor hidden" id="editor-birthWeight">
-      <div class="num-unit-row">
-        <input type="number" id="inputBirthWeight" inputmode="numeric" pattern="[0-9]*" min="500" max="6000" step="1" placeholder="例：3200" aria-label="出生体重（g）">
-        <span class="unit-label">g</span>
-      </div>
-      <button class="btn-primary" id="saveBirthWeightBtn" type="button">保存する</button>
-      <button class="btn-sub" id="cancelBirthWeightBtn" type="button">キャンセル</button>
-    </div>
 
     <button class="set-row" type="button" data-edit="weight">
       <span class="set-label">現在の体重</span>
       <span class="set-value unset" id="valWeight">未設定</span>
       <span class="set-chev">›</span>
     </button>
-    <div class="set-editor hidden" id="editor-weight">
-      <div class="num-unit-row">
-        <input type="number" id="inputWeight" inputmode="numeric" pattern="[0-9]*" min="500" max="20000" step="1" placeholder="例：3800" aria-label="現在の体重（g）">
-        <span class="unit-label">g</span>
-      </div>
-      <button class="btn-primary" id="saveWeightBtn" type="button">保存する</button>
-      <button class="btn-sub" id="cancelWeightBtn" type="button">キャンセル</button>
-    </div>
 
     <p class="sheet-sec-label">目標</p>
     <button class="set-row" type="button" data-edit="goal">
@@ -888,21 +863,6 @@
       <span class="set-value unset" id="valGoal">未設定</span>
       <span class="set-chev">›</span>
     </button>
-    <div class="set-editor hidden" id="editor-goal">
-      <div class="goal-inputs">
-        <div class="goal-field">
-          <input type="number" id="inputGoalMl" inputmode="numeric" pattern="[0-9]*" min="1" max="500" step="1" placeholder="例：50" aria-label="1回量（ml）">
-          <span class="goal-unit">ml</span>
-        </div>
-        <div class="goal-field">
-          <input type="number" id="inputGoalTimes" inputmode="numeric" pattern="[0-9]*" min="1" max="20" step="1" placeholder="例：8" aria-label="1日の回数">
-          <span class="goal-unit">回</span>
-        </div>
-      </div>
-      <button class="btn-primary" id="saveGoalBtn" type="button">保存する</button>
-      <button class="btn-sub" id="cancelGoalBtn" type="button">キャンセル</button>
-      <button class="btn-sub goal-reset-btn" id="clearGoalBtn" type="button">自動に戻す</button>
-    </div>
 
     <p class="sheet-sec-label">月齢別の目安</p>
     <div class="age-table" id="ageTable"></div>
@@ -915,15 +875,11 @@
     </div>
 
     <p class="sheet-sec-label">接続設定</p>
-    <div class="conn-box" id="setupCard">
-      <h4>初期設定</h4>
-      <label for="clientIdInput">Google OAuth クライアントID</label>
-      <input id="clientIdInput" type="text" placeholder="xxxxxxxx.apps.googleusercontent.com" autocomplete="off" spellcheck="false">
-      <label for="calendarIdInput">カレンダーID</label>
-      <input id="calendarIdInput" type="text" autocomplete="off" spellcheck="false">
-      <button class="btn-primary" id="saveSettingsBtn" type="button">保存してサインインへ</button>
-      <button class="btn-sub" id="cancelSettingsBtn" type="button">キャンセル</button>
-    </div>
+    <button class="set-row" type="button" data-edit="conn">
+      <span class="set-label">接続設定</span>
+      <span class="set-value unset" id="valConn">未設定</span>
+      <span class="set-chev">›</span>
+    </button>
     <div class="sheet-foot">
       <button class="btn-sub" id="babyFootCloseBtn" type="button" style="margin-top:0;">閉じる</button>
     </div>
@@ -962,10 +918,10 @@
   </div>
 </div>
 
-<!-- 編集シート -->
-<div class="overlay hidden" id="editOverlay">
-  <div class="sheet" role="dialog" aria-modal="true">
-    <h3><span id="editTitle">記録を編集</span><button class="close-x" id="editCloseXBtn" type="button" aria-label="閉じる">×</button></h3>
+<!-- 編集ポップアップ -->
+<div class="overlay center hidden" id="editOverlay">
+  <div class="pop-sheet edit-pop" role="dialog" aria-modal="true">
+    <div class="pop-head"><span class="pop-title" id="editTitle">記録を編集</span><button class="close-x" id="editCloseXBtn" type="button" aria-label="閉じる">×</button></div>
     <div class="sheet-error hidden" role="alert"></div>
     <div class="edit-fields">
     <label for="editDateTime">日時</label>
@@ -983,7 +939,7 @@
       </div>
     </div>
     </div>
-    <div class="sheet-foot">
+    <div class="pop-foot">
     <button class="btn-primary" id="editSaveBtn" type="button">保存する</button>
     <button class="btn-danger" id="editDeleteBtn" type="button">この記録を削除</button>
     <button class="btn-sub" id="editCancelBtn" type="button">キャンセル</button>
@@ -993,14 +949,27 @@
 
 <!-- ミルクの量ポップアップ（ステッパーと記録・キャンセルだけ） -->
 <div class="overlay center hidden" id="milkOverlay">
-  <div class="milk-sheet" role="dialog" aria-modal="true" aria-label="ミルクの量">
+  <div class="pop-sheet" role="dialog" aria-modal="true" aria-label="ミルクの量">
+    <div class="pop-head"><span class="pop-title">ミルクの量</span><button class="close-x" id="milkCloseXBtn" type="button" aria-label="閉じる">×</button></div>
     <div class="milk-step-row">
       <button class="rt-step" id="milkMinusBtn" type="button" aria-label="10ml減らす">−</button>
       <span class="milk-amt"><span id="milkAmount">50</span><span class="milk-amt-unit">ml</span></span>
       <button class="rt-step" id="milkPlusBtn" type="button" aria-label="10ml増やす">＋</button>
     </div>
+    <div class="pop-foot">
     <button class="btn-primary" id="milkRecordBtn" type="button">記録</button>
     <button class="btn-sub" id="milkCancelBtn" type="button">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- 小さなポップアップ（共通部品：単一目的の入力はすべてここに出す） -->
+<div class="overlay center hidden" id="popOverlay">
+  <div class="pop-sheet" role="dialog" aria-modal="true" aria-labelledby="popTitle">
+    <div class="pop-head"><span class="pop-title" id="popTitle"></span><button class="close-x" id="popCloseXBtn" type="button" aria-label="閉じる">×</button></div>
+    <div class="sheet-error hidden" id="popError" role="alert"></div>
+    <div id="popBody"></div>
+    <div class="pop-foot" id="popFoot"></div>
   </div>
 </div>
 
@@ -1009,7 +978,7 @@
   <div class="update-sheet" role="dialog" aria-modal="true" aria-label="アップデートのお知らせ">
     <div class="sheet-head"><span class="sheet-title">アップデートのお知らせ</span><button class="close-x" id="updateCloseXBtn" type="button" aria-label="閉じる">×</button></div>
     <div class="sheet-error hidden" role="alert"></div>
-    <div class="update-lines" id="updateNotes"></div>
+    <div id="updateNotes"></div>
     <div class="sheet-foot"><button class="btn-sub" id="updateCloseBtn" type="button" style="margin-top:0;">閉じる</button></div>
   </div>
 </div>
@@ -1071,50 +1040,62 @@ var LS_AUTO = 'omutsumirulog.autoSignIn';
    端末ではその人の「最後に見た版」のままなので、そちらでも1回表示される */
 /* 要約文（notes）の書き方ルール：
    ユーザー目線で平易に書き、ユーザーに関係ある変化だけを入れる。
-   内部の仕組み（お知らせ表示の仕組みなど）の話は要約に書かない。 */
+   内部の仕組み（お知らせ表示の仕組みなど）の話は要約に書かない。
+   各変更にはカテゴリ（c）を付ける：お知らせではカテゴリごとに
+   見出しとアイコンで区切って表示する。カテゴリは
+   デザイン／記録／表示／設定／修正 の中から選ぶ。
+   notes の各要素は { c:カテゴリ, t:文 } の形にする */
 var CHANGELOG = [
   { version:'2026-11-12-cats', notes:[
-    '画面の一番下で、猫（みぃ・ナリ）の体重を記録できるようになりました',
-    '入力するときに、画面がキーボードで隠れないようになりました'
+    { c:'記録', t:'画面の一番下で、猫（みぃ・ナリ）の体重を記録できるようになりました' },
+    { c:'修正', t:'入力するときに、画面がキーボードで隠れないようになりました' }
   ]},
   { version:'2026-11-12-week', notes:[
-    '7日間のログが、時間帯ごとの表示に変わりました',
-    '上の「時間変更」で、記録する時間をずらせるようになりました',
-    '今日のログは新しい4件だけになり、残りは「もっと見る」で見られます'
+    { c:'表示', t:'7日間のログが、時間帯ごとの表示に変わりました' },
+    { c:'記録', t:'上の「時間変更」で、記録する時間をずらせるようになりました' },
+    { c:'表示', t:'今日のログは新しい4件だけになり、残りは「もっと見る」で見られます' }
   ]},
   { version:'2026-11-12-order', notes:[
-    '同じ時間の記録が、おしっこ・うんち・母乳・ミルクの順に並ぶようになりました'
+    { c:'表示', t:'同じ時間の記録が、おしっこ・うんち・母乳・ミルクの順に並ぶようになりました' }
   ]},
   { version:'2026-11-12-2', notes:[
-    '一番上の時計に秒が表示されるようになりました'
+    { c:'表示', t:'一番上の時計に秒が表示されるようになりました' }
   ]},
   { version:'2026-11-12-3', notes:[
-    '画面のデザインが明るくなりました',
-    '7日間と月間のログで、前後の週・月を見られるようになりました',
-    '月間のログで、体重が月初から月末でどれだけ増えたか見られるようになりました'
+    { c:'デザイン', t:'画面のデザインが明るくなりました' },
+    { c:'表示', t:'7日間と月間のログで、前後の週・月を見られるようになりました' },
+    { c:'表示', t:'月間のログで、体重が月初から月末でどれだけ増えたか見られるようになりました' }
   ]},
   { version:'2026-11-13-1', notes:[
-    '設定や記録の入力欄の見た目と使い方を統一しました'
+    { c:'デザイン', t:'設定や記録の入力欄の見た目と使い方を統一しました' }
   ]},
   { version:'2026-11-13-2', notes:[
-    '入力のしかたや画面の使い方を全体で統一しました',
-    '間違った数字を入れたとき、理由がその場で見えるようになりました',
-    '猫のアイコンが、みぃとナリそれぞれの顔になりました'
+    { c:'デザイン', t:'入力のしかたや画面の使い方を全体で統一しました' },
+    { c:'修正', t:'間違った数字を入れたとき、理由がその場で見えるようになりました' },
+    { c:'デザイン', t:'猫のアイコンが、みぃとナリそれぞれの顔になりました' }
   ]},
   { version:'2026-11-13-3', notes:[
-    '赤ちゃんと猫のアイコンが新しくなりました',
-    '土日は曜日の文字に色が付くようになりました',
-    '月のログで日付を開くと、朝の記録から見られるようになりました',
-    '今日のログの時刻の見た目をそろえました',
-    '前回の記録の表示を、おしっこ・うんち・授乳でそろえました',
-    '記録の編集は、数字を入力するだけのシンプルな画面になりました',
-    'ボタンの色を、緑と白の2種類にそろえました',
-    '7日間の見出しがすっきりしました',
-    '記録ボタンが横一列になり、ミルクは押してから量を選ぶ形になりました'
+    { c:'デザイン', t:'赤ちゃんと猫のアイコンが新しくなりました' },
+    { c:'表示', t:'土日は曜日の文字に色が付くようになりました' },
+    { c:'表示', t:'月のログで日付を開くと、朝の記録から見られるようになりました' },
+    { c:'表示', t:'今日のログの時刻の見た目をそろえました' },
+    { c:'表示', t:'前回の記録の表示を、おしっこ・うんち・授乳でそろえました' },
+    { c:'記録', t:'記録の編集は、数字を入力するだけのシンプルな画面になりました' },
+    { c:'デザイン', t:'ボタンの色を、緑と白の2種類にそろえました' },
+    { c:'表示', t:'7日間の見出しがすっきりしました' },
+    { c:'記録', t:'記録ボタンが横一列になり、ミルクは押してから量を選ぶ形になりました' }
   ]},
   { version:'2026-11-13-4', notes:[
-    '7日間のログと一番上の日時でも、土日は曜日の文字に色が付くようになりました',
-    'メモの「書き込む」ボタンも、他の緑のボタンと同じ形にそろえました'
+    { c:'表示', t:'7日間のログと一番上の日時でも、土日は曜日の文字に色が付くようになりました' },
+    { c:'デザイン', t:'メモの「書き込む」ボタンも、他の緑のボタンと同じ形にそろえました' }
+  ]},
+  { version:'2026-11-13-5', notes:[
+    { c:'デザイン', t:'ボタンの形と大きさを、画面全体で2種類にそろえました' },
+    { c:'記録', t:'体重・設定・メモなどの入力が、全部小さなポップアップでできるようになりました' },
+    { c:'記録', t:'メモ欄が細い1行になり、場所を取らなくなりました' },
+    { c:'表示', t:'「前回」の表示が、経過時間だけの短い形になりました' },
+    { c:'表示', t:'7日間のログで、今日の列が緑色になって見やすくなりました' },
+    { c:'表示', t:'このお知らせが、種類ごとに分かれて読みやすくなりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1373,6 +1354,78 @@ function sheetError(overlayId, msg){
   box.classList.toggle('hidden', !msg);
 }
 function clearSheetError(overlayId){ sheetError(overlayId, ''); }
+/* ===== 小さなポップアップ（中央モーダル）共通部品 =====
+   単一目的の入力はすべてこの部品で出す。見出し＋×、エラー表示は
+   ポップアップの中、フッターに保存系／キャンセルの作法を統一する。
+   buttons: [{label, cls, onClick}] onClick が false を返したら閉じない
+   （検証エラーで開いたままにするため） */
+function popError(msg){
+  var box = $('popError');
+  if(!box) return;
+  box.textContent = msg || '';
+  box.classList.toggle('hidden', !msg);
+}
+function openPop(title, bodyHTML, buttons, onReady){
+  $('popTitle').textContent = title;
+  $('popBody').innerHTML = bodyHTML;
+  var foot = $('popFoot');
+  foot.innerHTML = '';
+  (buttons || []).forEach(function(b){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = b.cls;
+    btn.textContent = b.label;
+    btn.addEventListener('click', function(){
+      if(b.onClick && b.onClick() === false) return;
+      closePop();
+    });
+    foot.appendChild(btn);
+  });
+  popError('');
+  $('popOverlay').classList.remove('hidden');
+  refreshScrollLock();
+  if(onReady) onReady();
+}
+function closePop(){
+  $('popOverlay').classList.add('hidden');
+  refreshScrollLock();
+}
+function focusPopInput(el){
+  if(!el) return;
+  try{ el.focus({ preventScroll:true }); }
+  catch(e){ try{ el.focus(); }catch(e2){} }
+}
+$('popCloseXBtn').addEventListener('click', closePop);
+$('popOverlay').addEventListener('click', function(e){ if(e.target===this) closePop(); });
+/* 体重（g）の入力ポップアップ：TOPの「体重を記録」と設定の出生体重・
+   現在の体重で共用する。範囲外・非整数は理由をポップアップ内に出して
+   閉じない。allowEmpty の項目は空欄＝未設定に戻す扱いで通す */
+function openGramPop(o){
+  openPop(o.title,
+    '<div class="num-unit-row"><input type="number" id="popGram" inputmode="numeric" pattern="[0-9]*" min="' + o.min + '" max="' + o.max + '" step="1" placeholder="例：3800" aria-label="' + o.title + '（g）"><span class="unit-label">g</span></div>',
+    [
+      { label:'保存する', cls:'btn-primary', onClick:function(){
+        var v = String($('popGram').value || '').trim();
+        if(v === ''){
+          if(!o.allowEmpty){ popError('体重を入力してください'); return false; }
+          o.onSave('');
+          return;
+        }
+        var n = Number(v);
+        if(!isFinite(n) || Math.floor(n) !== n || n < o.min || n > o.max){
+          popError(o.label + 'は' + o.min + '〜' + o.max + 'gの整数で入力してください');
+          return false;
+        }
+        o.onSave(n);
+      }},
+      { label:'キャンセル', cls:'btn-sub', onClick:function(){} }
+    ],
+    function(){
+      var inp = $('popGram');
+      inp.value = (o.initial === '' || o.initial === null || o.initial === undefined) ? '' : o.initial;
+      focusPopInput(inp);
+    });
+}
 /* シートを開いている間は背景（TOP）のスクロールをロックする */
 function refreshScrollLock(){
   var overs = document.querySelectorAll('.overlay');
@@ -1465,7 +1518,9 @@ function lastRecOfKind(kind){
   for(var i=0;i<records.length;i++){ if(records[i].kind===kind) return records[i]; }
   return null;
 }
-function fmtPrev(rec, now){ return rec ? fmtTime(rec.start) + '（' + fmtElapsed(rec.start, now) + '）' : 'まだなし'; }
+/* 「前回」の表示はコンパクトに、経過時間だけにする（実際の時刻は出さない）。
+   おしっこ・うんち・授乳すべて同じ書式。授乳の「次 HH:MM」は従来どおり時刻で出す */
+function fmtPrev(rec, now){ return rec ? fmtElapsed(rec.start, now) : 'まだなし'; }
 function renderPrev(){
   var now = new Date();
   var pe = lastRecOfKind('pee'), po = lastRecOfKind('poop');
@@ -1995,93 +2050,51 @@ function renderBabySummary(){
   el.innerHTML = html;
   renderWeightRecordBtn();
 }
-/* 【ルール】設定の入力欄は、どの入口・どの項目でも、開くたびに閉じた
-   状態から始める。開くのは明示的にタップされた項目だけ */
-function closeAllSetEditors(){
-  var eds = document.querySelectorAll('.set-editor');
-  for(var k=0;k<eds.length;k++) eds[k].classList.add('hidden');
-}
-/* TOPの「体重を記録」ボタン：画面下のシートは出さず、体重が表示されている
-   その場所（赤ちゃん設定ブロックの中）に、入力欄と保存ボタンを
-   そのまま開く。フォーカス時もスクロールさせない（preventScroll）。
-   保存は設定画面と同じフロー（babySettings.weight → scheduleBabySave）で、
-   保存と同時に閉じるので入力欄が残ることはない。もう一度押すと閉じる。
+/* TOPの「体重を記録」ボタン：日付は選ばず、押したその日の体重として記録する。
+   入力は他の入力と共通の小さなポップアップで受け、現在の値が入った状態で開く。
+   保存すると今日の分として記録され、閉じる（ポップアップの共通作法）。
+   検証エラーはポップアップ内に出し、TOPのステータス欄には出さない。
    TOPの体重の数字自体は表示専用で、タップしても開かない */
-function openWeightEditorFromTop(){
-  var ed = $('topWeightEditor');
-  if(!ed.classList.contains('hidden')){ closeWeightEditor(); return; }
-  /* 開いたときは現在の体重が入った状態にし、元の値から修正できるようにする */
-  $('inputWeightTop').value = babySettings.weight || '';
-  ed.classList.remove('hidden');
-  var inp = $('inputWeightTop');
-  if(inp){
-    try{ inp.focus({ preventScroll:true }); }
-    catch(e){ try{ inp.focus(); }catch(e2){} }
-  }
-}
-function closeWeightEditor(){
-  var ed = $('topWeightEditor');
-  if(ed) ed.classList.add('hidden');
-}
-$('weightSaveBtn').addEventListener('click', function(){
-  var v = $('inputWeightTop').value.trim();
-  /* 設定シートの体重と同じ検証（500〜20000の整数）。範囲外は理由を表示して閉じない */
-  if(v !== ''){
-    var n = Number(v);
-    if(!isFinite(n) || Math.floor(n) !== n || n < 500 || n > 20000){
-      setStatus('現在の体重は500〜20000gの整数で入力してください', true);
-      return;
+$('weightRecordBtn').addEventListener('click', function(){
+  openGramPop({
+    title:'体重を記録', label:'現在の体重', min:500, max:20000,
+    allowEmpty:false, initial:babySettings.weight,
+    onSave:function(v){
+      babySettings.weight = v;
+      pushWeightLog(v);
+      scheduleBabySave();
     }
-  }
-  setStatus('');
-  babySettings.weight = v === '' ? '' : parseInt(v, 10);
-  if(v !== '') pushWeightLog(parseInt(v, 10));
-  scheduleBabySave();
-  closeWeightEditor();
+  });
 });
-$('weightCloseBtn').addEventListener('click', closeWeightEditor);
-/* 「体重を記録」ボタン：日付は選ばず、押したその日の体重として記録する。
-   入力欄はその場で開くインライン編集（スクロールなし、
-   保存は weightSaveBtn のフローで weight と今日の weightLog を更新して閉じる） */
-$('weightRecordBtn').addEventListener('click', openWeightEditorFromTop);
 function renderBabySettingsUI(){
   var bd = $('valBirthDate'), bw = $('valBirthWeight'), wt = $('valWeight');
   if(bd){
     bd.textContent = fmtBirthLabel() || '未設定';
     bd.classList.toggle('unset', !fmtBirthLabel());
-    $('inputBirthDate').value = babySettings.birthDate || '';
   }
   if(bw){
     bw.textContent = fmtGram(babySettings.birthWeight) || '未設定';
     bw.classList.toggle('unset', !fmtGram(babySettings.birthWeight));
-    $('inputBirthWeight').value = babySettings.birthWeight || '';
   }
   if(wt){
     wt.textContent = fmtGram(babySettings.weight) || '未設定';
     wt.classList.toggle('unset', !fmtGram(babySettings.weight));
-    $('inputWeight').value = babySettings.weight || '';
+  }
+  var vc = $('valConn');
+  if(vc){
+    vc.textContent = clientId ? '設定済み' : '未設定';
+    vc.classList.toggle('unset', !clientId);
   }
   var tog = $('remindToggle');
   tog.classList.toggle('on', !!babySettings.remind);
   tog.setAttribute('aria-checked', babySettings.remind ? 'true' : 'false');
   $('remindState').textContent = babySettings.remind ? 'ON' : 'OFF';
-  /* 目標の行と入力欄：設定済みならその値を、未設定なら「未設定」を出す。
-     入力欄の初期値は設定済みの値、プレースホルダは「例：今の目安の値」の形式 */
+  /* 目標の行：設定済みならその値を、未設定なら「未設定」を出す */
   var custom = customGoal();
   var vg = $('valGoal');
   if(vg){
     vg.textContent = custom ? (custom.ml + 'ml × ' + custom.times + '回') : '未設定';
     vg.classList.toggle('unset', !custom);
-  }
-  var dgForGoal = displayGuide();
-  var inMl = $('inputGoalMl'), inTimes = $('inputGoalTimes');
-  if(inMl){
-    inMl.value = custom ? custom.ml : '';
-    inMl.placeholder = '例：' + (dgForGoal ? dgForGoal.guide.perFeed : 50);
-  }
-  if(inTimes){
-    inTimes.value = custom ? custom.times : '';
-    inTimes.placeholder = '例：' + (dgForGoal ? dgForGoal.guide.times : 8);
   }
   /* 月齢別一覧：現在の月齢の行には哺乳瓶のおすすめマークを付け、
      設定中の目標と一致する行はハイライトする。タップでその行の
@@ -2104,8 +2117,9 @@ function renderBabySettingsUI(){
   }
   var tableHtml = AGE_BANDS.map(function(b, idx){
     var rec = (idx === curIdx) ? '<span class="age-rec" role="img" aria-label="おすすめ">' + IC.milk + '</span>' : '';
+    var chk = (idx === selIdx) ? '<span class="age-sel" aria-hidden="true">✓</span>' : '';
     return '<button class="age-row' + (idx === selIdx ? ' sel' : '') + '" type="button" data-age-idx="' + idx + '">' +
-      '<span class="age-label">' + b.label + '</span><span class="age-value">' + b.disp + '</span>' + rec + '</button>';
+      '<span class="age-label">' + b.label + '</span><span class="age-value">' + b.disp + '</span>' + rec + chk + '</button>';
   }).join('');
   $('ageTable').innerHTML = tableHtml;
   var ageRows = $('ageTable').querySelectorAll('.age-row');
@@ -2118,15 +2132,12 @@ function renderBabySettingsUI(){
       babySettings.goalTimes = bg.times;
       babySettings.goalBand = idx;
       scheduleBabySave();
-      closeAllSetEditors();
     });
   }
 }
 /* ================= 猫の体重ブロック 描画 =================
    メイン画面は各猫1行（名前・最新の体重・記録ボタン）だけ。
-   記録ボタンを押すと入力エリアが開き、体重入力の下に誕生日を小さく置く。
-   編集欄は赤ちゃんの体重と同じ作り：開くときは現在の値が入った状態で開き、
-   保存すると閉じ、キャンセルでも閉じる。開いている欄は1つだけ。
+   記録ボタンを押すと小さなポップアップが開き、体重と誕生日を入力する。
    体重履歴（日付つき）はデータとして保存し続けるが、一覧表示はしない */
 /* 猫アイコン（記録アイコンと同じ水準の抽象形）：丸顔＋耳のシルエットに毛柄だけを入れる。みぃ=茶トラの縞、ナリ=三毛の斑 */
 var CAT_IC = {
@@ -2134,19 +2145,53 @@ var CAT_IC = {
   nari: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><radialGradient id="catNariFur2" cx="50%" cy="36%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="60%" stop-color="#fdf8ef"/><stop offset="100%" stop-color="#f2e5cf"/></radialGradient><clipPath id="catClipN2"><path d="M21 40 L15 13 Q14 6.5 20.5 9.5 L41 21 Q46 24 43 30.5 L37 42 Z"/><path d="M79 40 L85 13 Q86 6.5 79.5 9.5 L59 21 Q54 24 57 30.5 L63 42 Z"/><ellipse cx="50" cy="57" rx="34" ry="31"/></clipPath></defs><path d="M21 40 L15 13 Q14 6.5 20.5 9.5 L41 21 Q46 24 43 30.5 L37 42 Z" fill="url(#catNariFur2)" stroke="#ecdcbf" stroke-width="2.5" stroke-linejoin="round"/><path d="M79 40 L85 13 Q86 6.5 79.5 9.5 L59 21 Q54 24 57 30.5 L63 42 Z" fill="url(#catNariFur2)" stroke="#ecdcbf" stroke-width="2.5" stroke-linejoin="round"/><path d="M24.5 33.5 L21 17 Q20.8 13 24 15.2 L36 23.5 Q38.6 25.4 37.2 29 L33.8 37 Z" fill="#ffb3c1" opacity="0.7"/><path d="M75.5 33.5 L79 17 Q79.2 13 76 15.2 L64 23.5 Q61.4 25.4 62.8 29 L66.2 37 Z" fill="#ffb3c1" opacity="0.7"/><ellipse cx="50" cy="57" rx="34" ry="31" fill="url(#catNariFur2)" stroke="rgba(198,168,120,0.5)" stroke-width="1"/><g clip-path="url(#catClipN2)"><g><ellipse cx="24" cy="21" rx="22" ry="16.5" fill="#f59a3f" transform="rotate(-13 24 21)"/><ellipse cx="79" cy="20" rx="18" ry="15.5" fill="#503a2c" transform="rotate(10 79 20)"/></g><ellipse cx="50" cy="86" rx="27" ry="9" fill="#7a4a12" opacity="0.05"/></g><circle cx="38" cy="58" r="3" fill="#46332a"/><circle cx="62" cy="58" r="3" fill="#46332a"/><ellipse cx="33" cy="31" rx="12.5" ry="6.5" fill="#ffffff" opacity="0.30" transform="rotate(-18 33 31)"/><ellipse cx="28" cy="27" rx="5" ry="2.8" fill="#ffffff" opacity="0.5" transform="rotate(-18 28 27)"/></svg>'
 };
 function catIconKey(cat){ return (cat && cat.name === 'ナリ') ? 'nari' : 'mii'; }
-var catOpenEditor = { idx:-1 };
-function closeCatEditors(){ catOpenEditor = { idx:-1 }; }
-function toggleCatEditor(idx){
-  if(catOpenEditor.idx === idx) closeCatEditors();
-  else catOpenEditor = { idx: idx };
-  renderCats();
-  if(catOpenEditor.idx === idx){
-    var inp = document.querySelector('[data-cat-winput="' + idx + '"]');
-    if(inp){
-      try{ inp.focus({ preventScroll:true }); }
-      catch(e){ try{ inp.focus(); }catch(e2){} }
-    }
-  }
+/* 猫の記録は小さなポップアップで受ける（他の入力と共通の作法）。
+   体重（現在の値が入った状態で開く）と誕生日を1つのポップアップにまとめ、
+   検証エラーはポップアップ内に出して閉じない。誕生日の不正値を
+   無言で空にすることはしない */
+function openCatPop(idx){
+  var cat = babySettings.cats[idx];
+  if(!cat) return;
+  var latest = catLatest(cat);
+  openPop(cat.name + 'の記録',
+    '<div class="num-unit-row"><input type="number" id="popCatWeight" inputmode="decimal" step="0.1" min="0.1" max="30" placeholder="例：4.2" aria-label="体重（kg）"><span class="unit-label">kg</span></div>' +
+    '<label for="popCatBirth">誕生日</label>' +
+    '<input type="date" id="popCatBirth" aria-label="誕生日">',
+    [
+      { label:'保存する', cls:'btn-primary', onClick:function(){
+        var wraw = String($('popCatWeight').value || '').trim();
+        var w = null;
+        if(wraw !== ''){
+          w = parseFloat(wraw);
+          if(!(w > 0) || w > 30){
+            popError(cat.name + 'の体重は0.1〜30kgの数値で入力してください');
+            return false;
+          }
+        }
+        var bv = $('popCatBirth').value || '';
+        if(bv){
+          var p = bv.split('-');
+          var d = new Date(+p[0], +p[1]-1, +p[2]);
+          if(p.length !== 3 || isNaN(d.getTime()) || fmtDateStr(d) !== bv){
+            popError('誕生日が正しくありません');
+            return false;
+          }
+          if(startOfDay(d) > startOfDay(new Date())){
+            popError('誕生日は今日より後の日付にはできません');
+            return false;
+          }
+        }
+        if(w !== null) pushCatWeight(idx, w);
+        cat.birthDate = bv;
+        scheduleBabySave();
+      }},
+      { label:'キャンセル', cls:'btn-sub', onClick:function(){} }
+    ],
+    function(){
+      $('popCatWeight').value = latest ? latest.w : '';
+      $('popCatBirth').value = cat.birthDate || '';
+      focusPopInput($('popCatWeight'));
+    });
 }
 function renderCats(){
   var wrap = $('catList');
@@ -2168,56 +2213,13 @@ function renderCats(){
     }
     html += '<button class="cat-rec-btn" type="button" data-cat-rec="' + i + '">記録</button>';
     html += '</div>';
-    /* 入力エリア：体重（kg・小数可、現在の値が入った状態で開く）と、
-       小さく置いた誕生日（現在の値が入った状態で開く） */
-    var open = (catOpenEditor.idx === i);
-    html += '<div class="cat-editor' + (open ? '' : ' hidden') + '">';
-    html += '<div class="sheet-error hidden" data-cat-err="' + i + '" role="alert"></div>';
-    html += '<div class="cat-kg-row"><input type="number" data-cat-winput="' + i + '" inputmode="decimal" step="0.1" min="0.1" max="30" placeholder="例：4.2" aria-label="' + escHTML(cat.name) + 'の体重（kg）" value="' + (latest ? latest.w : '') + '"><span class="cat-kg-unit">kg</span></div>';
-    html += '<div class="cat-birth-row"><span class="cat-birth-label">誕生日</span><input type="date" data-cat-binput="' + i + '" aria-label="' + escHTML(cat.name) + 'の誕生日" value="' + (cat.birthDate || '') + '"></div>';
-    html += '<button class="btn-primary" type="button" data-cat-save="' + i + '">保存する</button>';
-    html += '<button class="btn-sub" type="button" data-cat-cancel="' + i + '">キャンセル</button>';
-    html += '</div>';
     html += '</div>';
   });
   wrap.innerHTML = html;
   var recs = wrap.querySelectorAll('[data-cat-rec]');
   for(var r=0; r<recs.length; r++){
     recs[r].addEventListener('click', function(){
-      toggleCatEditor(parseInt(this.getAttribute('data-cat-rec'), 10));
-    });
-  }
-  var saves = wrap.querySelectorAll('[data-cat-save]');
-  for(var s=0; s<saves.length; s++){
-    saves[s].addEventListener('click', function(){
-      var idx = parseInt(this.getAttribute('data-cat-save'), 10);
-      var winp = document.querySelector('[data-cat-winput="' + idx + '"]');
-      var wraw = winp ? String(winp.value || '').trim() : '';
-      if(wraw !== ''){
-        var w = parseFloat(wraw);
-        if(!(w > 0) || w > 30){
-          /* 不正な値は保存せず、理由をその場（猫の編集エリア内）に表示して開いたままにする */
-          var errEl = document.querySelector('[data-cat-err="' + idx + '"]');
-          if(errEl){
-            errEl.textContent = (babySettings.cats[idx] ? babySettings.cats[idx].name : '猫') + 'の体重は0.1〜30kgの数値で入力してください';
-            errEl.classList.remove('hidden');
-          }
-          return;
-        }
-        pushCatWeight(idx, w);
-      }
-      var binp = document.querySelector('[data-cat-binput="' + idx + '"]');
-      var bv = binp ? (binp.value || '') : '';
-      if(babySettings.cats[idx]) babySettings.cats[idx].birthDate = /^\d{4}-\d{2}-\d{2}$/.test(bv) ? bv : '';
-      closeCatEditors();
-      scheduleBabySave();
-    });
-  }
-  var cancels = wrap.querySelectorAll('[data-cat-cancel]');
-  for(var c=0; c<cancels.length; c++){
-    cancels[c].addEventListener('click', function(){
-      closeCatEditors();
-      renderCats();
+      openCatPop(parseInt(this.getAttribute('data-cat-rec'), 10));
     });
   }
 }
@@ -2298,15 +2300,11 @@ function scheduleBabySave(){
   babySaveTimer = setTimeout(saveBabySettingsToCal, 500);
 }
 function openBabySettings(){
-  closeAllSetEditors();
-  clearSheetError('babyOverlay');
   renderBabySettingsUI();
   $('babyOverlay').classList.remove('hidden');
   refreshScrollLock();
 }
 function closeBabySettings(){
-  closeAllSetEditors();
-  clearSheetError('babyOverlay');
   $('babyOverlay').classList.add('hidden');
   refreshScrollLock();
 }
@@ -2685,12 +2683,9 @@ function createRecord(kind, amount){
   }).then(function(){ setBusy(false); });
 }
 /* メモの書き込み：その時点の時刻でカレンダーにイベントとして保存する。
-   空のメモは書き込まない。書き込み後は入力欄を空にする。
-   メモは授乳ではないのでリマインド同期は行わない */
-function createMemo(){
-  var inp = $('memoInput');
-  var text = (inp.value || '').trim();
-  if(!text) return;
+   入力は小さなポップアップで受け、空のメモは理由をポップアップ内に
+   出して書き込まない。メモは授乳ではないのでリマインド同期は行わない */
+function createMemo(text){
   if(!accessToken || busy) return;
   ensureAudio();
   setBusy(true);
@@ -2701,16 +2696,36 @@ function createMemo(){
   }).then(function(){
     playChime();
     setStatus('');
-    inp.value = '';
     return loadRecords(true);
   }).catch(function(err){
     setStatus('記録できませんでした：' + err.message, true);
   }).then(function(){ setBusy(false); });
 }
-$('memoAddBtn').addEventListener('click', createMemo);
-$('memoInput').addEventListener('keydown', function(e){
-  if(e.key === 'Enter'){ e.preventDefault(); createMemo(); }
-});
+function openMemoPop(){
+  if(!accessToken){ setStatus('サインインしてください', true); return; }
+  openPop('メモ',
+    '<input type="text" id="popMemoText" placeholder="メモ" aria-label="メモ" autocomplete="off">',
+    [
+      { label:'書き込む', cls:'btn-primary', onClick:function(){
+        var text = String($('popMemoText').value || '').trim();
+        if(!text){ popError('メモを入力してください'); return false; }
+        createMemo(text);
+      }},
+      { label:'キャンセル', cls:'btn-sub', onClick:function(){} }
+    ],
+    function(){
+      var inp = $('popMemoText');
+      inp.addEventListener('keydown', function(e){
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          var b = $('popFoot').querySelector('.btn-primary');
+          if(b) b.click();
+        }
+      });
+      focusPopInput(inp);
+    });
+}
+$('memoOpenBtn').addEventListener('click', openMemoPop);
 function saveEdit(rec, when, updated){
   if(busy) return;
   setBusy(true);
@@ -3104,133 +3119,154 @@ $('reloadBtn').addEventListener('click', function(){ loadRecords(); });
 
 /* ================= 設定 ================= */
 $('babySettingsBtn').addEventListener('click', function(){
-  $('clientIdInput').value = clientId;
-  $('calendarIdInput').value = calendarId;
   openBabySettings();
 });
 $('babyCloseBtn').addEventListener('click', closeBabySettings);
 $('babyOverlay').addEventListener('click', function(e){ if(e.target===this) closeBabySettings(); });
+/* 設定シートは項目一覧のハブ：各行をタップすると、その項目専用の
+   小さなポップアップが開く（入力はすべてポップアップに統一） */
 var setRowBtns = document.querySelectorAll('.set-row[data-edit]');
 for(var sr=0; sr<setRowBtns.length; sr++){
   setRowBtns[sr].addEventListener('click', function(){
     var f = this.getAttribute('data-edit');
-    var ed = $('editor-' + f);
-    var wasHidden = ed.classList.contains('hidden');
-    var eds = document.querySelectorAll('.set-editor');
-    for(var k=0;k<eds.length;k++) eds[k].classList.add('hidden');
-    if(wasHidden){
-      /* 開くときは、その項目の現在の値を入力欄に入れた状態にする */
-      if(f === 'birthDate') $('inputBirthDate').value = babySettings.birthDate || '';
-      if(f === 'birthWeight') $('inputBirthWeight').value = babySettings.birthWeight || '';
-      if(f === 'weight') $('inputWeight').value = babySettings.weight || '';
-      if(f === 'goal'){
-        var cg = customGoal();
-        $('inputGoalMl').value = cg ? cg.ml : '';
-        $('inputGoalTimes').value = cg ? cg.times : '';
-      }
-      ed.classList.remove('hidden');
-      var inp = ed.querySelector('input');
-      if(inp){
-        /* フォーカスでシートがスクロールしないよう preventScroll を使う。
-           日付ピッカーは生年月日のときだけ開く */
-        try{ inp.focus({ preventScroll:true }); }
-        catch(e){ try{ inp.focus(); }catch(e2){} }
-        if(inp.type === 'date'){ try{ if(inp.showPicker) inp.showPicker(); }catch(e){} }
-      }
+    if(f === 'birthDate') openBirthDatePop();
+    else if(f === 'birthWeight') openBirthWeightPop();
+    else if(f === 'weight') openSettingsWeightPop();
+    else if(f === 'goal') openGoalPop();
+    else if(f === 'conn') openConnPop();
+  });
+}
+/* ===== 設定の各項目ポップアップ =====
+   どの項目も「保存する」を押したときにだけ保存して閉じ、キャンセルは
+   保存せず閉じる。検証エラーは理由をポップアップ内に出して閉じない */
+/* 生年月日：空欄は未設定に戻す扱い。値がある場合は実在する日付で、
+   今日より後にはできない */
+function openBirthDatePop(){
+  openPop('生年月日',
+    '<input type="date" id="popBirthDate" aria-label="生年月日">',
+    [
+      { label:'保存する', cls:'btn-primary', onClick:function(){
+        var v = $('popBirthDate').value || '';
+        if(v){
+          var p = v.split('-');
+          var d = new Date(+p[0], +p[1]-1, +p[2]);
+          if(p.length !== 3 || isNaN(d.getTime()) || fmtDateStr(d) !== v){
+            popError('生年月日が正しくありません');
+            return false;
+          }
+          if(startOfDay(d) > startOfDay(new Date())){
+            popError('生年月日は今日より後の日付にはできません');
+            return false;
+          }
+        }
+        babySettings.birthDate = v;
+        scheduleBabySave();
+      }},
+      { label:'キャンセル', cls:'btn-sub', onClick:function(){} }
+    ],
+    function(){
+      var inp = $('popBirthDate');
+      inp.value = babySettings.birthDate || '';
+      focusPopInput(inp);
+    });
+}
+function openBirthWeightPop(){
+  openGramPop({
+    title:'出生体重', label:'出生体重', min:500, max:6000,
+    allowEmpty:true, initial:babySettings.birthWeight,
+    onSave:function(v){ babySettings.birthWeight = v; scheduleBabySave(); }
+  });
+}
+function openSettingsWeightPop(){
+  openGramPop({
+    title:'現在の体重', label:'現在の体重', min:500, max:20000,
+    allowEmpty:true, initial:babySettings.weight,
+    onSave:function(v){
+      babySettings.weight = v;
+      if(v !== '') pushWeightLog(v);
+      scheduleBabySave();
     }
   });
 }
-function closeSetEditor(field){
-  var ed = $('editor-' + field);
-  if(ed) ed.classList.add('hidden');
+/* 目標の直接入力：mlと回数の両方が範囲内の整数のときだけ保存する。
+   「自動に戻す」で未設定に戻り、従来どおり月齢から自動で決まる動作になる */
+function openGoalPop(){
+  var custom = customGoal();
+  var dg = displayGuide();
+  openPop('目標',
+    '<div class="goal-inputs">' +
+      '<div class="goal-field"><input type="number" id="popGoalMl" inputmode="numeric" pattern="[0-9]*" min="1" max="500" step="1" aria-label="1回量（ml）"><span class="goal-unit">ml</span></div>' +
+      '<div class="goal-field"><input type="number" id="popGoalTimes" inputmode="numeric" pattern="[0-9]*" min="1" max="20" step="1" aria-label="1日の回数"><span class="goal-unit">回</span></div>' +
+    '</div>',
+    [
+      { label:'保存する', cls:'btn-primary', onClick:function(){
+        var mlRaw = String($('popGoalMl').value || '').trim();
+        var timesRaw = String($('popGoalTimes').value || '').trim();
+        var ml = Number(mlRaw);
+        var times = Number(timesRaw);
+        if(mlRaw === '' || !isFinite(ml) || Math.floor(ml) !== ml || ml < 1 || ml > 500){
+          popError('目標の1回量は1〜500mlの整数で入力してください');
+          return false;
+        }
+        if(timesRaw === '' || !isFinite(times) || Math.floor(times) !== times || times < 1 || times > 20){
+          popError('目標の回数は1〜20回の整数で入力してください');
+          return false;
+        }
+        babySettings.goalMl = ml;
+        babySettings.goalTimes = times;
+        babySettings.goalBand = '';
+        scheduleBabySave();
+      }},
+      { label:'キャンセル', cls:'btn-sub', onClick:function(){} },
+      { label:'自動に戻す', cls:'btn-sub', onClick:function(){
+        babySettings.goalMl = '';
+        babySettings.goalTimes = '';
+        babySettings.goalBand = '';
+        scheduleBabySave();
+      }}
+    ],
+    function(){
+      var ml = $('popGoalMl'), tm = $('popGoalTimes');
+      ml.value = custom ? custom.ml : '';
+      ml.placeholder = '例：' + (dg ? dg.guide.perFeed : 50);
+      tm.value = custom ? custom.times : '';
+      tm.placeholder = '例：' + (dg ? dg.guide.times : 8);
+      focusPopInput(ml);
+    });
 }
-/* 生年月日も他の項目と同じ作法にする：変えた瞬間の即保存はやめ、
-   「保存する」を押したときにだけ保存して閉じ、キャンセルは保存せず閉じる */
-$('saveBirthDateBtn').addEventListener('click', function(){
-  babySettings.birthDate = $('inputBirthDate').value || '';
-  scheduleBabySave();
-  closeSetEditor('birthDate');
-});
-$('cancelBirthDateBtn').addEventListener('click', function(){ closeSetEditor('birthDate'); });
-/* 出生体重・現在の体重は、TOPの体重と同じく「保存する」ボタンを
-   押したときにだけ保存し、保存と同時に入力欄を閉じる
-   （入力しただけ・フォーカスを外しただけでは保存しない）。
-   体重（g）欄の検証：空欄は現行どおり「未設定にする」扱いで通す。
-   値がある場合は min〜max の整数でなければ、理由を表示して
-   閉じずに開いたままにする（編集シートと同じ方式） */
-function readGramField(inp, label){
-  var v = inp.value.trim();
-  if(v === '') return { ok:true, value:'' };
-  var n = Number(v);
-  var min = parseInt(inp.getAttribute('min'), 10);
-  var max = parseInt(inp.getAttribute('max'), 10);
-  if(!isFinite(n) || Math.floor(n) !== n || n < min || n > max){
-    sheetError('babyOverlay', label + 'は' + min + '〜' + max + 'gの整数で入力してください');
-    return { ok:false, value:'' };
-  }
-  return { ok:true, value:n };
+/* 接続設定：保存するとサインインし直しになる（従来どおり） */
+function openConnPop(){
+  openPop('接続設定',
+    '<label for="popClientId">Google OAuth クライアントID</label>' +
+    '<input id="popClientId" type="text" placeholder="xxxxxxxx.apps.googleusercontent.com" autocomplete="off" spellcheck="false">' +
+    '<label for="popCalendarId">カレンダーID</label>' +
+    '<input id="popCalendarId" type="text" autocomplete="off" spellcheck="false">',
+    [
+      { label:'保存してサインインへ', cls:'btn-primary', onClick:function(){
+        var cid = $('popClientId').value.trim();
+        var cal = $('popCalendarId').value.trim() || DEFAULT_CAL;
+        if(!cid){ popError('クライアントIDを入力してください'); return false; }
+        clientId = cid; calendarId = cal;
+        try{
+          localStorage.setItem(LS_CID, clientId);
+          localStorage.setItem(LS_CAL, calendarId);
+        }catch(e){}
+        clearSession();
+        resetSilentRetry();
+        authInFlight = false; silentInFlight = false; silentAuth = false;
+        accessToken = null; tokenExpiry = 0; tokenClient = null;
+        settingsEventId = null; settingsEventRaw = null;
+        closeBabySettings();
+        updateAuthUI();
+        setStatus('設定を保存しました。「Googleでサインイン」を押してください');
+      }},
+      { label:'キャンセル', cls:'btn-sub', onClick:function(){} }
+    ],
+    function(){
+      $('popClientId').value = clientId;
+      $('popCalendarId').value = calendarId;
+    });
 }
-$('saveBirthWeightBtn').addEventListener('click', function(){
-  var r = readGramField($('inputBirthWeight'), '出生体重');
-  if(!r.ok) return;
-  clearSheetError('babyOverlay');
-  babySettings.birthWeight = r.value;
-  scheduleBabySave();
-  closeSetEditor('birthWeight');
-});
-$('saveWeightBtn').addEventListener('click', function(){
-  var r = readGramField($('inputWeight'), '現在の体重');
-  if(!r.ok) return;
-  clearSheetError('babyOverlay');
-  babySettings.weight = r.value;
-  if(r.value !== '') pushWeightLog(r.value);
-  scheduleBabySave();
-  closeSetEditor('weight');
-});
-/* キャンセル：保存せずに入力欄を閉じるだけにする */
-$('cancelBirthWeightBtn').addEventListener('click', function(){ closeSetEditor('birthWeight'); });
-$('cancelWeightBtn').addEventListener('click', function(){ closeSetEditor('weight'); });
-/* 目標の直接入力：mlと回数の両方が範囲内の整数のときだけ保存し、
-   保存と同時に入力欄を閉じる（他の項目と同じルール）。
-   範囲は入力欄の min/max（1回量 1〜500ml、回数 1〜20回）を使い、
-   どちらか不正・範囲外のときは保存せず、理由を表示して
-   入力欄を開いたままにする */
-$('saveGoalBtn').addEventListener('click', function(){
-  var mlInp = $('inputGoalMl');
-  var timesInp = $('inputGoalTimes');
-  var mlMin = parseInt(mlInp.getAttribute('min'), 10);
-  var mlMax = parseInt(mlInp.getAttribute('max'), 10);
-  var timesMin = parseInt(timesInp.getAttribute('min'), 10);
-  var timesMax = parseInt(timesInp.getAttribute('max'), 10);
-  var mlRaw = String(mlInp.value || '').trim();
-  var timesRaw = String(timesInp.value || '').trim();
-  var ml = Number(mlRaw);
-  var times = Number(timesRaw);
-  if(mlRaw === '' || !isFinite(ml) || Math.floor(ml) !== ml || ml < mlMin || ml > mlMax){
-    sheetError('babyOverlay', '目標の1回量は' + mlMin + '〜' + mlMax + 'mlの整数で入力してください');
-    return;
-  }
-  if(timesRaw === '' || !isFinite(times) || Math.floor(times) !== times || times < timesMin || times > timesMax){
-    sheetError('babyOverlay', '目標の回数は' + timesMin + '〜' + timesMax + '回の整数で入力してください');
-    return;
-  }
-  clearSheetError('babyOverlay');
-  babySettings.goalMl = ml;
-  babySettings.goalTimes = times;
-  babySettings.goalBand = '';
-  scheduleBabySave();
-  closeSetEditor('goal');
-});
-/* キャンセル：保存せずに入力欄を閉じるだけにする */
-$('cancelGoalBtn').addEventListener('click', function(){ closeSetEditor('goal'); });
-/* 目標を未設定に戻す：従来どおり月齢から自動で決まる動作になる */
-$('clearGoalBtn').addEventListener('click', function(){
-  babySettings.goalMl = '';
-  babySettings.goalTimes = '';
-  babySettings.goalBand = '';
-  scheduleBabySave();
-  closeSetEditor('goal');
-});
 $('remindToggle').addEventListener('click', function(){
   babySettings.remind = !babySettings.remind;
   scheduleBabySave();
@@ -3240,26 +3276,7 @@ $('remindToggle').addEventListener('click', function(){
   cancelDelayedReminderSync();
   scheduleSyncReminder();
 });
-$('cancelSettingsBtn').addEventListener('click', function(){ closeBabySettings(); });
-$('saveSettingsBtn').addEventListener('click', function(){
-  var cid = $('clientIdInput').value.trim();
-  var cal = $('calendarIdInput').value.trim() || DEFAULT_CAL;
-  if(!cid){ sheetError('babyOverlay', 'クライアントIDを入力してください'); return; }
-  clearSheetError('babyOverlay');
-  clientId = cid; calendarId = cal;
-  try{
-    localStorage.setItem(LS_CID, clientId);
-    localStorage.setItem(LS_CAL, calendarId);
-  }catch(e){}
-  clearSession();
-  resetSilentRetry();
-  authInFlight = false; silentInFlight = false; silentAuth = false;
-  accessToken = null; tokenExpiry = 0; tokenClient = null;
-  settingsEventId = null; settingsEventRaw = null;
-  closeBabySettings();
-  updateAuthUI();
-  setStatus('設定を保存しました。「Googleでサインイン」を押してください');
-});
+
 
 /* ================= 記録ボタン構築 =================
    おしっこ・うんち・母乳・ミルクの4つを横1行に並べる。
@@ -3296,6 +3313,7 @@ function closeMilkPopup(){
 $('milkMinusBtn').addEventListener('click', function(){ milkPopupMl = Math.max(10, milkPopupMl - 10); renderMilkPopup(); });
 $('milkPlusBtn').addEventListener('click', function(){ milkPopupMl = Math.min(200, milkPopupMl + 10); renderMilkPopup(); });
 $('milkCancelBtn').addEventListener('click', closeMilkPopup);
+$('milkCloseXBtn').addEventListener('click', closeMilkPopup);
 $('milkOverlay').addEventListener('click', function(e){ if(e.target===this) closeMilkPopup(); });
 $('milkRecordBtn').addEventListener('click', function(){
   var ml = milkPopupMl;
@@ -3317,8 +3335,7 @@ function autoRefresh(){
   if(!$('editOverlay').classList.contains('hidden')) return;
   if(!$('dayOverlay').classList.contains('hidden')) return;
   if(!$('babyOverlay').classList.contains('hidden')) return;
-  if(!$('topWeightEditor').classList.contains('hidden')) return;
-  if(catOpenEditor.idx >= 0) return;
+  if(!$('popOverlay').classList.contains('hidden')) return;
   if(!$('monthOverlay').classList.contains('hidden')) return;
   if(!$('allMonthsOverlay').classList.contains('hidden')) return;
   if(!$('updateOverlay').classList.contains('hidden')) return;
@@ -3368,7 +3385,7 @@ function kbClearTimers(){
 /* 入力欄と一緒に見せたい範囲：同じ編集エリア（保存・キャンセル含む） */
 function kbBlockOf(el){
   if(el.closest){
-    var b = el.closest('.cat-editor, .top-weight-editor, .set-editor, .memo-row, .milk-custom, .conn-box, .edit-fields');
+    var b = el.closest('.pop-sheet, .sheet, .milk-custom, .edit-fields');
     if(b) return b;
   }
   return el;
@@ -3388,7 +3405,7 @@ function kbEnsureVisible(){
   else if(rect.top < vTop + margin) delta = rect.top - (vTop + margin);
   if(!delta) return;
   var rest = delta;
-  var sheet = el.closest ? el.closest('.sheet') : null;
+  var sheet = el.closest ? el.closest('.sheet, .pop-sheet, .update-sheet') : null;
   if(sheet){
     var before = sheet.scrollTop;
     sheet.scrollTop = before + rest;
@@ -3461,6 +3478,14 @@ function closeUpdateNotice(){
   $('updateOverlay').classList.add('hidden');
   saveSeenVersion();
 }
+/* お知らせのカテゴリ：見出しの色つきアイコンで区切って表示する */
+var UPD_CATS = {
+  'デザイン': { bg:'#fbe0ec', fg:'#d14f86', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.3 0 2-.8 2-1.7 0-.8-.6-1.3-.6-2.1 0-.9.8-1.7 1.9-1.7H17a4 4 0 0 0 4-4.1C21 6.7 17 3 12 3Z"/><circle cx="7.6" cy="10.4" r=".6" fill="currentColor"/><circle cx="12" cy="7.4" r=".6" fill="currentColor"/><circle cx="16.4" cy="10.4" r=".6" fill="currentColor"/></svg>' },
+  '記録': { bg:'#e8f9ec', fg:'#2ea63e', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>' },
+  '表示': { bg:'#d9f1fb', fg:'#2f83b8', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>' },
+  '設定': { bg:'#eef0ee', fg:'#7a8288', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h9M19 8h1M4 16h3M13 16h7"/><circle cx="16" cy="8" r="2.2"/><circle cx="10" cy="16" r="2.2"/></svg>' },
+  '修正': { bg:'#fdefc0', fg:'#a97b06', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.6 12.4 2.4 2.4 4.4-5"/></svg>' }
+};
 function checkUpdateNotice(){
   var seen = getSeenVersion();
   /* 初回（保存された版が無い端末）は「まだ何も見ていない」扱いにし、
@@ -3468,8 +3493,20 @@ function checkUpdateNotice(){
   if(seen === APP_VERSION) return;
   var notes = unseenNotes(seen);
   if(!notes.length){ saveSeenVersion(); return; }
+  /* 新しい変更をカテゴリごとにまとめ、出てきた順に区切って並べる */
+  var order = [], groups = {};
+  notes.forEach(function(n){
+    var c = (n && n.c) || 'その他';
+    if(!groups[c]){ groups[c] = []; order.push(c); }
+    groups[c].push(n && n.t ? n.t : String(n));
+  });
   var html = '';
-  for(var i=0;i<notes.length;i++) html += '<p>・' + escHTML(notes[i]) + '</p>';
+  order.forEach(function(c){
+    var meta = UPD_CATS[c] || UPD_CATS['表示'];
+    html += '<div class="upd-cat"><div class="upd-cat-head"><span class="upd-cat-ic" style="background:' + meta.bg + ';color:' + meta.fg + ';">' + meta.icon + '</span>' + escHTML(c) + '</div><ul class="upd-list">';
+    groups[c].forEach(function(t){ html += '<li>' + escHTML(t) + '</li>'; });
+    html += '</ul></div>';
+  });
   $('updateNotes').innerHTML = html;
   $('updateOverlay').classList.remove('hidden');
 }
@@ -3491,8 +3528,6 @@ document.addEventListener('click', function(ev){
 
 /* ================= 初期化 ================= */
 checkUpdateNotice();
-$('calendarIdInput').value = calendarId;
-$('clientIdInput').value = clientId;
 setNowLine();
 renderRecTime();
 renderBabyUI();
