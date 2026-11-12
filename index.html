@@ -27,8 +27,8 @@
     --poop-bg:#f3e4d3; --poop:#96692f;
     --breast-bg:#fbe0ec; --breast:#d14f86;
     --milk-bg:#fdefc0; --milk:#a97b06;
-    --accent:#d9a400;
-    --today-tint:rgba(255,205,40,.07); --today-ink:#d9a400;
+    /* 今日の強調は7日間・月間とも緑系で統一する（黄色はミルク専用） */
+    --today-tint:rgba(63,191,79,.10); --today-ink:#2ea63e;
     --coral:#e05252;
     --sun:#e56b6b; --sat:#5b8dd9;
     --shadow:0 2px 12px rgba(60,80,60,.07), 0 1px 3px rgba(60,80,60,.05);
@@ -236,7 +236,7 @@
   .disc.breast{background:var(--breast-bg);}
   .disc.milk{background:var(--milk-bg);}
   /* 前回の表示：ボタンの下に同じ1行でそろえる（3か所とも同じ大きさ・色で、各ボタンの中央）。
-     授乳分は母乳・ミルク2ボタンの下にまとめて1つだけ置き、「次」だけ黄色にする */
+     授乳分は母乳・ミルク2ボタンの下にまとめて1つだけ置き、「次」だけ緑で強調する */
   .rec-last{
     font-size:11px; font-weight:700; color:var(--ink-sub);
     font-variant-numeric:tabular-nums; line-height:1.3;
@@ -456,9 +456,11 @@
   .day-row .dcell .wd{font-size:12px; color:var(--ink-sub); font-weight:700; display:block;}
   .day-row .dcell .wline{font-size:10.5px; color:var(--ink); font-weight:700; display:block; white-space:nowrap; letter-spacing:-0.03em; margin-top:1px;}
   .day-row .dcell .wline .wdiff{color:var(--ink-sub); font-weight:700;}
-  .day-row .dcell .wline .wdiff.neg{color:var(--coral);}
+  .day-row .dcell .wline .wdiff.neg{color:var(--ink-sub);}
   .day-row .num{text-align:center;}
-  .day-row .hl{color:var(--today-ink); font-weight:800;}
+  /* 日別一覧の授乳の数は種類色で示す（黄色はミルクだけ） */
+  .day-row .hl{color:var(--milk); font-weight:800;}
+  .day-row .hlb{color:var(--breast); font-weight:800;}
   .days-head{
     display:grid; grid-template-columns:3.4rem repeat(4,minmax(0,1fr)); align-items:center; min-width:0;
     padding:1px 2px 4px; border-bottom:1px solid var(--line);
@@ -467,8 +469,8 @@
   .days-head svg{width:22px; height:22px;}
   .day-total{display:flex; gap:14px; flex-wrap:wrap; font-size:13.5px; color:var(--ink-sub); margin-bottom:8px; font-weight:700;}
   .day-total:empty{display:none;}
-  .day-total .hl{color:var(--today-ink); font-weight:800;}
-  .day-total .neg{color:var(--coral); font-weight:800;}
+  .day-total .hl{color:var(--ink); font-weight:800;}
+  .day-total .neg{color:var(--ink-sub); font-weight:800;}
 
   /* ===== 猫の体重 ===== */
   .cat-block{padding:5px 0; border-bottom:1px solid var(--line); min-width:0;}
@@ -1096,6 +1098,9 @@ var CHANGELOG = [
     { c:'表示', t:'「前回」の表示が、経過時間だけの短い形になりました' },
     { c:'表示', t:'7日間のログで、今日の列が緑色になって見やすくなりました' },
     { c:'表示', t:'このお知らせが、種類ごとに分かれて読みやすくなりました' }
+  ]},
+  { version:'2026-11-13-6', notes:[
+    { c:'デザイン', t:'色のルールを全体でそろえました。月のログでも今日が緑色になり、黄色はミルクだけに使うようになりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1653,7 +1658,7 @@ function dayRowHTML(d, st){
     '<span class="dcell"><span class="md">' + fmtMD(d) + '</span><span class="wd' + wdClass(d) + '">（' + WD[d.getDay()] + '）</span>' + dayWeightLineHTML(d) + '</span>' +
     '<span class="num">' + (st.pee || '―') + '</span>' +
     '<span class="num">' + (st.poop || '―') + '</span>' +
-    '<span class="num ' + (st.breast ? 'hl' : '') + '">' + (st.breast || '―') + '</span>' +
+    '<span class="num ' + (st.breast ? 'hlb' : '') + '">' + (st.breast || '―') + '</span>' +
     '<span class="num ' + (st.milk ? 'hl' : '') + '">' + (st.milk ? st.milk + 'ml' : '―') + '</span>' +
     '</button>';
 }
@@ -3484,7 +3489,7 @@ var UPD_CATS = {
   '記録': { bg:'#e8f9ec', fg:'#2ea63e', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>' },
   '表示': { bg:'#d9f1fb', fg:'#2f83b8', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>' },
   '設定': { bg:'#eef0ee', fg:'#7a8288', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h9M19 8h1M4 16h3M13 16h7"/><circle cx="16" cy="8" r="2.2"/><circle cx="10" cy="16" r="2.2"/></svg>' },
-  '修正': { bg:'#fdefc0', fg:'#a97b06', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.6 12.4 2.4 2.4 4.4-5"/></svg>' }
+  '修正': { bg:'#f3e4d3', fg:'#96692f', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.6 12.4 2.4 2.4 4.4-5"/></svg>' }
 };
 function checkUpdateNotice(){
   var seen = getSeenVersion();
