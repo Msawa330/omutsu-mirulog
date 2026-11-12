@@ -298,6 +298,18 @@
     background:var(--panel); width:100%; max-width:672px; min-width:0; max-height:86vh; overflow-y:auto; overflow-x:hidden;
     border-radius:24px 24px 0 0; padding:18px 16px calc(18px + env(safe-area-inset-bottom));
   }
+  /* ===== アップデートのお知らせ（中央モーダル） ===== */
+  .overlay.center{align-items:center; padding:20px 16px;}
+  .update-sheet{
+    background:var(--panel); color:var(--text); width:100%; max-width:480px; min-width:0;
+    max-height:86vh; overflow-y:auto; overflow-x:hidden;
+    border-radius:20px; padding:20px 18px calc(18px + env(safe-area-inset-bottom));
+    box-shadow:0 12px 32px rgba(0,0,0,.35);
+  }
+  .update-lines{font-size:15px; line-height:1.75; font-weight:700; overflow-wrap:anywhere;}
+  .update-lines p{margin:0 0 6px;}
+  .update-lines p:last-child{margin-bottom:0;}
+  .update-sheet .btn-primary{margin-top:16px;}
   .sheet h3{font-size:16px; font-weight:800; margin:0 0 12px; display:flex; align-items:center; gap:8px;}
   .sheet h3 svg{width:24px; height:24px;}
   .sheet .close-x{margin-left:auto; background:transparent; color:var(--sub); font-size:20px; line-height:1; padding:4px 8px;}
@@ -794,6 +806,14 @@
   </div>
 </div>
 
+<!-- アップデートのお知らせ -->
+<div class="overlay center hidden" id="updateOverlay">
+  <div class="update-sheet" role="dialog" aria-modal="true" aria-label="アップデートのお知らせ">
+    <div class="update-lines" id="updateNotes"></div>
+    <button class="btn-primary" id="updateCloseBtn" type="button">閉じる</button>
+  </div>
+</div>
+
 <script>
 (function(){
 "use strict";
@@ -841,6 +861,36 @@ var LS_CAL = 'omutsumirulog.calendarId';
 var LS_TOKEN = 'omutsumirulog.token';
 var LS_TOKEN_EXPIRY = 'omutsumirulog.tokenExpiry';
 var LS_AUTO = 'omutsumirulog.autoSignIn';
+/* ===== アプリの版（バージョン）と変更履歴 =====
+   更新を出すたびに CHANGELOG の末尾へ {version, notes} を1件追加し、
+   APP_VERSION をその版の識別子に合わせる。ポップアップには、見る人が
+   最後に見た版より新しい版の要約をすべてまとめて（差分）表示する。
+   「最後に見た版」(LS_SEEN_VERSION) は端末の localStorage にだけ保存する
+   見る人ごと（端末ごと）の記録で、共有カレンダーの設定イベントなど
+   夫婦で共有される場所には絶対に保存しない。片方が閉じても、もう片方の
+   端末ではその人の「最後に見た版」のままなので、そちらでも1回表示される */
+/* 要約文（notes）の書き方ルール：
+   ユーザー目線で平易に書き、ユーザーに関係ある変化だけを入れる。
+   内部の仕組み（お知らせ表示の仕組みなど）の話は要約に書かない。 */
+var CHANGELOG = [
+  { version:'2026-11-12-cats', notes:[
+    '画面の一番下で、猫（みぃ・ナリ）の体重を記録できるようになりました',
+    '入力するときに、画面がキーボードで隠れないようになりました'
+  ]},
+  { version:'2026-11-12-week', notes:[
+    '7日間のログが、時間帯ごとの表示に変わりました',
+    '上の「時間変更」で、記録する時間をずらせるようになりました',
+    '今日のログは新しい4件だけになり、残りは「もっと見る」で見られます'
+  ]},
+  { version:'2026-11-12-order', notes:[
+    '同じ時間の記録が、おしっこ・うんち・母乳・ミルクの順に並ぶようになりました'
+  ]},
+  { version:'2026-11-12-2', notes:[
+    '一番上の時計に秒が表示されるようになりました'
+  ]}
+];
+var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
+var LS_SEEN_VERSION = 'omutsumirulog.seenVersion';
 var clientId = '';
 var calendarId = DEFAULT_CAL;
 try{
@@ -1097,7 +1147,7 @@ function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()=
 function fmtTime(d){ return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
 function fmtMD(d){ return (d.getMonth()+1) + '/' + d.getDate(); }
 function fmtNow(d){
-  return (d.getMonth()+1) + '月' + d.getDate() + '日（' + WD[d.getDay()] + '） ' + fmtTime(d);
+  return (d.getMonth()+1) + '月' + d.getDate() + '日（' + WD[d.getDay()] + '） ' + fmtTime(d) + ':' + pad(d.getSeconds());
 }
 function fmtElapsed(from, now){
   var min = Math.floor((now - from) / 60000);
@@ -2855,6 +2905,7 @@ function autoRefresh(){
   if(catOpenEditor.idx >= 0) return;
   if(!$('monthOverlay').classList.contains('hidden')) return;
   if(!$('allMonthsOverlay').classList.contains('hidden')) return;
+  if(!$('updateOverlay').classList.contains('hidden')) return;
   if(tokenValid()){
     /* 期限までの残りが少ないときは、切れる前に先に裏で取り直す。
        その間も今のトークンで読み込みは続ける */
@@ -2878,6 +2929,11 @@ setInterval(function(){
   renderWeightRecordBtn();
   updateNowHour();
 }, 30000);
+
+/* 秒表示をリアルタイムに進める（1秒ごとに日時だけ更新） */
+setInterval(function(){
+  $('nowLine').textContent = fmtNow(new Date());
+}, 1000);
 
 /* ================= 入力欄をキーボードの上に見せる =================
    すべての入力欄（テキスト・数値・日付）共通の処理。フォーカスした入力欄と、
@@ -2951,7 +3007,50 @@ if(window.visualViewport){
   });
 }
 
+/* ================= アップデートのお知らせ =================
+   判定はページ読み込み時に1回だけ行う（30秒ごとの自動更新では呼ばない）。
+   「最後に見た版」はこの端末の localStorage のみに保存する（見る人ごと）。
+   共有カレンダー側には一切書かないため、片方が閉じても他方には出る */
+function getSeenVersion(){
+  try{ return localStorage.getItem(LS_SEEN_VERSION); }catch(e){ return null; }
+}
+function saveSeenVersion(){
+  /* 端末ローカルにだけ保存する。共有設定（カレンダー）には保存しない */
+  try{ localStorage.setItem(LS_SEEN_VERSION, APP_VERSION); }catch(e){}
+}
+/* 最後に見た版より新しい版の要約を、古い順にすべて集める（差分） */
+function unseenNotes(seen){
+  var start = 0, i, j;
+  for(i=0;i<CHANGELOG.length;i++){
+    if(CHANGELOG[i].version === seen){ start = i + 1; break; }
+  }
+  var out = [];
+  for(i=start;i<CHANGELOG.length;i++){
+    for(j=0;j<CHANGELOG[i].notes.length;j++) out.push(CHANGELOG[i].notes[j]);
+  }
+  return out;
+}
+function closeUpdateNotice(){
+  $('updateOverlay').classList.add('hidden');
+  saveSeenVersion();
+}
+function checkUpdateNotice(){
+  var seen = getSeenVersion();
+  /* 初回（保存された版が無い端末）は「まだ何も見ていない」扱いにし、
+     変更履歴の全件を1回だけ表示する。閉じたら現在の版が保存される */
+  if(seen === APP_VERSION) return;
+  var notes = unseenNotes(seen);
+  if(!notes.length){ saveSeenVersion(); return; }
+  var html = '';
+  for(var i=0;i<notes.length;i++) html += '<p>・' + escHTML(notes[i]) + '</p>';
+  $('updateNotes').innerHTML = html;
+  $('updateOverlay').classList.remove('hidden');
+}
+$('updateCloseBtn').addEventListener('click', closeUpdateNotice);
+$('updateOverlay').addEventListener('click', function(e){ if(e.target===this) closeUpdateNotice(); });
+
 /* ================= 初期化 ================= */
+checkUpdateNotice();
 $('calendarIdInput').value = calendarId;
 $('clientIdInput').value = clientId;
 $('nowLine').textContent = fmtNow(new Date());
