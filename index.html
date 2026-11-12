@@ -939,6 +939,18 @@
   </div>
 </div>
 
+<!-- 7日間シート（月のカレンダーで日付を押したときに開く。
+     カレンダー → この7日間表示 → 日のリスト、の順に階層を進む） -->
+<div class="overlay hidden" id="weekOverlay">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h3><span id="weekTitle">7日間のログ</span><button class="close-x" id="weekCloseXBtn" type="button" aria-label="閉じる">×</button></h3>
+    <div class="sheet-error hidden" role="alert"></div>
+    <div class="load-note hidden" id="weekOverlayLoadNote">読み込み中…</div>
+    <div id="weekOverlayBody"></div>
+    <div class="sheet-foot"><button class="btn-sub" id="weekCloseBtn" type="button" style="margin-top:0;">閉じる</button></div>
+  </div>
+</div>
+
 <!-- 日別ポップアップ（月間のログの日一覧から開く） -->
 <div class="overlay hidden" id="dayOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
@@ -1188,6 +1200,12 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-13-13', notes:[
     { c:'デザイン', t:'メモの「書く」ボタンを、猫の「記録」ボタンと同じ白いボタンにしました' }
+  ]},
+  { version:'2026-11-13-14', notes:[
+    { c:'表示', t:'今月の平均は、終わった日だけで計算するようになりました' }
+  ]},
+  { version:'2026-11-13-15', notes:[
+    { c:'表示', t:'月のカレンダーで日付を押すと、その日を右端にした7日間の表示が開くようになりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1527,7 +1545,7 @@ function refreshScrollLock(){
 }
 /* ===== 読み込み中表示（週・月・全月で共通） ===== */
 function setLoadNotes(on){
-  var ids = ['weekLoadNote','monthLoadNote','allMonthsLoadNote'];
+  var ids = ['weekLoadNote','monthLoadNote','allMonthsLoadNote','weekOverlayLoadNote'];
   for(var i=0;i<ids.length;i++){
     var el = $(ids[i]);
     if(el) el.classList.toggle('hidden', !on);
@@ -1780,17 +1798,11 @@ function findRecordById(id){
   }
   return null;
 }
-function renderDays(){
-  var today = startOfDay(new Date());
-  var endDay = new Date(today); endDay.setDate(endDay.getDate() - weekOffset * 7);
+/* 7日間グリッドのHTML生成（TOPの7日間ログと、月のカレンダーから開く
+   7日間表示で共用する）。highlightDay の列に「今日」と同じ緑系の強調を付け、
+   isCurrentWeek のときだけ現在時刻の行を強調する */
+function buildWeekGridHTML(days, src, highlightDay, isCurrentWeek){
   var nowHour = new Date().getHours();
-  var isCurrentWeek = (weekOffset === 0);
-  var days = [];
-  for(var i=6;i>=0;i--){
-    var d = new Date(endDay); d.setDate(d.getDate() - i);
-    days.push(d);
-  }
-  var src = logSource();
   var html = '<div class="wk-grid"><div class="wk-corner wk-head" aria-hidden="true">' +
     '<span class="wk-md wk-hidden">0/0</span>' +
     '<span class="wk-wd wk-hidden">（日）</span>' +
@@ -1804,7 +1816,7 @@ function renderDays(){
   days.forEach(function(d){
     var st = dayStatsFrom(src, d);
     var wInfo = dayWeightInfo(d);
-    html += '<div class="wk-head' + (sameDay(d, today) ? ' today-col' : '') + '" data-dayts="' + startOfDay(d).getTime() + '" role="button" tabindex="0" aria-label="' + fmtMD(d) + 'の記録を一覧で見る">' +
+    html += '<div class="wk-head' + (sameDay(d, highlightDay) ? ' today-col' : '') + '" data-dayts="' + startOfDay(d).getTime() + '" role="button" tabindex="0" aria-label="' + fmtMD(d) + 'の記録を一覧で見る">' +
       '<span class="wk-md">' + fmtMD(d) + '</span>' +
       '<span class="wk-wd' + wdClass(d) + '">（' + WD[d.getDay()] + '）</span>' +
       '<span class="wk-w">' + (wInfo ? wInfo.w.toLocaleString('ja-JP') : '') + '</span>' +
@@ -1840,7 +1852,7 @@ function renderDays(){
     html += '<div class="wk-axis' + lastCls + nowCls + '" data-hour="' + h + '">' + h + '</div>';
     for(var c=0; c<7; c++){
       var list = slots[c*24 + h] || [];
-      html += '<div class="wk-cell' + lastCls + nowCls + (sameDay(days[c], today) ? ' today-col' : '') + '" data-hour="' + h + '" data-dayts="' + startOfDay(days[c]).getTime() + '">';
+      html += '<div class="wk-cell' + lastCls + nowCls + (sameDay(days[c], highlightDay) ? ' today-col' : '') + '" data-hour="' + h + '" data-dayts="' + startOfDay(days[c]).getTime() + '">';
       list.forEach(function(r){
         if(r.kind==='milk'){
           html += '<button class="wk-chip milk" type="button" data-eid="' + r.id + '">' + IC.milk + '<span>' + (r.amount||0) + '</span></button>';
@@ -1852,14 +1864,16 @@ function renderDays(){
     }
   }
   html += '</div>';
-  $('daysBody').innerHTML = html;
-  /* 列のどこを押しても、その日を「今日のログ」と同じ一覧で開く
-     （月のカレンダーを押したときの日別表示と同じ流れ）。
-     一覧の行を押すと記録の編集が開く。チップも直接編集ではなく一覧を開く */
+  return html;
+}
+/* 列のどこを押しても、その日を「今日のログ」と同じ一覧で開く
+   （スケジュール形式を押すとリスト形式になる、を全画面で統一する）。
+   一覧の行を押すと記録の編集が開く。チップも直接編集ではなく一覧を開く */
+function bindWeekGrid(container){
   function openWeekDay(ts){
     openDay(new Date(parseInt(ts, 10)), logSource());
   }
-  var chips = $('daysBody').querySelectorAll('.wk-chip');
+  var chips = container.querySelectorAll('.wk-chip');
   for(var j=0;j<chips.length;j++){
     chips[j].addEventListener('click', function(e){
       if(e) e.stopPropagation();
@@ -1867,14 +1881,60 @@ function renderDays(){
       if(found) openWeekDay(startOfDay(found.start).getTime());
     });
   }
-  var colEls = $('daysBody').querySelectorAll('.wk-head[data-dayts], .wk-cell[data-dayts]');
+  var colEls = container.querySelectorAll('.wk-head[data-dayts], .wk-cell[data-dayts]');
   for(var ci=0; ci<colEls.length; ci++){
     colEls[ci].addEventListener('click', function(){
       openWeekDay(this.getAttribute('data-dayts'));
     });
   }
+}
+function renderDays(){
+  var today = startOfDay(new Date());
+  var endDay = new Date(today); endDay.setDate(endDay.getDate() - weekOffset * 7);
+  var days = [];
+  for(var i=6;i>=0;i--){
+    var d = new Date(endDay); d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+  $('daysBody').innerHTML = buildWeekGridHTML(days, logSource(), today, weekOffset === 0);
+  bindWeekGrid($('daysBody'));
   var nextBtn = $('weekNextBtn');
   if(nextBtn) nextBtn.disabled = (weekOffset === 0);
+}
+/* ===== 月のカレンダーから開く7日間表示 =====
+   月のカレンダーで日付を押すと、その日を「今日」とした7日間表示
+   （その日の6日前〜その日まで、その日が一番右）をまず開く。
+   押した日の列には、通常の7日間ログで今日の列が受ける緑系の強調を付ける。
+   この表示は日別リスト（dayOverlay）の下に重ねて開くので、
+   リストを閉じるとこの表示に戻り、ここを閉じると月のカレンダーに戻る */
+var weekOverlayEndDay = null;
+function renderWeekOverlay(){
+  if(!weekOverlayEndDay) return;
+  var days = [];
+  for(var i=6;i>=0;i--){
+    var d = new Date(weekOverlayEndDay); d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+  $('weekTitle').innerHTML = (weekOverlayEndDay.getMonth()+1) + '月' + weekOverlayEndDay.getDate() + '日（' + wdSpan(weekOverlayEndDay) + '）までの7日間';
+  var isCurrentWeek = sameDay(weekOverlayEndDay, startOfDay(new Date()));
+  $('weekOverlayBody').innerHTML = buildWeekGridHTML(days, logSource(), weekOverlayEndDay, isCurrentWeek);
+  bindWeekGrid($('weekOverlayBody'));
+}
+function openWeekView(date){
+  weekOverlayEndDay = startOfDay(date);
+  renderWeekOverlay();
+  $('weekOverlay').classList.remove('hidden');
+  refreshScrollLock();
+  var wkSheet = $('weekOverlay').querySelector('.sheet');
+  if(wkSheet) wkSheet.scrollTop = 0;
+  /* 押した日が通常の取得範囲より過去なら、アーカイブから追加取得する
+     （取得できたら loadArchive 側でこの表示も描き直す） */
+  var span = Math.ceil((startOfDay(new Date()) - weekOverlayEndDay) / 86400000) + 10;
+  if(span > 40) loadArchive(span);
+}
+function closeWeekView(){
+  $('weekOverlay').classList.add('hidden');
+  refreshScrollLock();
 }
 $('weekPrevBtn').addEventListener('click', function(){
   weekOffset++;
@@ -1911,11 +1971,17 @@ function monthStats(y, m){
   var src = logSource();
   var milk = 0, pee = 0, poop = 0, breast = 0, count = 0;
   var firstDay = null;
+  var now = new Date();
+  var isCurrent = (y===now.getFullYear() && m===now.getMonth());
+  var todayDate = now.getDate();
   src.forEach(function(r){
     if(r.kind==='memo') return;
     if(r.start.getFullYear()===y && r.start.getMonth()===m){
-      count++;
       var dd = r.start.getDate();
+      /* 今月は当日（今日）を合計にも日数にも入れない：
+         1日が完全に終わった日だけを対象にする */
+      if(isCurrent && dd === todayDate) return;
+      count++;
       if(firstDay === null || dd < firstDay) firstDay = dd;
       if(r.kind==='milk') milk += (r.amount||0);
       else if(r.kind==='pee') pee++;
@@ -1923,11 +1989,10 @@ function monthStats(y, m){
       else if(r.kind==='breast') breast++;
     }
   });
-  var now = new Date();
-  var isCurrent = (y===now.getFullYear() && m===now.getMonth());
-  var endDay = isCurrent ? now.getDate() : new Date(y, m+1, 0).getDate();
+  var endDay = isCurrent ? todayDate - 1 : new Date(y, m+1, 0).getDate();
   /* 1日平均の割り算は、その月に初めて記録がある日からにする
-     （例：記録が11日からなら、11日から月末まで／今月は今日まで、の日数で割る）。
+     （例：記録が11日からなら、11日から月末まで／今月は昨日まで、の日数で割る）。
+     今月に完了した日がまだ無い場合は count が 0 になり、平均は出さない。
      体重の表示はこの期間ルールの対象外で、従来どおり */
   var days = endDay;
   if(count && firstDay !== null){
@@ -2049,7 +2114,7 @@ function renderMonths(){
   var dayBtns = $('monthsBody').querySelectorAll('.mcal-day.has');
   for(var i=0;i<dayBtns.length;i++){
     dayBtns[i].addEventListener('click', function(){
-      openDay(new Date(y, m, parseInt(this.getAttribute('data-day'), 10)), logSource());
+      openWeekView(new Date(y, m, parseInt(this.getAttribute('data-day'), 10)));
     });
   }
   var nextBtn = $('monthNextBtn');
@@ -2487,6 +2552,11 @@ function openDay(date, src){
 }
 $('dayCloseBtn').addEventListener('click', function(){ $('dayOverlay').classList.add('hidden'); refreshScrollLock(); });
 $('dayCloseXBtn').addEventListener('click', function(){ $('dayOverlay').classList.add('hidden'); refreshScrollLock(); });
+/* 7日間表示（月のカレンダーから開く）の閉じる操作：閉じると月のカレンダーに戻る。
+   日別リストはこの表示の上に重なって開くので、リストを閉じればこの表示に戻る */
+$('weekCloseBtn').addEventListener('click', closeWeekView);
+$('weekCloseXBtn').addEventListener('click', closeWeekView);
+$('weekOverlay').addEventListener('click', function(e){ if(e.target===this) closeWeekView(); });
 $('babyFootCloseBtn').addEventListener('click', closeBabySettings);
 $('monthCloseXBtn').addEventListener('click', function(){ $('monthOverlay').classList.add('hidden'); refreshScrollLock(); });
 $('allMonthsCloseXBtn').addEventListener('click', function(){ $('allMonthsOverlay').classList.add('hidden'); refreshScrollLock(); });
@@ -2760,6 +2830,7 @@ function loadArchive(daysBack){
     archiveFetchedAt = Date.now();
     renderMonths();
     renderDays();
+    if(!$('weekOverlay').classList.contains('hidden')) renderWeekOverlay();
     if(!$('allMonthsOverlay').classList.contains('hidden')) renderAllMonths();
   }).catch(function(){
   }).then(function(){ archiveLoading = false; setLoadNotes(false); });
@@ -3495,6 +3566,7 @@ function autoRefresh(){
   if(!$('allMonthsOverlay').classList.contains('hidden')) return;
   if(!$('updateOverlay').classList.contains('hidden')) return;
   if(!$('milkOverlay').classList.contains('hidden')) return;
+  if(!$('weekOverlay').classList.contains('hidden')) return;
   if(tokenValid()){
     /* 期限までの残りが少ないときは、切れる前に先に裏で取り直す。
        その間も今のトークンで読み込みは続ける */
