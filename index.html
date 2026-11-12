@@ -926,8 +926,10 @@
     <div class="pop-head"><span class="pop-title" id="editTitle">記録を編集</span><button class="close-x" id="editCloseXBtn" type="button" aria-label="閉じる">×</button></div>
     <div class="sheet-error hidden" role="alert"></div>
     <div class="edit-fields">
-    <label for="editDateTime">日時</label>
-    <input type="datetime-local" id="editDateTime">
+    <label for="editTime">時刻</label>
+    <input type="time" id="editTime">
+    <label for="editDate">日付</label>
+    <input type="date" id="editDate">
     <div id="editMemoWrap" class="hidden">
       <label for="editMemoText">メモ</label>
       <input type="text" id="editMemoText" autocomplete="off">
@@ -1101,6 +1103,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-13-6', notes:[
     { c:'デザイン', t:'色のルールを全体でそろえました。月のログでも今日が緑色になり、黄色はミルクだけに使うようになりました' }
+  ]},
+  { version:'2026-11-13-7', notes:[
+    { c:'修正', t:'記録の編集を開いたときにカレンダーが勝手に出なくなりました。時刻と日付が別の欄になり、直したい欄を押したときだけ選べます' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1473,6 +1478,12 @@ function fmtElapsed(from, now){
 }
 function toLocalInput(d){
   return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function toLocalDateValue(d){
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+function toLocalTimeValue(d){
+  return pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
 
 /* ================= チャイム（記録成功時のみ） ================= */
@@ -2366,15 +2377,16 @@ function openEdit(rec){
   var del = $('editDeleteBtn');
   del.textContent = 'この記録を削除'; del.classList.remove('confirm');
   $('editTitle').textContent = '記録を編集';
-  $('editDateTime').value = toLocalInput(rec.start);
+  $('editTime').value = toLocalTimeValue(rec.start);
+  $('editDate').value = toLocalDateValue(rec.start);
   renderEditOpts();
   clearSheetError('editOverlay');
   $('dayOverlay').classList.add('hidden');
   $('editOverlay').classList.remove('hidden');
   refreshScrollLock();
-  /* 開いたら最初の入力欄（日時）へフォーカスを移す */
-  var dt = $('editDateTime');
-  if(dt){ try{ dt.focus({ preventScroll:true }); }catch(e){ try{ dt.focus(); }catch(e2){} } }
+  /* 開いた時点ではフォーカスを移さない。フォーカスするとピッカーが
+     自動で開いてしまうため、ピッカーは時刻・日付の欄をユーザーが
+     タップしたときにだけ出す */
 }
 function renderEditOpts(){
   var wrap = $('editOptsWrap'), box = $('editOpts');
@@ -2434,10 +2446,10 @@ $('editCancelBtn').addEventListener('click', closeEdit);
 $('editOverlay').addEventListener('click', function(e){ if(e.target===this) closeEdit(); });
 $('editSaveBtn').addEventListener('click', function(){
   if(!editing || busy) return;
-  var v = $('editDateTime').value;
-  if(!v){ sheetError('editOverlay', '日時を入力してください'); return; }
-  var when = new Date(v);
-  if(isNaN(when.getTime())){ sheetError('editOverlay', '日時が正しくありません'); return; }
+  var tv = $('editTime').value, dv = $('editDate').value;
+  if(!tv || !dv){ sheetError('editOverlay', '日付と時刻を入力してください'); return; }
+  var when = new Date(dv + 'T' + tv);
+  if(isNaN(when.getTime())){ sheetError('editOverlay', '日付と時刻が正しくありません'); return; }
   if(editing.rec && editing.rec.kind === 'memo'){
     var memoText = $('editMemoText').value.trim();
     if(!memoText){
@@ -3427,8 +3439,10 @@ document.addEventListener('focusin', function(e){
   var t = e.target;
   if(!t || !t.tagName) return;
   if(t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA' && t.tagName !== 'SELECT') return;
-  /* 日付欄（生年月日・猫の誕生日・編集の日時など）はフォーカスでピッカーを開く扱いに統一 */
-  if(t.type === 'date' || t.type === 'datetime-local'){ try{ if(t.showPicker) t.showPicker(); }catch(err){} }
+  /* 日付・時刻欄（生年月日・猫の誕生日・編集の日付と時刻など）は、ユーザーが
+     欄をタップしてフォーカスしたときにだけピッカーを開く。編集ポップアップは
+     開いた時点でフォーカスを移さないので、開いただけではピッカーは出ない */
+  if(t.type === 'date' || t.type === 'time' || t.type === 'datetime-local'){ try{ if(t.showPicker) t.showPicker(); }catch(err){} }
   kbInput = t;
   document.body.classList.add('kb-open');
   kbSchedule();
