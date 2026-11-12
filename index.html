@@ -263,6 +263,11 @@
   .pop-foot{margin-top:14px;}
   .pop-foot .btn-primary{margin-top:0;}
   .pop-foot .btn-sub, .pop-foot .btn-danger{margin-top:8px;}
+  /* 記録の編集：日付と時刻を1行に横並びにし、左右のバランスをそろえる */
+  .edit-datetime-row{display:flex; gap:10px; align-items:flex-start; width:100%;}
+  .edit-dt-field{flex:1 1 0; min-width:0;}
+  .edit-dt-field label{margin:0 0 6px;}
+  .edit-dt-field input{width:100%; text-align:center; padding-left:6px; padding-right:6px;}
   /* ミルクの量ポップアップの中身 */
   .milk-step-row{display:flex; align-items:center; justify-content:center; gap:18px;}
   .milk-amt{font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; min-width:3ch; text-align:center; line-height:1.1;}
@@ -273,6 +278,15 @@
   .gauge-main{font-size:13px; font-weight:800;}
   .gauge-main b{font-size:17px; font-variant-numeric:tabular-nums;}
   .gauge-goal{font-size:11px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums;}
+  /* TOPのミルクの目標：鉛筆付きのタップ領域にして、押すと目標の編集が開く */
+  .gauge-goal-btn{
+    display:inline-flex; align-items:center; gap:4px; flex:0 0 auto;
+    background:none; border:none; padding:5px 2px; margin:-5px -2px;
+    font-family:inherit; text-align:right;
+  }
+  .gauge-goal-btn:active{opacity:.6;}
+  .gauge-goal-pencil{width:13px; height:13px; display:inline-flex; align-items:center; justify-content:center; color:var(--green-dark); flex:0 0 auto;}
+  .gauge-goal-pencil svg{width:13px; height:13px; display:block;}
   .gauge-track{height:10px; background:#f1f2f0; border-radius:999px; overflow:hidden;}
   .gauge-fill{height:100%; width:0; background:linear-gradient(90deg,#ffd94d,#ffc61a); border-radius:999px; transition:width .3s ease;}
 
@@ -390,14 +404,20 @@
     background:var(--milk-bg); color:#8a6503; padding:0 3px 0 2px;
     font-size:9px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap;
   }
+  .wk-chip.memo{background:#eef0ee; color:#7a8288;}
   .wk-chip:active{filter:brightness(.96);}
+  /* 7日間ログ：列（見出し・セル）のどこを押してもその日の一覧が開く */
+  .wk-head[data-dayts], .wk-cell[data-dayts]{cursor:pointer;}
+  .wk-head[data-dayts]:active, .wk-cell[data-dayts]:active{background:var(--green-soft);}
 
   /* ===== 月間のログ ===== */
   .cal-head{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:6px;}
   .cal-month{font-size:13px; font-weight:800; color:var(--ink); padding:0; display:inline-flex; align-items:center; gap:3px;}
   .cal-month .chev{color:var(--ink-sub); font-size:16px; line-height:1;}
-  .cal-weight{font-size:11px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .cal-weight{font-size:11px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;}
   .cal-weight b{color:var(--ink); font-weight:800;}
+  .cal-weight .w-ic, .mv-weight .w-ic{width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; color:var(--ink-sub);}
+  .cal-weight .w-ic svg, .mv-weight .w-ic svg{width:14px; height:14px; display:block;}
   .mcal-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:2px;}
   .mcal-dow{text-align:center; font-size:9px; font-weight:800; color:var(--ink-sub); padding:2px 0;}
   .mcal-dow.sun{color:var(--sun);}
@@ -443,6 +463,26 @@
   .months-head .hcell{display:flex; align-items:center; justify-content:center; min-width:0;}
   .months-head .hcell:first-child{justify-content:flex-start;}
   .months-head svg{width:22px; height:22px; flex:0 0 auto;}
+  /* ===== 月間ビューワー（月ごとの体重の変化と1日平均をシンプルに並べる） ===== */
+  .month-view-row{
+    display:block; width:100%; background:transparent; text-align:left;
+    padding:10px 2px 12px; border-bottom:1px solid var(--line); color:var(--ink); min-width:0;
+  }
+  .month-view-row:last-child{border-bottom:none;}
+  .month-view-row:active{background:#fafbfa;}
+  .mv-head{display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; min-width:0;}
+  .mv-name{font-size:15px; font-weight:800; white-space:nowrap;}
+  .mv-weight{font-size:11px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;}
+  .mv-weight b{color:var(--ink); font-weight:800;}
+  .mv-stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:7px;}
+  .mv-stat{border-radius:10px; padding:5px 4px; text-align:center; min-width:0; display:block;}
+  .mv-stat .k{display:flex; align-items:center; justify-content:center; gap:3px; font-size:9px; font-weight:800;}
+  .mv-stat .k svg{width:13px; height:13px; display:block; flex:0 0 auto;}
+  .mv-stat .v{display:block; font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; margin-top:1px; color:var(--ink);}
+  .mv-stat.pee{background:var(--pee-bg);} .mv-stat.pee .k{color:var(--pee);}
+  .mv-stat.poop{background:var(--poop-bg);} .mv-stat.poop .k{color:var(--poop);}
+  .mv-stat.breast{background:var(--breast-bg);} .mv-stat.breast .k{color:var(--breast);}
+  .mv-stat.milk{background:var(--milk-bg);} .mv-stat.milk .k{color:var(--milk);}
   .day-row{
     display:grid; grid-template-columns:3.4rem repeat(4,minmax(0,1fr)); align-items:center; min-width:0;
     width:100%; background:transparent; text-align:center; padding:5px 2px;
@@ -492,6 +532,7 @@
   }
   .cat-rec-btn:active{background:var(--green-soft);}
   .cat-name{font-size:13px; font-weight:800; flex:0 0 auto;}
+  .cat-age{font-size:12px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap;}
   .cat-latest{font-size:12px; font-weight:800; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap;}
   .cat-latest.unset{font-weight:700;}
 
@@ -593,7 +634,7 @@
   .set-row .set-label{font-weight:700; color:var(--ink); flex:0 0 auto;}
   .set-row .set-value{flex:1; min-width:0; text-align:right; font-weight:800; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .set-row .set-value.unset{color:var(--ink-sub); font-weight:700;}
-  .set-row .set-chev{color:var(--ink-sub); font-size:20px; line-height:1; flex:0 0 auto;}
+  .set-row .set-chev{color:var(--green-dark); font-size:20px; font-weight:800; line-height:1; flex:0 0 auto;}
   .age-table{margin-top:6px; border:1px solid var(--line); border-radius:16px; overflow:hidden; max-width:100%;}
   .age-row{display:flex; gap:10px; padding:8px 14px; background:#fff; border-bottom:1px solid var(--line); font-size:13.5px; align-items:center; min-width:0; width:100%; text-align:left; font-family:inherit; cursor:pointer;}
   .age-row:last-child{border-bottom:none;}
@@ -772,7 +813,10 @@
   <section class="panel" id="milkGaugeWrap" aria-label="今日のミルク">
     <div class="gauge-top">
       <span class="gauge-main">ミルク <b id="gaugeTotal">0</b>ml</span>
-      <span class="gauge-goal" id="gaugeGoal">目標 400ml</span>
+      <button class="gauge-goal-btn" id="gaugeGoalBtn" type="button" aria-label="ミルクの目標を編集">
+        <span class="gauge-goal" id="gaugeGoal">目標 400ml</span>
+        <span class="gauge-goal-pencil" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span>
+      </button>
     </div>
     <div class="gauge-track"><div class="gauge-fill" id="gaugeFill"></div></div>
   </section>
@@ -817,7 +861,7 @@
       <button class="nav-btn" id="monthPrevBtn" type="button">‹ 前の月</button>
       <button class="nav-btn" id="monthNextBtn" type="button" disabled>次の月 ›</button>
     </div>
-    <button class="btn-more" id="allMonthsBtn" type="button">もっと見る</button>
+    <button class="btn-more" id="allMonthsBtn" type="button">月間ビューワー</button>
   </section>
 
   <!-- 猫の体重 -->
@@ -859,9 +903,9 @@
       <span class="set-chev">›</span>
     </button>
 
-    <p class="sheet-sec-label">目標</p>
+    <p class="sheet-sec-label">ミルクの目標</p>
     <button class="set-row" type="button" data-edit="goal">
-      <span class="set-label">目標</span>
+      <span class="set-label">ミルクの目標</span>
       <span class="set-value unset" id="valGoal">未設定</span>
       <span class="set-chev">›</span>
     </button>
@@ -909,10 +953,10 @@
   </div>
 </div>
 
-<!-- 全月一覧 -->
+<!-- 月間ビューワー（全月一覧） -->
 <div class="overlay hidden" id="allMonthsOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
-    <h3>月間のログ<button class="close-x" id="allMonthsCloseXBtn" type="button" aria-label="閉じる">×</button></h3>
+    <h3>月間ビューワー<button class="close-x" id="allMonthsCloseXBtn" type="button" aria-label="閉じる">×</button></h3>
     <div class="sheet-error hidden" role="alert"></div>
     <div class="load-note hidden" id="allMonthsLoadNote">読み込み中…</div>
     <div id="allMonthsBody"></div>
@@ -926,10 +970,16 @@
     <div class="pop-head"><span class="pop-title" id="editTitle">記録を編集</span><button class="close-x" id="editCloseXBtn" type="button" aria-label="閉じる">×</button></div>
     <div class="sheet-error hidden" role="alert"></div>
     <div class="edit-fields">
-    <label for="editTime">時刻</label>
-    <input type="time" id="editTime">
-    <label for="editDate">日付</label>
-    <input type="date" id="editDate">
+    <div class="edit-datetime-row">
+      <div class="edit-dt-field">
+        <label for="editTime">時刻</label>
+        <input type="time" id="editTime">
+      </div>
+      <div class="edit-dt-field">
+        <label for="editDate">日付</label>
+        <input type="date" id="editDate">
+      </div>
+    </div>
     <div id="editMemoWrap" class="hidden">
       <label for="editMemoText">メモ</label>
       <input type="text" id="editMemoText" autocomplete="off">
@@ -1106,6 +1156,22 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-13-7', notes:[
     { c:'修正', t:'記録の編集を開いたときにカレンダーが勝手に出なくなりました。時刻と日付が別の欄になり、直したい欄を押したときだけ選べます' }
+  ]},
+  { version:'2026-11-13-8', notes:[
+    { c:'修正', t:'記録の編集で、日付と時刻が1行に並んでバランスよく見えるようになりました' },
+    { c:'表示', t:'7日間のログで、その日の列を押すと1日分の記録が一覧で見られるようになりました。一覧から選んで編集できます' },
+    { c:'表示', t:'月の1日平均が、記録を始めた日から計算されるようになりました' },
+    { c:'表示', t:'月のログの「もっと見る」が「月間ビューワー」になり、月ごとの体重の変化と1日平均が見られるようになりました' }
+  ]},
+  { version:'2026-11-13-9', notes:[
+    { c:'設定', t:'設定の各項目の「›」が緑色になり、押して編集できることが分かりやすくなりました' },
+    { c:'設定', t:'設定の「目標」が「ミルクの目標」に変わりました' },
+    { c:'記録', t:'今日のミルクの目標の横にある鉛筆からも、ミルクの目標を編集できるようになりました' },
+    { c:'表示', t:'7日間のログにも、メモのマークが表示されるようになりました' },
+    { c:'表示', t:'月のログの体重の変化に、体重のアイコンが付きました' }
+  ]},
+  { version:'2026-11-13-10', notes:[
+    { c:'表示', t:'猫の年齢も、体重と同じ行に表示されるようになりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1678,10 +1744,10 @@ function dayRowHTML(d, st){
    列ヘッダー：日付・曜日・体重（g数値のみ、無い日は空行で高さ統一）と
    その日の集計（数値のみ）。集計の種類を示すアイコンは、時刻軸と同じく
    左端の列にだけ縦に並べ、各日の数値と行の高さを揃える（0件は―）。
-   記録チップ：おしっこ・うんち・母乳はアイコンのみ、ミルクはアイコン＋量。
-   同じセル内のチップの並びは種類順（おしっこ→うんち→母乳→ミルク）で固定し、
-   同じ種類同士は時刻順。
-   チップをタップすると編集シートが開く。メモはチップにしない */
+   記録チップ：おしっこ・うんち・母乳・メモはアイコンのみ、ミルクはアイコン＋量。
+   同じセル内のチップの並びは種類順（おしっこ→うんち→母乳→ミルク→メモ）で固定し、
+   同じ種類同士は時刻順。メモは見出しの集計（4種類の数）には数えない。
+   チップをタップすると、その日の記録一覧が開く（他のチップと同じ） */
 function wkSumRowHTML(kind, valHTML){
   return '<div class="wk-sumrow ' + kind + '"><span>' + valHTML + '</span></div>';
 }
@@ -1722,7 +1788,7 @@ function renderDays(){
   days.forEach(function(d){
     var st = dayStatsFrom(src, d);
     var wInfo = dayWeightInfo(d);
-    html += '<div class="wk-head' + (sameDay(d, today) ? ' today-col' : '') + '">' +
+    html += '<div class="wk-head' + (sameDay(d, today) ? ' today-col' : '') + '" data-dayts="' + startOfDay(d).getTime() + '" role="button" tabindex="0" aria-label="' + fmtMD(d) + 'の記録を一覧で見る">' +
       '<span class="wk-md">' + fmtMD(d) + '</span>' +
       '<span class="wk-wd' + wdClass(d) + '">（' + WD[d.getDay()] + '）</span>' +
       '<span class="wk-w">' + (wInfo ? wInfo.w.toLocaleString('ja-JP') : '') + '</span>' +
@@ -1735,7 +1801,6 @@ function renderDays(){
   });
   var slots = {};
   src.forEach(function(r){
-    if(r.kind==='memo') return;
     for(var di=0; di<7; di++){
       if(sameDay(r.start, days[di])){
         var key = di*24 + r.start.getHours();
@@ -1745,7 +1810,7 @@ function renderDays(){
       }
     }
   });
-  var WK_KIND_ORDER = { pee:0, poop:1, breast:2, milk:3 };
+  var WK_KIND_ORDER = { pee:0, poop:1, breast:2, milk:3, memo:4 };
   Object.keys(slots).forEach(function(k){
     slots[k].sort(function(a,b){
       var dd = (WK_KIND_ORDER[a.kind] || 0) - (WK_KIND_ORDER[b.kind] || 0);
@@ -1759,7 +1824,7 @@ function renderDays(){
     html += '<div class="wk-axis' + lastCls + nowCls + '" data-hour="' + h + '">' + h + '</div>';
     for(var c=0; c<7; c++){
       var list = slots[c*24 + h] || [];
-      html += '<div class="wk-cell' + lastCls + nowCls + (sameDay(days[c], today) ? ' today-col' : '') + '" data-hour="' + h + '">';
+      html += '<div class="wk-cell' + lastCls + nowCls + (sameDay(days[c], today) ? ' today-col' : '') + '" data-hour="' + h + '" data-dayts="' + startOfDay(days[c]).getTime() + '">';
       list.forEach(function(r){
         if(r.kind==='milk'){
           html += '<button class="wk-chip milk" type="button" data-eid="' + r.id + '">' + IC.milk + '<span>' + (r.amount||0) + '</span></button>';
@@ -1772,11 +1837,24 @@ function renderDays(){
   }
   html += '</div>';
   $('daysBody').innerHTML = html;
+  /* 列のどこを押しても、その日を「今日のログ」と同じ一覧で開く
+     （月のカレンダーを押したときの日別表示と同じ流れ）。
+     一覧の行を押すと記録の編集が開く。チップも直接編集ではなく一覧を開く */
+  function openWeekDay(ts){
+    openDay(new Date(parseInt(ts, 10)), logSource());
+  }
   var chips = $('daysBody').querySelectorAll('.wk-chip');
   for(var j=0;j<chips.length;j++){
-    chips[j].addEventListener('click', function(){
+    chips[j].addEventListener('click', function(e){
+      if(e) e.stopPropagation();
       var found = findRecordById(this.getAttribute('data-eid'));
-      if(found) openEdit(found);
+      if(found) openWeekDay(startOfDay(found.start).getTime());
+    });
+  }
+  var colEls = $('daysBody').querySelectorAll('.wk-head[data-dayts], .wk-cell[data-dayts]');
+  for(var ci=0; ci<colEls.length; ci++){
+    colEls[ci].addEventListener('click', function(){
+      openWeekDay(this.getAttribute('data-dayts'));
     });
   }
   var nextBtn = $('weekNextBtn');
@@ -1816,10 +1894,13 @@ function logSource(){
 function monthStats(y, m){
   var src = logSource();
   var milk = 0, pee = 0, poop = 0, breast = 0, count = 0;
+  var firstDay = null;
   src.forEach(function(r){
     if(r.kind==='memo') return;
     if(r.start.getFullYear()===y && r.start.getMonth()===m){
       count++;
+      var dd = r.start.getDate();
+      if(firstDay === null || dd < firstDay) firstDay = dd;
       if(r.kind==='milk') milk += (r.amount||0);
       else if(r.kind==='pee') pee++;
       else if(r.kind==='poop') poop++;
@@ -1827,7 +1908,16 @@ function monthStats(y, m){
     }
   });
   var now = new Date();
-  var days = (y===now.getFullYear() && m===now.getMonth()) ? now.getDate() : new Date(y, m+1, 0).getDate();
+  var isCurrent = (y===now.getFullYear() && m===now.getMonth());
+  var endDay = isCurrent ? now.getDate() : new Date(y, m+1, 0).getDate();
+  /* 1日平均の割り算は、その月に初めて記録がある日からにする
+     （例：記録が11日からなら、11日から月末まで／今月は今日まで、の日数で割る）。
+     体重の表示はこの期間ルールの対象外で、従来どおり */
+  var days = endDay;
+  if(count && firstDay !== null){
+    days = endDay - firstDay + 1;
+    if(days < 1) days = 1;
+  }
   return {
     count: count,
     milkAvg: count ? Math.round(milk / days) : null,
@@ -1858,19 +1948,26 @@ function fmtWeightRange(y, m){
   var d = r.diff > 0 ? '+' + r.diff : (r.diff < 0 ? '−' + Math.abs(r.diff) : '±0');
   return r.first.toLocaleString('ja-JP') + ' → ' + r.last.toLocaleString('ja-JP') + '（' + d + '）';
 }
+function mvStatHTML(kind, name, val){
+  return '<span class="mv-stat ' + kind + '"><span class="k">' + IC[kind] + '<span>' + name + '</span></span><span class="v">' + val + '</span></span>';
+}
 function monthRowHTML(y, m){
   var st = monthStats(y, m);
-  var milkVal = st.count ? st.milkAvg + 'ml' : '―';
-  var diaperVal = st.count ? st.diaperAvg.toFixed(1) + '回' : '―';
-  return '<button class="month-row" type="button" data-y="' + y + '" data-m="' + m + '">' +
-    '<span class="month-name">' + y + '年' + (m+1) + '月</span>' +
-    '<span class="mvalue wt">' + fmtWeightRange(y, m) + '</span>' +
-    '<span class="mvalue">' + milkVal + '</span>' +
-    '<span class="mvalue">' + diaperVal + '</span>' +
+  /* 月間ビューワー：月ごとに体重の変化と4種類の1日平均をシンプルに並べる。
+     平均は monthStats の期間ルール（初めて記録がある日から）で計算済み */
+  return '<button class="month-view-row" type="button" data-y="' + y + '" data-m="' + m + '">' +
+    '<span class="mv-head"><span class="mv-name">' + y + '年' + (m+1) + '月</span>' +
+    '<span class="mv-weight"><span class="w-ic" aria-hidden="true">' + IC.scale + '</span>体重 <b>' + fmtWeightRange(y, m) + '</b></span></span>' +
+    '<span class="mv-stats">' +
+    mvStatHTML('pee', 'おしっこ', st.peeAvg === null ? '―' : fmtAvg(st.peeAvg) + '回') +
+    mvStatHTML('poop', 'うんち', st.poopAvg === null ? '―' : fmtAvg(st.poopAvg) + '回') +
+    mvStatHTML('breast', '母乳', st.breastAvg === null ? '―' : fmtAvg(st.breastAvg) + '回') +
+    mvStatHTML('milk', 'ミルク', st.milkAvg === null ? '―' : String(st.milkAvg) + 'ml') +
+    '</span>' +
     '</button>';
 }
 function bindMonthRows(container){
-  var rows = container.querySelectorAll('.month-row');
+  var rows = container.querySelectorAll('.month-row, .month-view-row');
   for(var i=0;i<rows.length;i++){
     rows[i].addEventListener('click', function(){
       openMonth(parseInt(this.getAttribute('data-y'), 10), parseInt(this.getAttribute('data-m'), 10));
@@ -1905,7 +2002,7 @@ function renderMonths(){
   });
   var html = '<div class="cal-head">' +
     '<button class="cal-month" type="button" id="monthTitleBtn">' + y + '年' + (m+1) + '月<span class="chev">›</span></button>' +
-    '<span class="cal-weight">体重 <b>' + fmtWeightRange(y, m) + '</b></span></div>';
+    '<span class="cal-weight"><span class="w-ic" aria-hidden="true">' + IC.scale + '</span>体重 <b>' + fmtWeightRange(y, m) + '</b></span></div>';
   html += '<div class="mcal-grid">';
   for(var wi=0; wi<7; wi++){
     html += '<div class="mcal-dow' + (wi===0 ? ' sun' : wi===6 ? ' sat' : '') + '">' + WD[wi] + '</div>';
@@ -1976,7 +2073,7 @@ function renderAllMonths(){
     $('allMonthsBody').innerHTML = '<div class="empty">まだ記録がありません</div>';
     return;
   }
-  $('allMonthsBody').innerHTML = monthsHeadHTML() + list.map(function(ym){ return monthRowHTML(ym[0], ym[1]); }).join('');
+  $('allMonthsBody').innerHTML = list.map(function(ym){ return monthRowHTML(ym[0], ym[1]); }).join('');
   bindMonthRows($('allMonthsBody'));
 }
 function openMonth(y, m){
@@ -2161,6 +2258,25 @@ var CAT_IC = {
   nari: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><radialGradient id="catNariFur2" cx="50%" cy="36%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="60%" stop-color="#fdf8ef"/><stop offset="100%" stop-color="#f2e5cf"/></radialGradient><clipPath id="catClipN2"><path d="M21 40 L15 13 Q14 6.5 20.5 9.5 L41 21 Q46 24 43 30.5 L37 42 Z"/><path d="M79 40 L85 13 Q86 6.5 79.5 9.5 L59 21 Q54 24 57 30.5 L63 42 Z"/><ellipse cx="50" cy="57" rx="34" ry="31"/></clipPath></defs><path d="M21 40 L15 13 Q14 6.5 20.5 9.5 L41 21 Q46 24 43 30.5 L37 42 Z" fill="url(#catNariFur2)" stroke="#ecdcbf" stroke-width="2.5" stroke-linejoin="round"/><path d="M79 40 L85 13 Q86 6.5 79.5 9.5 L59 21 Q54 24 57 30.5 L63 42 Z" fill="url(#catNariFur2)" stroke="#ecdcbf" stroke-width="2.5" stroke-linejoin="round"/><path d="M24.5 33.5 L21 17 Q20.8 13 24 15.2 L36 23.5 Q38.6 25.4 37.2 29 L33.8 37 Z" fill="#ffb3c1" opacity="0.7"/><path d="M75.5 33.5 L79 17 Q79.2 13 76 15.2 L64 23.5 Q61.4 25.4 62.8 29 L66.2 37 Z" fill="#ffb3c1" opacity="0.7"/><ellipse cx="50" cy="57" rx="34" ry="31" fill="url(#catNariFur2)" stroke="rgba(198,168,120,0.5)" stroke-width="1"/><g clip-path="url(#catClipN2)"><g><ellipse cx="24" cy="21" rx="22" ry="16.5" fill="#f59a3f" transform="rotate(-13 24 21)"/><ellipse cx="79" cy="20" rx="18" ry="15.5" fill="#503a2c" transform="rotate(10 79 20)"/></g><ellipse cx="50" cy="86" rx="27" ry="9" fill="#7a4a12" opacity="0.05"/></g><circle cx="38" cy="58" r="3" fill="#46332a"/><circle cx="62" cy="58" r="3" fill="#46332a"/><ellipse cx="33" cy="31" rx="12.5" ry="6.5" fill="#ffffff" opacity="0.30" transform="rotate(-18 33 31)"/><ellipse cx="28" cy="27" rx="5" ry="2.8" fill="#ffffff" opacity="0.5" transform="rotate(-18 28 27)"/></svg>'
 };
 function catIconKey(cat){ return (cat && cat.name === 'ナリ') ? 'nari' : 'mii'; }
+/* 猫の年齢表示：誕生日（birthDate 'YYYY-MM-DD'）から、赤ちゃんと同じ
+   年・月の数え方で「◯歳◯か月」を作る。月が0なら年のみ、1歳未満は
+   「◯か月」のみ。誕生日が未設定・不正なら空文字（表示しない） */
+function catAgeText(cat){
+  var bd = cat && cat.birthDate;
+  if(!bd) return '';
+  var p = String(bd).split('-');
+  if(p.length !== 3) return '';
+  var b = new Date(+p[0], +p[1] - 1, +p[2]);
+  if(isNaN(b.getTime()) || fmtDateStr(b) !== bd) return '';
+  var now = new Date();
+  var y = now.getFullYear() - b.getFullYear();
+  var m = now.getMonth() - b.getMonth();
+  if(now.getDate() < b.getDate()) m--;
+  if(m < 0){ y--; m += 12; }
+  if(y < 0) return '';
+  if(y === 0) return m + 'か月';
+  return y + '歳' + (m ? m + 'か月' : '');
+}
 /* 猫の記録は小さなポップアップで受ける（他の入力と共通の作法）。
    体重（現在の値が入った状態で開く）と誕生日を1つのポップアップにまとめ、
    検証エラーはポップアップ内に出して閉じない。誕生日の不正値を
@@ -2217,11 +2333,13 @@ function renderCats(){
   cats.forEach(function(cat, i){
     var latest = catLatest(cat);
     html += '<div class="cat-block">';
-    /* 1行：名前・最新の体重・記録ボタンだけ */
+    /* 1行：名前・年齢（誕生日がある場合）・最新の体重・記録ボタン */
     html += '<div class="cat-head">';
     var ckey = catIconKey(cat);
     html += '<span class="cat-ava ' + ckey + '">' + CAT_IC[ckey] + '</span>';
     html += '<span class="cat-name">' + escHTML(cat.name) + '</span>';
+    var age = catAgeText(cat);
+    if(age) html += '<span class="cat-age">' + age + '</span>';
     if(latest){
       html += '<span class="cat-latest">' + fmtCatKg(latest.w) + '</span>';
     } else {
@@ -3205,12 +3323,14 @@ function openSettingsWeightPop(){
     }
   });
 }
-/* 目標の直接入力：mlと回数の両方が範囲内の整数のときだけ保存する。
-   「自動に戻す」で未設定に戻り、従来どおり月齢から自動で決まる動作になる */
+/* ミルクの目標の直接入力：mlと回数の両方が範囲内の整数のときだけ保存する。
+   「自動に戻す」で未設定に戻り、従来どおり月齢から自動で決まる動作になる。
+   設定シートの行からも、TOPの「今日のミルク」の目標（鉛筆）からも、
+   この同じポップアップを開き、同じ保存先（goalMl・goalTimes）を使う */
 function openGoalPop(){
   var custom = customGoal();
   var dg = displayGuide();
-  openPop('目標',
+  openPop('ミルクの目標',
     '<div class="goal-inputs">' +
       '<div class="goal-field"><input type="number" id="popGoalMl" inputmode="numeric" pattern="[0-9]*" min="1" max="500" step="1" aria-label="1回量（ml）"><span class="goal-unit">ml</span></div>' +
       '<div class="goal-field"><input type="number" id="popGoalTimes" inputmode="numeric" pattern="[0-9]*" min="1" max="20" step="1" aria-label="1日の回数"><span class="goal-unit">回</span></div>' +
@@ -3222,11 +3342,11 @@ function openGoalPop(){
         var ml = Number(mlRaw);
         var times = Number(timesRaw);
         if(mlRaw === '' || !isFinite(ml) || Math.floor(ml) !== ml || ml < 1 || ml > 500){
-          popError('目標の1回量は1〜500mlの整数で入力してください');
+          popError('ミルクの目標の1回量は1〜500mlの整数で入力してください');
           return false;
         }
         if(timesRaw === '' || !isFinite(times) || Math.floor(times) !== times || times < 1 || times > 20){
-          popError('目標の回数は1〜20回の整数で入力してください');
+          popError('ミルクの目標の回数は1〜20回の整数で入力してください');
           return false;
         }
         babySettings.goalMl = ml;
@@ -3251,6 +3371,8 @@ function openGoalPop(){
       focusPopInput(ml);
     });
 }
+/* TOPの「今日のミルク」の目標（鉛筆）からも、設定と同じ目標の編集を開く */
+$('gaugeGoalBtn').addEventListener('click', function(){ openGoalPop(); });
 /* 接続設定：保存するとサインインし直しになる（従来どおり） */
 function openConnPop(){
   openPop('接続設定',
