@@ -202,61 +202,92 @@
   .btn-more:active{background:#232f4f;}
   .hidden{display:none !important;}
 
-  /* ===== 週間ビューワー ===== */
-  .viewer-sheet{display:flex; flex-direction:column; max-height:92vh;}
-  .viewer-scroll{
-    overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
-    background:var(--bg); border:1px solid var(--divider); border-radius:14px;
-    max-height:calc(92vh - 150px); min-width:0;
-    overscroll-behavior:contain; touch-action:pan-y;
+  /* ===== 記録時間ブロック ===== */
+  .rectime{padding:5px 12px;}
+  .rectime-toggle{display:flex; gap:6px; min-width:0;}
+  .rt-opt{
+    flex:1 1 0; min-width:0; background:var(--panel); color:var(--sub);
+    border:1px solid var(--divider); border-radius:10px; padding:3px 6px;
+    font-size:15px; font-weight:800; text-align:center;
   }
-  /* ===== ビューワー表示中は背景ページをロックする ===== */
-  html.viewer-locked, body.viewer-locked{overflow:hidden !important; overscroll-behavior:none;}
-  body.viewer-locked{position:fixed; left:0; right:0; width:100%;}
-  #viewerOverlay{overscroll-behavior:none;}
-  .viewer-sheet{overscroll-behavior:contain;}
-  .viewer-nav{display:flex; gap:8px; margin-top:12px;}
-  .viewer-nav .btn-sub{margin-top:0; flex:1 1 0; width:auto; padding:9px 4px; font-size:13px; white-space:nowrap;}
-  .viewer-nav .viewer-close{flex:1.2 1 0; font-weight:800; color:var(--text);}
-  .viewer-grid{display:grid; grid-template-columns:2.3rem repeat(7,minmax(0,1fr)); min-width:0;}
-  .v-head{
-    position:sticky; top:0; z-index:3; background:var(--dark);
-    text-align:center; padding:6px 1px 5px; border-bottom:1px solid rgba(255,255,255,.3);
-    line-height:1.2; min-width:0;
+  .rt-opt.sel{background:var(--accent); color:var(--dark); border-color:var(--accent);}
+  .rt-opt:active{filter:brightness(1.08);}
+  .rectime-set{padding-top:5px;}
+  .rt-date{font-size:13px; font-weight:700; color:var(--sub); text-align:center; min-height:1.3em;}
+  .rt-controls{display:flex; align-items:center; justify-content:center; gap:10px; margin-top:2px;}
+  .rt-group{display:flex; align-items:center; gap:8px;}
+  .rt-step{
+    width:34px; height:21px; border-radius:999px; background:var(--panel); color:var(--text);
+    border:1px solid var(--divider); font-size:16px; font-weight:800; line-height:1;
+    display:flex; align-items:center; justify-content:center; padding:0;
   }
-  .v-head .v-md{display:block; font-size:12px; font-weight:800; white-space:nowrap;}
-  .v-head .v-wd{display:block; font-size:10px; font-weight:700; color:var(--sub); white-space:nowrap;}
-  .v-head .v-w{display:block; font-size:10px; font-weight:700; white-space:nowrap; line-height:1.2; min-height:1.2em; margin-top:1px;}
-  .v-head.today .v-md,.v-head.today .v-wd,.v-head.today .v-w{color:var(--accent);}
-  .v-corner{position:sticky; top:0; z-index:3; background:var(--dark); border-bottom:1px solid rgba(255,255,255,.3);}
-  .v-time{
-    font-size:10px; font-weight:700; color:var(--sub); text-align:right;
-    padding:2px 4px 0 0; line-height:1.1; min-width:0; white-space:nowrap;
+  .rt-step:active{background:#3a4a75;}
+  .rt-num{font-size:26px; font-weight:800; min-width:2ch; text-align:center; font-variant-numeric:tabular-nums;}
+  .rt-colon{font-size:26px; font-weight:800;}
+
+  /* ===== 7日間ログ（統合グリッド：日付列×24時間行） ===== */
+  .wk-grid{display:grid; grid-template-columns:15px repeat(7,minmax(0,1fr)); min-width:0;}
+  .wk-corner{border-bottom:1px solid rgba(255,255,255,.07);}
+  .wk-head{
+    border-bottom:1px solid rgba(255,255,255,.07); border-left:1px solid rgba(255,255,255,.045);
+    padding:2px 0 7px; text-align:center; min-width:0;
   }
-  .v-time.hour{border-top:1px solid rgba(255,255,255,.30);}
-  .v-slot{
-    min-height:26px; padding:1px 1px; display:flex; flex-direction:column; gap:2px;
-    border-left:1px solid rgba(255,255,255,.07); min-width:0;
+  .wk-head .wk-md{display:block; font-size:13px; font-weight:800; line-height:1.25; white-space:nowrap; font-variant-numeric:tabular-nums;}
+  .wk-head .wk-wd{display:block; font-size:10px; font-weight:700; color:var(--sub); line-height:1.3;}
+  .wk-head .wk-w{display:block; height:14px; font-size:10.5px; line-height:14px; color:#dbe4f5; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .wk-head .wk-sums{margin-top:5px; padding-top:5px; border-top:1px solid rgba(255,255,255,.07); display:flex; flex-direction:column; gap:2px;}
+  .wk-sumrow{display:flex; align-items:center; justify-content:center; gap:3px; font-size:10px; line-height:1.35; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .wk-sumrow .none{color:#7f8fb3;}
+  .wk-sumrow svg{width:11px; height:11px; flex:0 0 auto;}
+  .wk-axis{
+    display:flex; align-items:center; justify-content:flex-end; padding-right:4px;
+    font-size:9px; font-weight:700; color:#7f8fb3; font-variant-numeric:tabular-nums;
+    border-bottom:1px solid rgba(255,255,255,.07); min-height:21px; min-width:0; white-space:nowrap;
   }
-  .v-slot.hour{border-top:1px solid rgba(255,255,255,.30);}
-  .v-slot.today{background:rgba(255,217,77,.05);}
-  .v-chip{
-    width:100%; min-width:0; border-radius:6px; padding:2px 1px;
-    display:flex; align-items:center; justify-content:center; gap:1px;
-    font-size:9px; font-weight:800; line-height:1.15; white-space:nowrap; overflow:hidden;
+  .wk-cell{
+    border-bottom:1px solid rgba(255,255,255,.07); border-left:1px solid rgba(255,255,255,.045);
+    min-height:21px; display:flex; flex-wrap:wrap; align-items:center; align-content:center;
+    gap:2px; padding:2px 1px; min-width:0;
   }
-  .v-chip svg{width:13px; height:13px; flex:0 0 auto;}
-  .v-chip span{overflow:hidden; text-overflow:ellipsis;}
-  .v-chip.pee{background:var(--pee); color:#fff;}
-  .v-chip.poop{background:var(--poop); color:#fff;}
-  .v-chip.breast{background:var(--breast); color:var(--dark);}
-  .v-chip.milk{background:var(--milk-bg); color:var(--dark);}
-  .v-chip:active{filter:brightness(1.12);}
+  .wk-cell.today-col{background:rgba(255,217,77,.13);}
+  /* 今日の列の見出し：黄色の淡い色付け＋日付は黄色文字で中程度に目立たせる */
+  .wk-head.today-col{background:rgba(255,217,77,.22); border-bottom-color:rgba(255,217,77,.32);}
+  .wk-head.today-col .wk-md{color:var(--accent);}
+  .wk-head.today-col .wk-wd{color:rgba(255,217,77,.78);}
+  .wk-head.today-col .wk-sums{border-top-color:rgba(255,217,77,.25);}
+  .wk-head.today-col .wk-sumrow .none{color:rgba(255,217,77,.5);}
+  .wk-grid .wk-last{border-bottom:none;}
+  /* いまの時間帯の行：黄色18%の淡い色付け、時刻ラベルも同系の色付け＋黄色文字 */
+  .wk-axis.now-hour{color:var(--accent); background:rgba(255,217,77,.18); font-weight:800;}
+  .wk-cell.now-hour{background:rgba(255,217,77,.18);}
+  .wk-cell.now-hour.today-col{background:rgba(255,217,77,.30);}
+  .wk-cell.now-hour .wk-chip.milk{background:var(--accent); color:var(--dark);}
+  /* 記録チップ：ミルク以外はアイコンのみ、ミルクはアイコン＋量 */
+  .wk-chip{
+    flex:0 0 auto; width:15px; height:15px; border-radius:5px; padding:0;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .wk-chip svg{width:11px; height:11px; flex:0 0 auto;}
+  .wk-chip.pee{background:rgba(110,147,184,.28); color:#a9c6e2;}
+  .wk-chip.poop{background:rgba(154,126,109,.32); color:#d3bda9;}
+  .wk-chip.breast{background:rgba(222,154,164,.26); color:#efc3c9;}
+  .wk-chip.milk{
+    width:auto; height:15px; padding:0 3px 0 2px; gap:1px;
+    background:rgba(255,217,77,.20); color:var(--accent);
+    font-size:10px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .wk-chip.milk svg{width:8px; height:11px;}
+  .wk-chip:active{filter:brightness(1.25);}
   @media (max-width:430px){
-    .viewer-grid{grid-template-columns:2rem repeat(7,minmax(0,1fr));}
-    .v-head .v-md{font-size:11px;}
-    .v-chip{font-size:8.5px;}
-    .v-chip svg{width:12px; height:12px;}
+    .wk-head .wk-md{font-size:11.5px;}
+    .wk-sumrow{font-size:9.5px;}
+    .wk-sumrow svg{width:10px; height:10px;}
+  }
+  @media (max-width:360px){
+    .wk-head .wk-md{font-size:10.5px;}
+    .wk-head .wk-w{font-size:9.5px;}
+    .rt-num{font-size:24px;}
+    .rt-step{width:30px; height:20px;}
   }
 
   /* ===== modals ===== */
@@ -530,6 +561,30 @@
   </div>
   <p class="status" id="status"></p>
 
+  <!-- 記録時間ブロック（おむつ・授乳どちらの記録にも効く） -->
+  <section class="panel rectime" aria-label="記録時間">
+    <div class="rectime-toggle" role="group" aria-label="記録時間の切り替え">
+      <button class="rt-opt sel" id="rtNowBtn" type="button">今</button>
+      <button class="rt-opt" id="rtSetBtn" type="button">時間変更</button>
+    </div>
+    <div class="rectime-set hidden" id="rtSetBox">
+      <div class="rt-date" id="rtDateLabel"></div>
+      <div class="rt-controls">
+        <div class="rt-group">
+          <button class="rt-step" id="rtHourMinus" type="button" aria-label="時間を1時間戻す">－</button>
+          <span class="rt-num" id="rtHour">--</span>
+          <button class="rt-step" id="rtHourPlus" type="button" aria-label="時間を1時間進める">＋</button>
+        </div>
+        <span class="rt-colon">:</span>
+        <div class="rt-group">
+          <button class="rt-step" id="rtMinMinus" type="button" aria-label="分を10分戻す">－</button>
+          <span class="rt-num" id="rtMin">--</span>
+          <button class="rt-step" id="rtMinPlus" type="button" aria-label="分を10分進める">＋</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- おむつパネル -->
   <section class="panel" aria-label="おむつ">
     <div class="prevrow" id="prevDiaper"></div>
@@ -559,6 +614,7 @@
   <section class="panel" aria-label="今日のログ">
     <div class="rec-list" id="todayList"></div>
   </section>
+  <button class="btn-more hidden" id="todayMoreBtn" type="button">もっと見る</button>
 
   <!-- メモ入力 -->
   <section class="panel" aria-label="メモ">
@@ -575,7 +631,6 @@
   <section class="panel" aria-label="7日間のログ">
     <div id="daysBody"></div>
   </section>
-  <button class="btn-more" id="viewerBtn" type="button">ビューワーで見る</button>
 
   <!-- 月間のログ -->
   <div class="sec-head">
@@ -682,7 +737,7 @@
   </div>
 </div>
 
-<!-- 日別ポップアップ -->
+<!-- 日別ポップアップ（月間のログの日一覧から開く） -->
 <div class="overlay hidden" id="dayOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
     <h3 id="dayTitle">—</h3>
@@ -698,21 +753,6 @@
     <h3 id="monthTitle">—</h3>
     <div id="monthDays"></div>
     <button class="btn-sub" id="monthCloseBtn" type="button" style="margin-top:14px;">閉じる</button>
-  </div>
-</div>
-
-<!-- 週間ビューワー -->
-<div class="overlay hidden" id="viewerOverlay">
-  <div class="sheet viewer-sheet" role="dialog" aria-modal="true">
-    <h3 id="viewerTitle">—<button class="close-x" id="viewerCloseX" type="button" aria-label="閉じる">×</button></h3>
-    <div class="viewer-scroll" id="viewerScroll">
-      <div class="viewer-grid" id="viewerGrid"></div>
-    </div>
-    <div class="viewer-nav">
-      <button class="btn-sub" id="viewerPrevBtn" type="button">‹ 前のログ</button>
-      <button class="btn-sub viewer-close" id="viewerCloseBtn" type="button">閉じる</button>
-      <button class="btn-sub" id="viewerNextBtn" type="button">次のログ ›</button>
-    </div>
   </div>
 </div>
 
@@ -1181,25 +1221,40 @@ function renderGauge(){
   wrap.classList.remove('hidden');
   $('gaugeHead').classList.remove('hidden');
 }
+/* 今日のログ：既定は新しい順に直近4件まで（記録とメモを合わせて）。
+   残りは「もっと見る」でその場に展開して全部見られ、もう一度押すと閉じる。
+   今日の記録が少ないときは、従来どおり直近の過去記録を補って出す */
+var todayExpanded = false;
 function renderToday(){
   var now = new Date();
   var todays = records.filter(function(r){ return sameDay(r.start, now); });
-  var show = todays.slice();
-  if(show.length < 4){
+  var full = todays.slice();
+  if(full.length < 4){
     var past = records.filter(function(r){ return !sameDay(r.start, now); });
-    show = show.concat(past.slice(0, 5 - show.length));
-  } else {
-    show = show.slice(0, Math.max(show.length, 0));
+    full = full.concat(past.slice(0, 5 - full.length));
   }
-  /* 今日分が5件以上ある場合は今日分を全て出す（最低ラインは合計5件の補完ルール） */
-  if(todays.length >= 4){ show = todays; }
-  if(!show.length){
+  var btn = $('todayMoreBtn');
+  if(!full.length){
     $('todayList').innerHTML = '<div class="empty">まだ記録がありません</div>';
+    if(btn) btn.classList.add('hidden');
     return;
   }
-  $('todayList').innerHTML = show.map(function(r){ return recRowHTML(r, true); }).join('');
+  var visible = todayExpanded ? full : full.slice(0, 4);
+  $('todayList').innerHTML = visible.map(function(r){ return recRowHTML(r, true); }).join('');
   bindRecRows($('todayList'));
+  if(btn){
+    if(full.length > 4){
+      btn.classList.remove('hidden');
+      btn.textContent = todayExpanded ? '閉じる' : 'もっと見る';
+    } else {
+      btn.classList.add('hidden');
+    }
+  }
 }
+$('todayMoreBtn').addEventListener('click', function(){
+  todayExpanded = !todayExpanded;
+  renderToday();
+});
 function dayStats(date){ return dayStatsFrom(records, date); }
 function dayStatsFrom(src, date){
   var st = { pee:0, poop:0, breast:0, milk:0, list:[] };
@@ -1252,28 +1307,93 @@ function dayRowHTML(d, st){
     '<span class="num ' + (st.milk ? 'hl' : '') + '">' + (st.milk ? st.milk + 'ml' : '—') + '</span>' +
     '</button>';
 }
-function daysHeadHTML(){
-  return '<div class="days-head" aria-hidden="true">' +
-    '<span class="hcell"></span>' +
-    '<span class="hcell" style="color:#7dd3fc;">' + IC.pee + '</span>' +
-    '<span class="hcell" style="color:#c2a68d;">' + IC.poop + '</span>' +
-    '<span class="hcell" style="color:var(--breast);">' + IC.breast + '</span>' +
-    '<span class="hcell" style="color:var(--milk-bg);">' + IC.milk + '</span>' +
-    '</div>';
+/* ===== 7日間ログ（統合グリッド） =====
+   日付列（左が6日前・右が今日）×24時間行。左端に時刻軸。
+   列ヘッダー：日付・曜日・体重（g数値のみ、無い日は空行で高さ統一）と
+   その日の集計（おしっこ・うんち・母乳はアイコン＋回数、
+   ミルクはアイコン＋総量、0件は―）。
+   記録チップ：おしっこ・うんち・母乳はアイコンのみ、ミルクはアイコン＋量。
+   チップをタップすると編集シートが開く。メモはチップにしない */
+function wkSumRowHTML(kind, valHTML, color){
+  return '<div class="wk-sumrow"><span style="color:' + color + ';">' + IC[kind] + '</span>' + valHTML + '</div>';
 }
+function wkNone(){ return '<span class="none">―</span>'; }
 function renderDays(){
-  var html = daysHeadHTML();
   var today = startOfDay(new Date());
-  for(var i=0;i<7;i++){
+  var nowHour = new Date().getHours();
+  var days = [];
+  for(var i=6;i>=0;i--){
     var d = new Date(today); d.setDate(d.getDate() - i);
-    html += dayRowHTML(d, dayStats(d));
+    days.push(d);
   }
+  var html = '<div class="wk-grid"><div class="wk-corner"></div>';
+  days.forEach(function(d, di){
+    var st = dayStatsFrom(records, d);
+    var wInfo = dayWeightInfo(d);
+    html += '<div class="wk-head' + (di===6 ? ' today-col' : '') + '">' +
+      '<span class="wk-md">' + fmtMD(d) + '</span>' +
+      '<span class="wk-wd">（' + WD[d.getDay()] + '）</span>' +
+      '<span class="wk-w">' + (wInfo ? wInfo.w.toLocaleString('ja-JP') : '') + '</span>' +
+      '<div class="wk-sums">' +
+      wkSumRowHTML('pee', st.pee ? String(st.pee) : wkNone(), '#7dd3fc') +
+      wkSumRowHTML('poop', st.poop ? String(st.poop) : wkNone(), '#c2a68d') +
+      wkSumRowHTML('breast', st.breast ? String(st.breast) : wkNone(), 'var(--breast)') +
+      wkSumRowHTML('milk', st.milk ? st.milk + 'ml' : wkNone(), 'var(--accent)') +
+      '</div></div>';
+  });
+  /* 日×1時間枠 → 記録リスト（時刻の早い順） */
+  var slots = {};
+  records.forEach(function(r){
+    if(r.kind==='memo') return;
+    for(var di=0; di<7; di++){
+      if(sameDay(r.start, days[di])){
+        var key = di*24 + r.start.getHours();
+        if(!slots[key]) slots[key] = [];
+        slots[key].push(r);
+        break;
+      }
+    }
+  });
+  Object.keys(slots).forEach(function(k){
+    slots[k].sort(function(a,b){ return a.start - b.start; });
+  });
+  for(var h=0; h<24; h++){
+    var lastCls = (h===23) ? ' wk-last' : '';
+    var nowCls = (h===nowHour) ? ' now-hour' : '';
+    html += '<div class="wk-axis' + lastCls + nowCls + '" data-hour="' + h + '">' + h + '</div>';
+    for(var c=0; c<7; c++){
+      var list = slots[c*24 + h] || [];
+      html += '<div class="wk-cell' + lastCls + nowCls + (c===6 ? ' today-col' : '') + '" data-hour="' + h + '">';
+      list.forEach(function(r){
+        if(r.kind==='milk'){
+          html += '<button class="wk-chip milk" type="button" data-eid="' + r.id + '">' + IC.milk + '<span>' + (r.amount||0) + '</span></button>';
+        } else {
+          html += '<button class="wk-chip ' + r.kind + '" type="button" data-eid="' + r.id + '" aria-label="' + KIND[r.kind].label + '">' + IC[r.kind] + '</button>';
+        }
+      });
+      html += '</div>';
+    }
+  }
+  html += '</div>';
   $('daysBody').innerHTML = html;
-  var rows = $('daysBody').querySelectorAll('.day-row');
-  for(var j=0;j<rows.length;j++){
-    rows[j].addEventListener('click', function(){
-      openDay(new Date(parseInt(this.getAttribute('data-day'), 10)));
+  var chips = $('daysBody').querySelectorAll('.wk-chip');
+  for(var j=0;j<chips.length;j++){
+    chips[j].addEventListener('click', function(){
+      var id = this.getAttribute('data-eid');
+      var found = null, k;
+      for(k=0;k<records.length;k++){ if(records[k].id===id){ found = records[k]; break; } }
+      if(found) openEdit(found);
     });
+  }
+}
+/* 時計の定期更新で、いまの時間帯のハイライトだけ付け替える */
+function updateNowHour(){
+  var body = $('daysBody');
+  if(!body) return;
+  var h = new Date().getHours();
+  var els = body.querySelectorAll('[data-hour]');
+  for(var i=0;i<els.length;i++){
+    els[i].classList.toggle('now-hour', parseInt(els[i].getAttribute('data-hour'), 10) === h);
   }
 }
 /* ================= 月間のログ ================= */
@@ -1812,170 +1932,6 @@ $('allMonthsBtn').addEventListener('click', function(){
 $('allMonthsCloseBtn').addEventListener('click', function(){ $('allMonthsOverlay').classList.add('hidden'); });
 $('allMonthsOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
 
-/* ================= 週間ビューワー（7日並列・1時間単位） ================= */
-function viewerChipLabel(rec){
-  if(rec.kind==='pee') return 'おし';
-  if(rec.kind==='poop') return 'うんち';
-  if(rec.kind==='breast') return '母乳';
-  return (rec.amount || 0) + 'ml';
-}
-/* 表示中の週：0=今日までの7日間、-1=その前の7日間、+側は今日より先には進まない */
-var viewerWeekOffset = 0;
-function renderViewer(){
-  var endDay = startOfDay(new Date());
-  endDay.setDate(endDay.getDate() + viewerWeekOffset * 7);
-  var realToday = startOfDay(new Date());
-  var days = [];
-  for(var i=6;i>=0;i--){
-    var d = new Date(endDay); d.setDate(d.getDate() - i);
-    days.push(d);
-  }
-  var prevB = $('viewerPrevBtn'), nextB = $('viewerNextBtn');
-  if(nextB) nextB.disabled = viewerWeekOffset >= 0;
-  if(prevB) prevB.disabled = false;
-  $('viewerTitle').firstChild.textContent =
-    fmtMD(days[0]) + '（' + WD[days[0].getDay()] + '）〜' + fmtMD(days[6]) + '（' + WD[days[6].getDay()] + '）';
-  /* 日×1時間枠 → 記録リスト */
-  var src = logSource();
-  var slots = {}; /* key: dayIndex*24+hour */
-  src.forEach(function(r){
-    if(r.kind==='memo') return; /* メモはビューワーのチップにしない */
-    for(var di=0; di<7; di++){
-      if(sameDay(r.start, days[di])){
-        var slot = r.start.getHours();
-        var key = di*24 + slot;
-        if(!slots[key]) slots[key] = [];
-        slots[key].push(r);
-        break;
-      }
-    }
-  });
-  Object.keys(slots).forEach(function(k){
-    slots[k].sort(function(a,b){ return a.start - b.start; });
-  });
-  var html = '<div class="v-corner"></div>';
-  days.forEach(function(d, di){
-    /* 体重は列ヘッダー（M/D・曜日の下）に数値だけ1行。記録が無い日は空行で高さをそろえる */
-    var wInfo = dayWeightInfo(d);
-    var wText = wInfo ? wInfo.w.toLocaleString('ja-JP') : '&nbsp;';
-    html += '<div class="v-head' + (sameDay(d, realToday) ? ' today' : '') + '"><span class="v-md">' + fmtMD(d) +
-      '</span><span class="v-wd">（' + WD[d.getDay()] + '）</span><span class="v-w">' + wText + '</span></div>';
-  });
-  for(var s=0; s<24; s++){
-    html += '<div class="v-time hour" data-slot="' + s + '">' + s + ':00</div>';
-    for(var c=0; c<7; c++){
-      var list = slots[c*24 + s] || [];
-      html += '<div class="v-slot hour' + (sameDay(days[c], realToday) ? ' today' : '') + '">';
-      list.forEach(function(r){
-        html += '<button class="v-chip ' + r.kind + '" type="button" data-eid="' + r.id + '">' +
-          IC[r.kind] + '<span>' + viewerChipLabel(r) + '</span></button>';
-      });
-      html += '</div>';
-    }
-  }
-  /* 24:00 の終端ライン */
-  html += '<div class="v-time hour">24:00</div>';
-  for(var e=0; e<7; e++){ html += '<div class="v-slot hour" style="min-height:0;padding:0;"></div>'; }
-  $('viewerGrid').innerHTML = html;
-  var chips = $('viewerGrid').querySelectorAll('.v-chip');
-  for(var j=0;j<chips.length;j++){
-    chips[j].addEventListener('click', function(){
-      var id = this.getAttribute('data-eid');
-      var found = null, k;
-      for(k=0;k<records.length;k++){ if(records[k].id===id){ found = records[k]; break; } }
-      if(!found && archiveRecords){
-        for(k=0;k<archiveRecords.length;k++){ if(archiveRecords[k].id===id){ found = archiveRecords[k]; break; } }
-      }
-      if(found){
-        closeViewer();
-        openEdit(found);
-      }
-    });
-  }
-}
-function scrollViewerToNow(){
-  /* 現在時刻あたりが見える位置へスクロール */
-  var now = new Date();
-  var curSlot = now.getHours();
-  requestAnimationFrame(function(){
-    var sc = $('viewerScroll');
-    if(!sc) return;
-    var row = sc.querySelector('.v-time[data-slot="' + Math.max(0, curSlot - 1) + '"]');
-    if(row){
-      sc.scrollTop = Math.max(0, row.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 40);
-    }
-  });
-}
-/* ビューワー表示中だけ背景ページを固定し、背後のスクロールを止める。
-   ビューワー内の時間スクロール（viewerScroll）はそのまま動く */
-var viewerLocked = false;
-var viewerLockedY = 0;
-var viewerLastTouchY = null;
-function lockViewerBackground(){
-  if(viewerLocked) return;
-  viewerLocked = true;
-  viewerLockedY = window.pageYOffset || document.documentElement.scrollTop || 0;
-  document.documentElement.classList.add('viewer-locked');
-  document.body.classList.add('viewer-locked');
-  document.body.style.top = (-viewerLockedY) + 'px';
-}
-function unlockViewerBackground(){
-  if(!viewerLocked) return;
-  viewerLocked = false;
-  viewerLastTouchY = null;
-  document.documentElement.classList.remove('viewer-locked');
-  document.body.classList.remove('viewer-locked');
-  document.body.style.top = '';
-  window.scrollTo(0, viewerLockedY);
-}
-function closeViewer(){
-  $('viewerOverlay').classList.add('hidden');
-  unlockViewerBackground();
-}
-document.addEventListener('touchstart', function(e){
-  if(viewerLocked && e.touches.length === 1) viewerLastTouchY = e.touches[0].clientY;
-}, { passive:true });
-document.addEventListener('touchmove', function(e){
-  if(!viewerLocked) return;
-  var sc = $('viewerScroll');
-  /* スクロール領域の外（背面・タイトル・ボタン帯）のドラッグは背景へ伝えない */
-  if(!sc || !sc.contains(e.target)){ e.preventDefault(); return; }
-  if(viewerLastTouchY === null || !e.touches.length) return;
-  var y = e.touches[0].clientY;
-  var dy = y - viewerLastTouchY;
-  viewerLastTouchY = y;
-  /* 上端・下端でのドラッグも背景へ伝えない（スクロール連鎖の防止） */
-  var maxTop = sc.scrollHeight - sc.clientHeight;
-  if(maxTop <= 0 || (sc.scrollTop <= 0 && dy > 0) || (sc.scrollTop >= maxTop - 1 && dy < 0)){
-    e.preventDefault();
-  }
-}, { passive:false });
-function openViewer(){
-  viewerWeekOffset = 0;
-  renderViewer();
-  $('viewerOverlay').classList.remove('hidden');
-  lockViewerBackground();
-  scrollViewerToNow();
-}
-$('viewerBtn').addEventListener('click', openViewer);
-$('viewerPrevBtn').addEventListener('click', function(){
-  viewerWeekOffset--;
-  renderViewer();
-  /* 古い週は通常表示分（31日）より前になることがあるのでアーカイブも広げて取る */
-  loadArchive((0 - viewerWeekOffset) * 7 + 14);
-  var sc = $('viewerScroll'); if(sc) sc.scrollTop = 0;
-});
-$('viewerNextBtn').addEventListener('click', function(){
-  if(viewerWeekOffset >= 0) return;
-  viewerWeekOffset++;
-  renderViewer();
-  if(viewerWeekOffset === 0) scrollViewerToNow();
-  else { var sc = $('viewerScroll'); if(sc) sc.scrollTop = 0; }
-});
-$('viewerCloseBtn').addEventListener('click', closeViewer);
-$('viewerCloseX').addEventListener('click', closeViewer);
-$('viewerOverlay').addEventListener('click', function(e){ if(e.target===this) closeViewer(); });
-
 /* ================= 編集シート ================= */
 function openEdit(rec){
   if(!accessToken){ setStatus('サインインしてください', true); return; }
@@ -2245,7 +2201,6 @@ function loadArchive(daysBack){
     archiveFetchedAt = Date.now();
     renderMonths();
     if(!$('allMonthsOverlay').classList.contains('hidden')) renderAllMonths();
-    if(!$('viewerOverlay').classList.contains('hidden')) renderViewer();
   }).catch(function(){
   }).then(function(){ archiveLoading = false; });
 }
@@ -2256,12 +2211,62 @@ function setBusy(b){
   var mb = document.querySelectorAll('.feed-grid button');
   for(var j=0;j<mb.length;j++){ mb[j].disabled = b || !accessToken; }
 }
+/* ================= 記録時間ブロック =================
+   おむつ・授乳どちらの記録にも効く記録時刻の切り替え。
+   ①今：従来どおり現在時刻で記録する。
+   ②時間変更：あらかじめ設定した日時に保存する。時間を先に決めてから
+   同じ時間で続けて記録する使い方を想定し、記録を保存してもモードと
+   設定時刻はそのまま保持する（①今に戻るのは①今を押したときだけ）。
+   ②を選んだ時点の現在時刻を初期値とし、時は＋／−で1時間ずつ、
+   分は＋／−で10分ずつ（時刻全体が10分前後する）動かす。
+   0時を跨ぐと日付も前日・翌日に変わる */
+var recTimeMode = 'now'; /* 'now' | 'set' */
+var recTimeDate = null;  /* ②で設定中の日時（Date） */
+function renderRecTime(){
+  $('rtNowBtn').classList.toggle('sel', recTimeMode === 'now');
+  $('rtSetBtn').classList.toggle('sel', recTimeMode === 'set');
+  var box = $('rtSetBox');
+  if(recTimeMode === 'set' && recTimeDate){
+    box.classList.remove('hidden');
+    $('rtDateLabel').textContent = (recTimeDate.getMonth()+1) + '月' + recTimeDate.getDate() + '日（' + WD[recTimeDate.getDay()] + '）';
+    $('rtHour').textContent = pad(recTimeDate.getHours());
+    $('rtMin').textContent = pad(recTimeDate.getMinutes());
+  } else {
+    box.classList.add('hidden');
+  }
+}
+function setRecTimeMode(mode){
+  if(mode === 'set' && recTimeMode !== 'set'){
+    /* ②に切り替えたときは現在時刻を初期値にする */
+    recTimeDate = new Date();
+    recTimeDate.setSeconds(0, 0);
+  }
+  recTimeMode = mode;
+  renderRecTime();
+}
+$('rtNowBtn').addEventListener('click', function(){ setRecTimeMode('now'); });
+$('rtSetBtn').addEventListener('click', function(){ setRecTimeMode('set'); });
+function stepRecTime(ms){
+  if(!recTimeDate) recTimeDate = new Date();
+  recTimeDate = new Date(recTimeDate.getTime() + ms);
+  renderRecTime();
+}
+$('rtHourPlus').addEventListener('click', function(){ stepRecTime(3600000); });
+$('rtHourMinus').addEventListener('click', function(){ stepRecTime(-3600000); });
+$('rtMinPlus').addEventListener('click', function(){ stepRecTime(10*60000); });
+$('rtMinMinus').addEventListener('click', function(){ stepRecTime(-10*60000); });
+/* 記録に使う日時：①今なら現在時刻、②なら設定した日時 */
+function recordWhen(){
+  if(recTimeMode === 'set' && recTimeDate) return new Date(recTimeDate.getTime());
+  return new Date();
+}
+
 function createRecord(kind, amount){
   if(!accessToken || busy) return;
   ensureAudio();
   setBusy(true);
   setStatus('記録中…');
-  var body = eventBody(kind, amount, new Date());
+  var body = eventBody(kind, amount, recordWhen());
   apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events', {
     method: 'POST', body: JSON.stringify(body)
   }).then(function(){
@@ -2844,7 +2849,6 @@ function autoRefresh(){
   if(catOpenEditor.idx >= 0) return;
   if(!$('monthOverlay').classList.contains('hidden')) return;
   if(!$('allMonthsOverlay').classList.contains('hidden')) return;
-  if(!$('viewerOverlay').classList.contains('hidden')) return;
   if(tokenValid()){
     /* 期限までの残りが少ないときは、切れる前に先に裏で取り直す。
        その間も今のトークンで読み込みは続ける */
@@ -2866,6 +2870,7 @@ setInterval(function(){
   $('nowLine').textContent = fmtNow(new Date());
   renderPrev();
   renderWeightRecordBtn();
+  updateNowHour();
 }, 30000);
 
 /* ================= 入力欄をキーボードの上に見せる =================
@@ -2944,6 +2949,7 @@ if(window.visualViewport){
 $('calendarIdInput').value = calendarId;
 $('clientIdInput').value = clientId;
 $('nowLine').textContent = fmtNow(new Date());
+renderRecTime();
 renderBabyUI();
 updateAuthUI();
 window.addEventListener('load', function(){
