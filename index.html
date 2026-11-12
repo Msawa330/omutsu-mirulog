@@ -31,7 +31,15 @@
     --today-tint:rgba(255,205,40,.07); --today-ink:#d9a400;
     --coral:#e05252;
     --shadow:0 2px 12px rgba(60,80,60,.07), 0 1px 3px rgba(60,80,60,.05);
+    /* ===== 共通寸法（余白・角丸・文字・ボタンの高さ） ===== */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+    --r-s:10px; --r-m:14px; --r-l:20px; --pill:999px;
+    --fs-1:11px; --fs-2:13px; --fs-3:15px; --fs-4:17px;
+    --btn-h:36px; --btn-h-lg:44px;
+    --err-bg:#fdecec;
+    --head-ink:var(--ink-sub); --head-milk:var(--milk); --head-diaper:var(--pee);
   }
+  body.no-scroll{overflow:hidden;}
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0; overflow-x:hidden; max-width:100%;}
   html{-webkit-text-size-adjust:100%;}
@@ -75,13 +83,13 @@
   .baby-summary .unset{font-size:13px; font-weight:700; opacity:.92;}
   .weight-edit{
     position:relative;
-    width:24px; height:24px; min-height:24px;
+    width:36px; height:36px; min-height:36px;
     border:none; border-radius:50%;
     background:rgba(255,255,255,.18); color:#fff;
     display:flex; align-items:center; justify-content:center;
     padding:0; flex:0 0 auto;
   }
-  .weight-edit svg{width:12px; height:12px;}
+  .weight-edit svg{width:15px; height:15px;}
   .weight-edit:active{background:rgba(255,255,255,.32);}
   .weight-edit.recorded::after{
     content:'✓'; position:absolute; top:-6px; right:-7px;
@@ -93,7 +101,7 @@
   }
   .hdr-right{margin-left:auto; display:flex; align-items:center; gap:8px; flex:0 0 auto;}
   .hdr-icon{
-    width:30px; height:30px; min-height:30px;
+    width:36px; height:36px; min-height:36px;
     border:none; border-radius:50%;
     background:rgba(255,255,255,.18); color:#fff;
     display:flex; align-items:center; justify-content:center; padding:0;
@@ -105,7 +113,7 @@
     background:rgba(255,255,255,.18); color:#fff;
     display:flex; align-items:center; gap:4px;
     padding:5px 10px; font-size:11px; font-weight:800;
-    min-height:30px; white-space:nowrap;
+    min-height:36px; white-space:nowrap;
   }
   .settings-btn svg{width:14px; height:14px;}
   .settings-btn:active{background:rgba(255,255,255,.32);}
@@ -149,12 +157,12 @@
   /* ===== 共通ボタン ===== */
   .btn-primary{
     background:var(--green); color:#fff; font-weight:800; font-size:15px;
-    border-radius:12px; padding:11px 18px; width:100%; margin-top:14px;
+    border-radius:12px; padding:11px 18px; width:100%; margin-top:14px; min-height:var(--btn-h-lg);
   }
   .btn-primary:active{background:var(--green-dark);}
   .btn-sub{
     background:#fff; color:var(--ink-sub); font-weight:700; font-size:13px;
-    border:1px solid var(--line); border-radius:10px; padding:9px 14px; width:100%; margin-top:8px;
+    border:1px solid var(--line); border-radius:10px; padding:9px 14px; width:100%; margin-top:8px; min-height:var(--btn-h);
   }
   .btn-more{
     display:block; margin:8px auto 2px;
@@ -163,14 +171,14 @@
   }
   .btn-danger{
     background:#fff; color:var(--coral); border:1px solid rgba(224,82,82,.5);
-    font-weight:800; font-size:14px; border-radius:12px; padding:11px 18px; width:100%; margin-top:10px;
+    font-weight:800; font-size:14px; border-radius:12px; padding:11px 18px; width:100%; margin-top:10px; min-height:var(--btn-h-lg);
   }
   .btn-danger.confirm{background:#c0392b; color:#fff; border-color:#c0392b;}
   .nav-row{display:flex; gap:8px; margin-top:10px;}
   .nav-btn{
     flex:1; border:2px solid var(--green-soft); background:var(--green-soft);
     color:var(--green-dark); font-size:13px; font-weight:800;
-    border-radius:999px; padding:7px 10px; min-height:36px;
+    border-radius:999px; padding:7px 10px; min-height:var(--btn-h);
   }
   .nav-btn:active{background:var(--green); color:#fff;}
   .nav-btn:disabled{background:#f0f3f0; border-color:#f0f3f0; color:#b6bcb6; opacity:1;}
@@ -180,7 +188,7 @@
   .rectime-toggle{display:flex; background:#f0f3f0; border-radius:999px; padding:3px; gap:3px; min-width:0;}
   .rt-opt{
     flex:1 1 0; min-width:0; background:transparent; color:var(--ink-sub);
-    border-radius:999px; padding:4px 0; min-height:28px;
+    border-radius:999px; padding:4px 0; min-height:36px;
     font-size:12px; font-weight:800; text-align:center;
   }
   .rt-opt.sel{background:#fff; color:var(--green-dark); box-shadow:0 1px 4px rgba(60,80,60,.14);}
@@ -189,7 +197,7 @@
   .rt-controls{display:flex; align-items:center; justify-content:center; gap:12px; margin-top:2px;}
   .rt-group{display:flex; align-items:center; gap:8px;}
   .rt-step{
-    width:30px; height:30px; border-radius:50%; background:var(--green-soft); color:var(--green-dark);
+    width:36px; height:36px; min-height:36px; border-radius:50%; background:var(--green-soft); color:var(--green-dark);
     border:2px solid var(--green-soft); font-size:16px; font-weight:800; line-height:1;
     display:flex; align-items:center; justify-content:center; padding:0;
   }
@@ -321,13 +329,13 @@
   }
   .wk-head .wk-md{display:block; font-size:11px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.3;}
   .wk-head .wk-wd{display:block; font-size:9px; font-weight:700; color:var(--ink-sub); line-height:1.3;}
-  .wk-head .wk-w{display:block; min-height:11px; font-size:8px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.3;}
+  .wk-head .wk-w{display:block; min-height:11px; font-size:9px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.3;}
   .wk-head.today-col .wk-md{color:var(--today-ink);}
   .wk-sums{display:flex; flex-direction:column; gap:2px; margin-top:4px; padding:0 1px;}
   .wk-sumrow{
     border-radius:6px; padding:2px 0;
     display:flex; align-items:center; justify-content:center; gap:2px;
-    font-size:8px; font-weight:800; line-height:1.15;
+    font-size:9px; font-weight:800; line-height:1.15;
     font-variant-numeric:tabular-nums; white-space:nowrap;
   }
   .wk-sumrow svg{width:11px; height:11px; flex:0 0 auto; display:block;}
@@ -337,7 +345,7 @@
   .wk-sumrow.breast{background:var(--breast-bg); color:var(--breast);}
   .wk-sumrow.milk{background:var(--milk-bg); color:#8a6503;}
   .wk-axis{
-    font-size:8px; font-weight:700; color:#b6bcb6;
+    font-size:9px; font-weight:700; color:#b6bcb6;
     display:flex; align-items:flex-start; justify-content:center;
     padding-top:2px; font-variant-numeric:tabular-nums;
     border-bottom:1px solid #f5f6f5; min-width:0; white-space:nowrap;
@@ -354,16 +362,18 @@
   .wk-grid .wk-last{border-bottom:none;}
   .wk-chip{
     flex:0 0 auto; height:13px; min-width:13px;
-    border-radius:999px; padding:0 2px;
+    border-radius:999px; padding:0 2px; position:relative;
     display:inline-flex; align-items:center; justify-content:center; gap:1px;
   }
+  /* 見た目は変えず、タップの当たり判定だけを上下左右に広げる */
+  .wk-chip::after{content:""; position:absolute; inset:-8px -4px;}
   .wk-chip svg{width:10px; height:10px; display:block;}
   .wk-chip.pee{background:var(--pee-bg);}
   .wk-chip.poop{background:var(--poop-bg);}
   .wk-chip.breast{background:var(--breast-bg);}
   .wk-chip.milk{
     background:var(--milk-bg); color:#8a6503; padding:0 3px 0 2px;
-    font-size:7px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap;
+    font-size:9px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap;
   }
   .wk-chip:active{filter:brightness(.96);}
 
@@ -388,8 +398,8 @@
   .mcal-day.has{color:var(--ink);}
   .mcal-day .dot{display:block; width:4px; height:4px; border-radius:50%; background:var(--green); margin:1px auto 0;}
   .mcal-day .dot.none{background:transparent;}
-  .mcal-day.today{background:var(--green); color:#fff; font-weight:800;}
-  .mcal-day.today .dot{background:#fff;}
+  .mcal-day.today{background:var(--today-tint); color:var(--today-ink); font-weight:800;}
+  .mcal-day.today .dot{background:var(--today-ink);}
   .month-stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:9px;}
   .mstat{border-radius:10px; padding:5px 4px; text-align:center; min-width:0;}
   .mstat .k{display:flex; align-items:center; justify-content:center; gap:3px; font-size:9px; font-weight:800;}
@@ -450,32 +460,49 @@
   .cat-block:last-child{border-bottom:none; padding-bottom:2px;}
   .cat-head{display:flex; align-items:center; gap:9px; min-width:0; padding:2px 0;}
   .cat-ava{
-    width:32px; height:32px; border-radius:50%;
-    background:#fdf3e3; color:#d99a2b;
-    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+    width:36px; height:36px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto; overflow:hidden;
+    box-shadow:0 1px 4px rgba(90,70,40,.14), inset 0 -5px 9px rgba(120,90,40,.06), inset 0 3px 6px rgba(255,255,255,.7);
   }
-  .cat-ava svg{width:18px; height:18px;}
+  .cat-ava.mii{background:radial-gradient(circle at 35% 30%, #fff6e8 0%, #ffe9cf 55%, #ffdfba 100%);}
+  .cat-ava.nari{background:radial-gradient(circle at 35% 30%, #ffffff 0%, #f3f0ea 55%, #e9e2d4 100%);}
+  .cat-ava svg{width:88%; height:88%; display:block;}
+  /* 猫の記録ボタン専用クラス（TOPの .btn-ghost とは分離） */
+  .cat-rec-btn{
+    margin-left:auto; flex:0 0 auto;
+    border:2px solid var(--green); background:#fff; color:var(--green-dark);
+    font-size:12px; font-weight:800; border-radius:999px; padding:4px 14px; min-height:36px;
+  }
+  .cat-rec-btn:active{background:var(--green-soft);}
   .cat-name{font-size:13px; font-weight:800; flex:0 0 auto;}
   .cat-latest{font-size:12px; font-weight:800; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap;}
   .cat-latest.unset{font-weight:700;}
-  .cat-head .btn-ghost{
-    margin-left:auto; flex:0 0 auto;
-    border:2px solid var(--green); background:#fff; color:var(--green-dark);
-    font-size:12px; font-weight:800; border-radius:999px; padding:4px 14px; min-height:30px;
-  }
-  .cat-head .btn-ghost:active{background:var(--green-soft);}
   .cat-editor{margin-top:8px;}
-  .cat-editor input{
-    width:100%; background:var(--bg); border:1px solid var(--line); border-radius:10px;
-    color:var(--ink); font-size:16px; padding:10px 12px; font-family:inherit;
-  }
-  .cat-editor .btn-primary{margin-top:8px;}
+  .cat-editor input{ width:100%; }
   .cat-kg-row{display:flex; align-items:center; gap:8px;}
   .cat-kg-row input{flex:1 1 auto; min-width:0;}
   .cat-kg-unit{font-size:15px; font-weight:800; flex:0 0 auto;}
   .cat-birth-row{display:flex; align-items:center; gap:8px; margin-top:8px;}
   .cat-birth-label{font-size:12px; font-weight:700; color:var(--ink-sub); flex:0 0 auto;}
-  .cat-birth-row input{flex:1 1 auto; min-width:0; font-size:14px; padding:7px 10px;}
+  .cat-birth-row input{flex:1 1 auto; min-width:0;}
+
+  /* ===== 入力欄の共通スタイル（設定・編集・接続設定・猫で統一） ===== */
+  .set-editor input,
+  .sheet .conn-box input,
+  .sheet input[type="datetime-local"],
+  .sheet input[type="text"],
+  .milk-custom input,
+  .cat-editor input,
+  .card input{
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); font-size:16px; padding:10px 12px; font-family:inherit;
+  }
+  /* 数値欄＋単位の横並び */
+  .num-unit-row{display:flex; align-items:center; gap:8px;}
+  .num-unit-row input{flex:1 1 auto; min-width:0;}
+  .num-unit-row .unit-label{font-size:15px; font-weight:800; flex:0 0 auto;}
+  /* 目標の「自動に戻す」は保存／キャンセルと分けた第3のボタン */
+  .goal-reset-btn{margin-top:14px;}
 
   /* ===== シート（モーダル） ===== */
   .overlay{
@@ -484,23 +511,39 @@
   }
   .sheet{
     background:#fff; color:var(--ink); width:100%; max-width:672px; min-width:0;
-    max-height:86vh; overflow-y:auto; overflow-x:hidden;
-    border-radius:24px 24px 0 0; padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+    max-height:86vh; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
+    border-radius:var(--r-l) var(--r-l) 0 0; padding:18px 16px calc(18px + env(safe-area-inset-bottom));
     box-shadow:0 -4px 24px rgba(60,80,60,.14);
+  }
+  /* シート共通：見出しは上に、主要ボタンは下部フッターに固定する */
+  .sheet > h3{position:sticky; top:-18px; background:#fff; z-index:2; padding:2px 0 8px; margin-bottom:4px;}
+  .sheet-foot{
+    position:sticky; bottom:calc(-18px - env(safe-area-inset-bottom)); z-index:2;
+    background:#fff; padding:10px 0 2px; margin-top:12px;
+  }
+  .sheet-foot .btn-primary, .sheet-foot .btn-danger{margin-top:8px;}
+  .sheet-foot .btn-primary:first-child, .sheet-foot .btn-danger:first-child{margin-top:0;}
+  .sheet-foot .btn-sub{margin-top:8px;}
+  .sheet-error{
+    background:var(--err-bg); color:var(--coral); border-radius:var(--r-s);
+    font-size:var(--fs-2); font-weight:700; line-height:1.5;
+    padding:9px 12px; margin:0 0 10px; overflow-wrap:anywhere;
+  }
+  .load-note{
+    font-size:var(--fs-1); font-weight:800; color:var(--green-dark);
+    background:var(--green-soft); border-radius:var(--pill);
+    padding:5px 12px; margin:0 0 8px; text-align:center;
   }
   .sheet h3{font-size:16px; font-weight:800; margin:0 0 12px; display:flex; align-items:center; gap:8px;}
   .sheet h3 svg{width:24px; height:24px;}
   .sheet .close-x{margin-left:auto; background:transparent; color:var(--ink-sub); font-size:20px; line-height:1; padding:4px 8px;}
   .sheet label{display:block; font-size:13px; font-weight:700; color:var(--ink-sub); margin:10px 0 6px;}
   .sheet input[type="datetime-local"],
-  .sheet input[type="text"]{
-    width:100%; background:var(--bg); border:1px solid var(--line); border-radius:10px;
-    color:var(--ink); font-size:16px; padding:10px 12px; font-family:inherit;
-  }
+  .sheet input[type="text"]{ width:100%; }
   .preset-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
   .preset{
-    background:var(--bg); color:var(--ink); border:1px solid var(--line);
-    border-radius:999px; padding:8px 13px; font-size:13px; font-weight:700;
+    background:#fff; color:var(--ink); border:1px solid var(--line);
+    border-radius:10px; padding:9px 14px; font-size:13px; font-weight:700;
   }
   .preset:active{background:var(--green-soft);}
   .opt-row{display:flex; gap:8px; flex-wrap:wrap;}
@@ -515,25 +558,24 @@
   .opt.breast{background:var(--breast-bg);}
   .opt.milk{background:var(--milk-bg);}
   .milk-custom{display:flex; align-items:center; gap:8px; margin-top:10px;}
-  .milk-custom input{
-    flex:1; min-width:0; background:var(--bg); border:1px solid var(--line); border-radius:10px;
-    color:var(--ink); font-size:16px; padding:10px 12px; font-family:inherit;
-  }
+  .milk-custom input{ flex:1; min-width:0; }
   .milk-custom .milk-unit{font-size:15px; font-weight:800; color:var(--ink); flex:0 0 auto;}
-  .sheet .btn-primary{margin-top:18px;}
 
   /* ===== アップデートのお知らせ（中央モーダル） ===== */
   .overlay.center{align-items:center; padding:20px 16px;}
   .update-sheet{
     background:#fff; color:var(--ink); width:100%; max-width:480px; min-width:0;
-    max-height:86vh; overflow-y:auto; overflow-x:hidden;
-    border-radius:20px; padding:20px 18px calc(18px + env(safe-area-inset-bottom));
+    max-height:86vh; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
+    border-radius:var(--r-l); padding:20px 18px calc(18px + env(safe-area-inset-bottom));
     box-shadow:0 12px 32px rgba(60,80,60,.25);
   }
+  .update-sheet .sheet-head{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .update-sheet .sheet-title{font-size:16px; font-weight:800;}
+  .update-sheet .close-x{margin-left:auto; background:transparent; color:var(--ink-sub); font-size:20px; line-height:1; padding:4px 8px;}
+  .update-sheet .sheet-foot{bottom:calc(-18px - env(safe-area-inset-bottom));}
   .update-lines{font-size:15px; line-height:1.75; font-weight:700; overflow-wrap:anywhere;}
   .update-lines p{margin:0 0 6px;}
   .update-lines p:last-child{margin-bottom:0;}
-  .update-sheet .btn-primary{margin-top:16px;}
 
   /* ===== 設定シート ===== */
   .set-row{
@@ -546,16 +588,7 @@
   .set-row .set-value.unset{color:var(--ink-sub); font-weight:700;}
   .set-row .set-chev{color:var(--ink-sub); font-size:20px; line-height:1; flex:0 0 auto;}
   .set-editor{margin-top:6px;}
-  .set-editor input{
-    width:100%; background:#fff; border:1px solid var(--line); border-radius:10px;
-    color:var(--ink); font-size:16px; padding:9px 12px; font-family:inherit;
-  }
-  .set-editor .btn-primary{margin-top:8px;}
-  .guide-box{background:var(--bg); border:1px solid var(--line); border-radius:16px; padding:10px 14px; margin-top:6px;}
-  .guide-box .guide-title{display:flex; align-items:center; gap:8px; font-size:15px; font-weight:800; margin-bottom:6px;}
-  .guide-box .guide-title .gicon{width:24px; height:24px; display:inline-flex;}
-  .guide-box .guide-title .gicon svg{width:24px; height:24px;}
-  .guide-box .guide-line{font-size:16px; font-weight:800; line-height:1.5; overflow-wrap:anywhere;}
+  .set-editor input{ width:100%; }
   .age-table{margin-top:6px; border:1px solid var(--line); border-radius:16px; overflow:hidden; max-width:100%;}
   .age-row{display:flex; gap:10px; padding:8px 14px; background:#fff; border-bottom:1px solid var(--line); font-size:13.5px; align-items:center; min-width:0; width:100%; text-align:left; font-family:inherit; cursor:pointer;}
   .age-row:last-child{border-bottom:none;}
@@ -583,22 +616,9 @@
   .sheet .conn-box{background:var(--bg); border:1px solid var(--line); border-radius:16px; padding:10px 14px; margin-top:6px;}
   .sheet .conn-box h4{font-size:14px; font-weight:800; margin:0 0 6px;}
   .sheet .conn-box label{margin:10px 0 5px;}
-  .sheet .conn-box input{
-    width:100%; background:#fff; border:1px solid var(--line); border-radius:10px;
-    color:var(--ink); font-size:16px; padding:10px 12px; font-family:inherit;
-  }
+  .sheet .conn-box input{ width:100%; }
   .sheet-sec-label{font-size:13px; font-weight:700; color:var(--ink-sub); margin:12px 0 0;}
 
-  /* ===== setup / guide カード（未使用時の保険として明色で維持） ===== */
-  .card{background:#fff; border-radius:16px; box-shadow:var(--shadow); padding:16px; margin-bottom:12px;}
-  .card h2{font-size:16px; font-weight:800; margin:0 0 8px;}
-  .card p{font-size:13.5px; line-height:1.7; color:var(--ink-sub); margin:0 0 10px;}
-  .card ol{font-size:13.5px; line-height:1.8; color:var(--ink-sub); margin:0 0 6px; padding-left:20px;}
-  .card label{display:block; font-size:13px; font-weight:700; margin:12px 0 5px;}
-  .card input{
-    width:100%; background:var(--bg); border:1px solid var(--line); border-radius:10px;
-    color:var(--ink); font-size:16px; padding:10px 12px; font-family:inherit;
-  }
 
   /* ===== 押し心地アニメーション ===== */
   @keyframes pop{
@@ -628,6 +648,11 @@
     .month-row .mvalue{font-size:14px;}
     .month-row .mvalue.wt{font-size:10.5px;}
     .sheet{padding:16px 12px calc(16px + env(safe-area-inset-bottom));}
+    .overlay.center{padding:16px 10px;}
+    .update-sheet{padding:16px 12px calc(16px + env(safe-area-inset-bottom)); border-radius:var(--r-l);}
+    .sheet > h3{top:-16px;}
+    .sheet-foot{bottom:calc(-16px - env(safe-area-inset-bottom));}
+    .update-sheet .sheet-foot{bottom:calc(-16px - env(safe-area-inset-bottom));}
     .set-row{font-size:14px; padding:9px 10px;}
     .age-row{padding:8px 10px; gap:8px;}
     .toggle-row{padding:9px 10px;}
@@ -653,13 +678,14 @@
     .age-row .age-label{flex-basis:5.4em;}
     .rec-title{font-size:12.5px;}
     .wk-head .wk-md{font-size:10.5px;}
-    .wk-sumrow{font-size:7.5px;}
-    .rt-step{width:28px; height:28px;}
+    .wk-sumrow{font-size:9px;}
+    .rt-step{width:36px; height:36px;}
     .settings-btn{padding:5px 8px;}
   }
   /* ===== 入力中：キーボードに隠れないよう下方向のスクロール余白を確保 ===== */
   body.kb-open .wrap{padding-bottom:55vh;}
   body.kb-open .sheet{padding-bottom:48vh;}
+  body.kb-open .update-sheet{padding-bottom:48vh;}
 </style>
 </head>
 <body>
@@ -790,6 +816,7 @@
     <div class="card-head">
       <span class="card-title">7日間のログ</span>
     </div>
+    <div class="load-note hidden" id="weekLoadNote">読み込み中…</div>
     <div id="daysBody"></div>
     <div class="nav-row">
       <button class="nav-btn" id="weekPrevBtn" type="button">‹ 前の週</button>
@@ -799,6 +826,7 @@
 
   <!-- 月間のログ -->
   <section class="panel" aria-label="月間のログ">
+    <div class="load-note hidden" id="monthLoadNote">読み込み中…</div>
     <div id="monthsBody"></div>
     <div class="nav-row">
       <button class="nav-btn" id="monthPrevBtn" type="button">‹ 前の月</button>
@@ -827,6 +855,8 @@
 <div class="overlay hidden" id="babyOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
     <h3>赤ちゃん設定<button class="close-x" id="babyCloseBtn" type="button" aria-label="閉じる">×</button></h3>
+    <div class="sheet-error hidden" role="alert"></div>
+    
 
     <button class="set-row" type="button" data-edit="birthDate">
       <span class="set-label">生年月日</span>
@@ -834,7 +864,9 @@
       <span class="set-chev">›</span>
     </button>
     <div class="set-editor hidden" id="editor-birthDate">
-      <input type="date" id="inputBirthDate">
+      <input type="date" id="inputBirthDate" aria-label="生年月日">
+      <button class="btn-primary" id="saveBirthDateBtn" type="button">保存する</button>
+      <button class="btn-sub" id="cancelBirthDateBtn" type="button">キャンセル</button>
     </div>
 
     <button class="set-row" type="button" data-edit="birthWeight">
@@ -843,7 +875,10 @@
       <span class="set-chev">›</span>
     </button>
     <div class="set-editor hidden" id="editor-birthWeight">
-      <input type="number" id="inputBirthWeight" inputmode="numeric" min="500" max="6000" step="10" placeholder="例：3200">
+      <div class="num-unit-row">
+        <input type="number" id="inputBirthWeight" inputmode="numeric" pattern="[0-9]*" min="500" max="6000" step="1" placeholder="例：3200" aria-label="出生体重（g）">
+        <span class="unit-label">g</span>
+      </div>
       <button class="btn-primary" id="saveBirthWeightBtn" type="button">保存する</button>
       <button class="btn-sub" id="cancelBirthWeightBtn" type="button">キャンセル</button>
     </div>
@@ -854,7 +889,10 @@
       <span class="set-chev">›</span>
     </button>
     <div class="set-editor hidden" id="editor-weight">
-      <input type="number" id="inputWeight" inputmode="numeric" min="500" max="20000" step="10" placeholder="例：3800">
+      <div class="num-unit-row">
+        <input type="number" id="inputWeight" inputmode="numeric" pattern="[0-9]*" min="500" max="20000" step="1" placeholder="例：3800" aria-label="現在の体重（g）">
+        <span class="unit-label">g</span>
+      </div>
       <button class="btn-primary" id="saveWeightBtn" type="button">保存する</button>
       <button class="btn-sub" id="cancelWeightBtn" type="button">キャンセル</button>
     </div>
@@ -868,16 +906,17 @@
     <div class="set-editor hidden" id="editor-goal">
       <div class="goal-inputs">
         <div class="goal-field">
-          <input type="number" id="inputGoalMl" inputmode="numeric" pattern="[0-9]*" min="1" max="500" step="1" placeholder="50" aria-label="1回量（ml）">
+          <input type="number" id="inputGoalMl" inputmode="numeric" pattern="[0-9]*" min="1" max="500" step="1" placeholder="例：50" aria-label="1回量（ml）">
           <span class="goal-unit">ml</span>
         </div>
         <div class="goal-field">
-          <input type="number" id="inputGoalTimes" inputmode="numeric" pattern="[0-9]*" min="1" max="20" step="1" placeholder="8" aria-label="1日の回数">
+          <input type="number" id="inputGoalTimes" inputmode="numeric" pattern="[0-9]*" min="1" max="20" step="1" placeholder="例：8" aria-label="1日の回数">
           <span class="goal-unit">回</span>
         </div>
       </div>
       <button class="btn-primary" id="saveGoalBtn" type="button">保存する</button>
-      <button class="btn-sub" id="clearGoalBtn" type="button">自動に戻す</button>
+      <button class="btn-sub" id="cancelGoalBtn" type="button">キャンセル</button>
+      <button class="btn-sub goal-reset-btn" id="clearGoalBtn" type="button">自動に戻す</button>
     </div>
 
     <p class="sheet-sec-label">月齢別の目安</p>
@@ -898,7 +937,10 @@
       <label for="calendarIdInput">カレンダーID</label>
       <input id="calendarIdInput" type="text" autocomplete="off" spellcheck="false">
       <button class="btn-primary" id="saveSettingsBtn" type="button">保存してサインインへ</button>
-      <button class="btn-sub" id="cancelSettingsBtn" type="button">閉じる</button>
+      <button class="btn-sub" id="cancelSettingsBtn" type="button">キャンセル</button>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-sub" id="babyFootCloseBtn" type="button" style="margin-top:0;">閉じる</button>
     </div>
   </div>
 </div>
@@ -906,35 +948,41 @@
 <!-- 日別ポップアップ（月間のログの日一覧から開く） -->
 <div class="overlay hidden" id="dayOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
-    <h3 id="dayTitle">—</h3>
+    <h3><span id="dayTitle">―</span><button class="close-x" id="dayCloseXBtn" type="button" aria-label="閉じる">×</button></h3>
+    <div class="sheet-error hidden" role="alert"></div>
     <div class="day-total" id="dayTotal"></div>
     <div class="rec-list" id="dayList"></div>
-    <button class="btn-sub" id="dayCloseBtn" type="button" style="margin-top:14px;">閉じる</button>
+    <div class="sheet-foot"><button class="btn-sub" id="dayCloseBtn" type="button" style="margin-top:0;">閉じる</button></div>
   </div>
 </div>
 
 <!-- 月別 日一覧 -->
 <div class="overlay hidden" id="monthOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
-    <h3 id="monthTitle">—</h3>
+    <h3><span id="monthTitle">―</span><button class="close-x" id="monthCloseXBtn" type="button" aria-label="閉じる">×</button></h3>
+    <div class="sheet-error hidden" role="alert"></div>
     <div id="monthDays"></div>
-    <button class="btn-sub" id="monthCloseBtn" type="button" style="margin-top:14px;">閉じる</button>
+    <div class="sheet-foot"><button class="btn-sub" id="monthCloseBtn" type="button" style="margin-top:0;">閉じる</button></div>
   </div>
 </div>
 
 <!-- 全月一覧 -->
 <div class="overlay hidden" id="allMonthsOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
-    <h3>月間のログ</h3>
+    <h3>月間のログ<button class="close-x" id="allMonthsCloseXBtn" type="button" aria-label="閉じる">×</button></h3>
+    <div class="sheet-error hidden" role="alert"></div>
+    <div class="load-note hidden" id="allMonthsLoadNote">読み込み中…</div>
     <div id="allMonthsBody"></div>
-    <button class="btn-sub" id="allMonthsCloseBtn" type="button" style="margin-top:14px;">閉じる</button>
+    <div class="sheet-foot"><button class="btn-sub" id="allMonthsCloseBtn" type="button" style="margin-top:0;">閉じる</button></div>
   </div>
 </div>
 
 <!-- 編集シート -->
 <div class="overlay hidden" id="editOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
-    <h3 id="editTitle">記録を編集</h3>
+    <h3><span id="editTitle">記録を編集</span><button class="close-x" id="editCloseXBtn" type="button" aria-label="閉じる">×</button></h3>
+    <div class="sheet-error hidden" role="alert"></div>
+    <div class="edit-fields">
     <label for="editDateTime">日時</label>
     <input type="datetime-local" id="editDateTime">
     <div class="preset-row" id="presetRow">
@@ -955,17 +1003,22 @@
         <span class="milk-unit">ml</span>
       </div>
     </div>
+    </div>
+    <div class="sheet-foot">
     <button class="btn-primary" id="editSaveBtn" type="button">保存する</button>
     <button class="btn-danger" id="editDeleteBtn" type="button">この記録を削除</button>
     <button class="btn-sub" id="editCancelBtn" type="button">キャンセル</button>
+    </div>
   </div>
 </div>
 
 <!-- アップデートのお知らせ -->
 <div class="overlay center hidden" id="updateOverlay">
   <div class="update-sheet" role="dialog" aria-modal="true" aria-label="アップデートのお知らせ">
+    <div class="sheet-head"><span class="sheet-title">アップデートのお知らせ</span><button class="close-x" id="updateCloseXBtn" type="button" aria-label="閉じる">×</button></div>
+    <div class="sheet-error hidden" role="alert"></div>
     <div class="update-lines" id="updateNotes"></div>
-    <button class="btn-primary" id="updateCloseBtn" type="button">閉じる</button>
+    <div class="sheet-foot"><button class="btn-primary" id="updateCloseBtn" type="button" style="margin-top:0;">閉じる</button></div>
   </div>
 </div>
 
@@ -974,10 +1027,10 @@
 "use strict";
 /* ================= アイコン（線画SVG, viewBox 0 0 48 48） ================= */
 var IC = {
-  pee: '<svg viewBox="0 -0.5 48 48" aria-hidden="true"><defs><linearGradient id="gPee" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd3f4"/><stop offset="1" stop-color="#2f8fc4"/></linearGradient></defs><path d="M24 4.5C24 4.5 11 19.8 11 29a13 13 0 0 0 26 0C37 19.8 24 4.5 24 4.5Z" fill="url(#gPee)"/><ellipse cx="18.2" cy="24.5" rx="3.4" ry="6" fill="#ffffff" opacity="0.55" transform="rotate(-16 18.2 24.5)"/><ellipse cx="29" cy="35.5" rx="4.5" ry="2.6" fill="#ffffff" opacity="0.18"/></svg>',
-  poop: '<svg viewBox="0 -1 48 48" aria-hidden="true"><defs><linearGradient id="gPoop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9b183"/><stop offset="1" stop-color="#9c6b3d"/></linearGradient></defs><path d="M24.6 5.2c2.6-.3 4.6 1.6 4.6 3.9 0 .7-.2 1.4-.5 2 3.4 1 5.9 4.2 5.9 8 0 1.3-.3 2.5-.8 3.6 3.4 1.4 5.7 4.6 5.7 8.4 0 5.9-4.9 9.7-15.5 9.7S8.5 37 8.5 31.1c0-3.8 2.3-7 5.7-8.4-.5-1.1-.8-2.3-.8-3.6 0-3.8 2.5-7 5.9-8-.3-.6-.5-1.3-.5-2 0-2.1 1.7-3.7 5.8-3.9Z" fill="url(#gPoop)"/><ellipse cx="17.5" cy="14.5" rx="4.6" ry="2.8" fill="#ffffff" opacity="0.35" transform="rotate(-18 17.5 14.5)"/><path d="M15.5 23.5c2.8 1.6 6 2.3 9.5 2.1" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" opacity="0.28"/></svg>',
-  breast: '<svg viewBox="0 1.3 48 48" aria-hidden="true"><defs><linearGradient id="gBreast" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7a8c4"/><stop offset="1" stop-color="#e0528a"/></linearGradient></defs><path d="M24 41.5S7.5 30.6 7.5 19.7C7.5 13.4 12.2 9.2 17.3 9.2c3 0 5.5 1.5 6.7 3.7 1.2-2.2 3.7-3.7 6.7-3.7 5.1 0 9.8 4.2 9.8 10.5C40.5 30.6 24 41.5 24 41.5Z" fill="url(#gBreast)"/><ellipse cx="16.5" cy="16.5" rx="4.6" ry="3" fill="#ffffff" opacity="0.5" transform="rotate(-24 16.5 16.5)"/><path d="M24 20.5c0 0-4.2 4.9-4.2 7.6a4.2 4.2 0 0 0 8.4 0C28.2 25.4 24 20.5 24 20.5Z" fill="#ffffff" opacity="0.9"/></svg>',
-  milk: '<svg viewBox="0 -0.25 48 48" aria-hidden="true"><defs><linearGradient id="gMilk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd968"/><stop offset="1" stop-color="#e39a00"/></linearGradient><linearGradient id="gMilkIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf4"/><stop offset="1" stop-color="#ffedb8"/></linearGradient></defs><path d="M24 3.5c3 0 4.8 2.7 4.8 5.5 0 1.9-.8 3.2-1.6 4.6h-6.4c-.8-1.4-1.6-2.7-1.6-4.6 0-2.8 1.8-5.5 4.8-5.5Z" fill="url(#gMilk)"/><rect x="15" y="13.6" width="18" height="5.4" rx="2.7" fill="#d98e00"/><path d="M16.8 19h14.4c1.7 2.7 2.5 5.2 2.5 8.6v11A5.4 5.4 0 0 1 28.3 44H19.7a5.4 5.4 0 0 1-5.4-5.4v-11c0-3.4.8-5.9 2.5-8.6Z" fill="url(#gMilk)"/><path d="M17.3 27.5h13.4v11.1a2.9 2.9 0 0 1-2.9 2.9h-7.6a2.9 2.9 0 0 1-2.9-2.9V27.5Z" fill="url(#gMilkIn)"/><ellipse cx="20" cy="23.5" rx="2.6" ry="4" fill="#ffffff" opacity="0.5" transform="rotate(-12 20 23.5)"/><path d="M27.5 31.5h3.2M27.5 35.5h3.2" stroke="#d98e00" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  pee: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gPee" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd3f4"/><stop offset="1" stop-color="#2f8fc4"/></linearGradient></defs><path d="M24 4.5C24 4.5 11 19.8 11 29a13 13 0 0 0 26 0C37 19.8 24 4.5 24 4.5Z" fill="url(#gPee)"/><ellipse cx="18.2" cy="24.5" rx="3.4" ry="6" fill="#ffffff" opacity="0.55" transform="rotate(-16 18.2 24.5)"/><ellipse cx="29" cy="35.5" rx="4.5" ry="2.6" fill="#ffffff" opacity="0.18"/></svg>',
+  poop: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gPoop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9b183"/><stop offset="1" stop-color="#9c6b3d"/></linearGradient></defs><path d="M24.6 5.2c2.6-.3 4.6 1.6 4.6 3.9 0 .7-.2 1.4-.5 2 3.4 1 5.9 4.2 5.9 8 0 1.3-.3 2.5-.8 3.6 3.4 1.4 5.7 4.6 5.7 8.4 0 5.9-4.9 9.7-15.5 9.7S8.5 37 8.5 31.1c0-3.8 2.3-7 5.7-8.4-.5-1.1-.8-2.3-.8-3.6 0-3.8 2.5-7 5.9-8-.3-.6-.5-1.3-.5-2 0-2.1 1.7-3.7 5.8-3.9Z" fill="url(#gPoop)"/><ellipse cx="17.5" cy="14.5" rx="4.6" ry="2.8" fill="#ffffff" opacity="0.35" transform="rotate(-18 17.5 14.5)"/><path d="M15.5 23.5c2.8 1.6 6 2.3 9.5 2.1" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" opacity="0.28"/></svg>',
+  breast: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gBreast" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7a8c4"/><stop offset="1" stop-color="#e0528a"/></linearGradient></defs><path d="M24 41.5S7.5 30.6 7.5 19.7C7.5 13.4 12.2 9.2 17.3 9.2c3 0 5.5 1.5 6.7 3.7 1.2-2.2 3.7-3.7 6.7-3.7 5.1 0 9.8 4.2 9.8 10.5C40.5 30.6 24 41.5 24 41.5Z" fill="url(#gBreast)"/><ellipse cx="16.5" cy="16.5" rx="4.6" ry="3" fill="#ffffff" opacity="0.5" transform="rotate(-24 16.5 16.5)"/><path d="M24 20.5c0 0-4.2 4.9-4.2 7.6a4.2 4.2 0 0 0 8.4 0C28.2 25.4 24 20.5 24 20.5Z" fill="#ffffff" opacity="0.9"/></svg>',
+  milk: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gMilk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd968"/><stop offset="1" stop-color="#e39a00"/></linearGradient><linearGradient id="gMilkIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf4"/><stop offset="1" stop-color="#ffedb8"/></linearGradient></defs><path d="M24 3.5c3 0 4.8 2.7 4.8 5.5 0 1.9-.8 3.2-1.6 4.6h-6.4c-.8-1.4-1.6-2.7-1.6-4.6 0-2.8 1.8-5.5 4.8-5.5Z" fill="url(#gMilk)"/><rect x="15" y="13.6" width="18" height="5.4" rx="2.7" fill="#d98e00"/><path d="M16.8 19h14.4c1.7 2.7 2.5 5.2 2.5 8.6v11A5.4 5.4 0 0 1 28.3 44H19.7a5.4 5.4 0 0 1-5.4-5.4v-11c0-3.4.8-5.9 2.5-8.6Z" fill="url(#gMilk)"/><path d="M17.3 27.5h13.4v11.1a2.9 2.9 0 0 1-2.9 2.9h-7.6a2.9 2.9 0 0 1-2.9-2.9V27.5Z" fill="url(#gMilkIn)"/><ellipse cx="20" cy="23.5" rx="2.6" ry="4" fill="#ffffff" opacity="0.5" transform="rotate(-12 20 23.5)"/><path d="M27.5 31.5h3.2M27.5 35.5h3.2" stroke="#d98e00" stroke-width="1.8" stroke-linecap="round"/></svg>',
   scale: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="6.5" width="35" height="35" rx="8"/><rect x="16" y="11" width="16" height="8" rx="2.4"/><path d="M20.5 15h7"/><path d="M17.6 24.6c2 0 3.4 1.6 3.4 3.8v4.9c0 2.2-1.4 3.8-3.4 3.8s-3.4-1.6-3.4-3.8v-4.9c0-2.2 1.4-3.8 3.4-3.8Z"/><path d="M30.4 24.6c2 0 3.4 1.6 3.4 3.8v4.9c0 2.2-1.4 3.8-3.4 3.8s-3.4-1.6-3.4-3.8v-4.9c0-2.2 1.4-3.8 3.4-3.8Z"/></svg>',
   diaper: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 8.5h37l-2.5 12.3c-1 4.7-3.9 7.2-7.5 8.9-3.2 1.5-5.2 3.7-6 7.4l-.5 2.4h-4l-.5-2.4c-.8-3.7-2.8-5.9-6-7.4-3.6-1.7-6.5-4.2-7.5-8.9L5.5 8.5Z"/><path d="M6.8 15.8h34.4"/><path d="M13 11.8h.01M35 11.8h.01" stroke-width="3.8"/></svg>',
   bell: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 7.5a13.5 13.5 0 0 1 13.5 13.5c0 5.8 1.7 8.2 3 10.5H7.5c1.3-2.3 3-4.7 3-10.5A13.5 13.5 0 0 1 24 7.5Z"/><path d="M19.2 38.5a5 5 0 0 0 9.6 0"/><path d="M24 7.5V5"/></svg>',
@@ -1047,6 +1100,14 @@ var CHANGELOG = [
     '画面のデザインが明るくなりました',
     '7日間と月間のログで、前後の週・月を見られるようになりました',
     '月間のログで、体重が月初から月末でどれだけ増えたか見られるようになりました'
+  ]},
+  { version:'2026-11-13-1', notes:[
+    '設定や記録の入力欄の見た目と使い方を統一しました'
+  ]},
+  { version:'2026-11-13-2', notes:[
+    '入力のしかたや画面の使い方を全体で統一しました',
+    '間違った数字を入れたとき、理由がその場で見えるようになりました',
+    '猫のアイコンが、みぃとナリそれぞれの顔になりました'
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1298,6 +1359,33 @@ function setStatus(msg, isErr){
   statusEl.textContent = msg || '';
   statusEl.className = 'status' + (isErr ? ' err' : '');
 }
+/* ===== シート内エラー表示（共通） =====
+   検証・保存のエラーは、開いているシートの中の専用領域に出す。
+   TOPの #status はTOP側の案内専用として残す */
+function sheetError(overlayId, msg){
+  var ov = $(overlayId);
+  if(!ov) return;
+  var box = ov.querySelector('.sheet-error');
+  if(!box) return;
+  box.textContent = msg || '';
+  box.classList.toggle('hidden', !msg);
+}
+function clearSheetError(overlayId){ sheetError(overlayId, ''); }
+/* シートを開いている間は背景（TOP）のスクロールをロックする */
+function refreshScrollLock(){
+  var overs = document.querySelectorAll('.overlay');
+  var any = false;
+  for(var i=0;i<overs.length;i++){ if(!overs[i].classList.contains('hidden')){ any = true; break; } }
+  document.body.classList.toggle('no-scroll', any);
+}
+/* ===== 読み込み中表示（週・月・全月で共通） ===== */
+function setLoadNotes(on){
+  var ids = ['weekLoadNote','monthLoadNote','allMonthsLoadNote'];
+  for(var i=0;i<ids.length;i++){
+    var el = $(ids[i]);
+    if(el) el.classList.toggle('hidden', !on);
+  }
+}
 
 /* ================= 日時ユーティリティ ================= */
 var WD = ['日','月','火','水','木','金','土'];
@@ -1385,7 +1473,7 @@ function renderPrev(){
       var bell = babySettings.remind ? '<span class="next-bell" role="img" aria-label="通知あり">' + IC.bell + '</span>' : '';
       fn.innerHTML = bell + '<span>' + fmtTime(nextFeed) + '</span>';
     } else {
-      fn.textContent = '—';
+      fn.textContent = '―';
     }
   }
 }
@@ -1499,10 +1587,10 @@ function dayWeightLineHTML(d){
 function dayRowHTML(d, st){
   return '<button class="day-row" type="button" data-day="' + d.getTime() + '">' +
     '<span class="dcell"><span class="md">' + fmtMD(d) + '</span><span class="wd">（' + WD[d.getDay()] + '）</span>' + dayWeightLineHTML(d) + '</span>' +
-    '<span class="num">' + (st.pee || '—') + '</span>' +
-    '<span class="num">' + (st.poop || '—') + '</span>' +
-    '<span class="num ' + (st.breast ? 'hl' : '') + '">' + (st.breast || '—') + '</span>' +
-    '<span class="num ' + (st.milk ? 'hl' : '') + '">' + (st.milk ? st.milk + 'ml' : '—') + '</span>' +
+    '<span class="num">' + (st.pee || '―') + '</span>' +
+    '<span class="num">' + (st.poop || '―') + '</span>' +
+    '<span class="num ' + (st.breast ? 'hl' : '') + '">' + (st.breast || '―') + '</span>' +
+    '<span class="num ' + (st.milk ? 'hl' : '') + '">' + (st.milk ? st.milk + 'ml' : '―') + '</span>' +
     '</button>';
 }
 /* ===== 7日間ログ（統合グリッド） =====
@@ -1657,33 +1745,6 @@ function monthStats(y, m){
     breastAvg: count ? breast / days : null
   };
 }
-/* 月初からの体重増加分：その月の最後の体重 − 月初時点の体重
-   （月初時点＝その月より前の最後の記録。無ければその月最初の記録） */
-function monthWeightGain(y, m){
-  var log = babySettings.weightLog || [];
-  if(!log.length) return null;
-  var startStr = y + '-' + pad(m+1) + '-01';
-  var endStr = y + '-' + pad(m+1) + '-' + pad(new Date(y, m+1, 0).getDate());
-  var base = null, last = null, firstIn = null;
-  for(var i=0;i<log.length;i++){
-    var e = log[i];
-    if(e.d < startStr) base = e;
-    else if(e.d <= endStr){ if(!firstIn) firstIn = e; last = e; }
-  }
-  if(!last) return null;
-  if(!base){
-    /* 月より前の記録が無い場合、月内に2件以上ないと増加分は出せない（―表示） */
-    if(!firstIn || firstIn === last) return null;
-    base = firstIn;
-  }
-  return last.w - base.w;
-}
-function fmtGain(g){
-  if(g === null) return '―';
-  if(g > 0) return '+' + g.toLocaleString('ja-JP') + 'g';
-  if(g < 0) return '-' + Math.abs(g).toLocaleString('ja-JP') + 'g';
-  return '0g';
-}
 function monthWeightRange(y, m){
   var log = babySettings.weightLog || [];
   if(!log.length) return null;
@@ -1727,9 +1788,9 @@ function bindMonthRows(container){
 function monthsHeadHTML(){
   return '<div class="months-head" aria-hidden="true">' +
     '<span class="hcell"></span>' +
-    '<span class="hcell" style="color:#7a8288;">' + IC.scale + '</span>' +
-    '<span class="hcell" style="color:var(--milk-bg);">' + IC.milk + '</span>' +
-    '<span class="hcell ic-diaper" style="color:#2f83b8;">' + IC.diaper + '</span>' +
+    '<span class="hcell" style="color:var(--head-ink);">' + IC.scale + '</span>' +
+    '<span class="hcell" style="color:var(--head-milk);">' + IC.milk + '</span>' +
+    '<span class="hcell ic-diaper" style="color:var(--head-diaper);">' + IC.diaper + '</span>' +
     '</div>';
 }
 var monthOffset = 0;
@@ -1943,6 +2004,15 @@ function closeWeightEditor(){
 }
 $('weightSaveBtn').addEventListener('click', function(){
   var v = $('inputWeightTop').value.trim();
+  /* 設定シートの体重と同じ検証（500〜20000の整数）。範囲外は理由を表示して閉じない */
+  if(v !== ''){
+    var n = Number(v);
+    if(!isFinite(n) || Math.floor(n) !== n || n < 500 || n > 20000){
+      setStatus('現在の体重は500〜20000gの整数で入力してください', true);
+      return;
+    }
+  }
+  setStatus('');
   babySettings.weight = v === '' ? '' : parseInt(v, 10);
   if(v !== '') pushWeightLog(parseInt(v, 10));
   scheduleBabySave();
@@ -1975,7 +2045,7 @@ function renderBabySettingsUI(){
   tog.setAttribute('aria-checked', babySettings.remind ? 'true' : 'false');
   $('remindState').textContent = babySettings.remind ? 'ON' : 'OFF';
   /* 目標の行と入力欄：設定済みならその値を、未設定なら「未設定」を出す。
-     入力欄の初期値は設定済みの値、プレースホルダは今の目安の値 */
+     入力欄の初期値は設定済みの値、プレースホルダは「例：今の目安の値」の形式 */
   var custom = customGoal();
   var vg = $('valGoal');
   if(vg){
@@ -1986,11 +2056,11 @@ function renderBabySettingsUI(){
   var inMl = $('inputGoalMl'), inTimes = $('inputGoalTimes');
   if(inMl){
     inMl.value = custom ? custom.ml : '';
-    inMl.placeholder = dgForGoal ? dgForGoal.guide.perFeed : 50;
+    inMl.placeholder = '例：' + (dgForGoal ? dgForGoal.guide.perFeed : 50);
   }
   if(inTimes){
     inTimes.value = custom ? custom.times : '';
-    inTimes.placeholder = dgForGoal ? dgForGoal.guide.times : 8;
+    inTimes.placeholder = '例：' + (dgForGoal ? dgForGoal.guide.times : 8);
   }
   /* 月齢別一覧：現在の月齢の行には哺乳瓶のおすすめマークを付け、
      設定中の目標と一致する行はハイライトする。タップでその行の
@@ -2037,6 +2107,12 @@ function renderBabySettingsUI(){
    編集欄は赤ちゃんの体重と同じ作り：開くときは現在の値が入った状態で開き、
    保存すると閉じ、キャンセルでも閉じる。開いている欄は1つだけ。
    体重履歴（日付つき）はデータとして保存し続けるが、一覧表示はしない */
+/* 猫アイコン（記録アイコンと同じ水準の抽象形）：丸顔＋耳のシルエットに毛柄だけを入れる。みぃ=茶トラの縞、ナリ=三毛の斑 */
+var CAT_IC = {
+  mii: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="catMiiG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb763"/><stop offset="1" stop-color="#f68c2e"/></linearGradient><clipPath id="catClipM"><path d="M11.5 20.5 9.8 9.2c-.2-1.5 1.2-2.4 2.5-1.7L21 12.6c.9-.2 1.9-.3 3-.3s2.1.1 3 .3l8.7-5.1c1.3-.7 2.7.2 2.5 1.7L36.5 20.5c1 1.9 1.5 4 1.5 6.3 0 7.7-6.3 13-14 13s-14-5.3-14-13c0-2.3.5-4.4 1.5-6.3Z"/></clipPath></defs><g fill="url(#catMiiG)"><path d="M11.5 20.5 9.8 9.2c-.2-1.5 1.2-2.4 2.5-1.7L21 12.6c.9-.2 1.9-.3 3-.3s2.1.1 3 .3l8.7-5.1c1.3-.7 2.7.2 2.5 1.7L36.5 20.5c1 1.9 1.5 4 1.5 6.3 0 7.7-6.3 13-14 13s-14-5.3-14-13c0-2.3.5-4.4 1.5-6.3Z"/></g><g clip-path="url(#catClipM)"><g stroke="#dd7414" stroke-width="2.6" stroke-linecap="round" fill="none"><path d="M24 13.5v5"/><path d="M17.5 15l1 4.6"/><path d="M30.5 15l-1 4.6"/></g><ellipse cx="17" cy="17" rx="6" ry="3.4" fill="#ffffff" opacity="0.35" transform="rotate(-18 17 17)"/></g></svg>',
+  nari: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="catNariG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f0dfc2"/></linearGradient><clipPath id="catClipN"><path d="M11.5 20.5 9.8 9.2c-.2-1.5 1.2-2.4 2.5-1.7L21 12.6c.9-.2 1.9-.3 3-.3s2.1.1 3 .3l8.7-5.1c1.3-.7 2.7.2 2.5 1.7L36.5 20.5c1 1.9 1.5 4 1.5 6.3 0 7.7-6.3 13-14 13s-14-5.3-14-13c0-2.3.5-4.4 1.5-6.3Z"/></clipPath></defs><g fill="url(#catNariG)"><path d="M11.5 20.5 9.8 9.2c-.2-1.5 1.2-2.4 2.5-1.7L21 12.6c.9-.2 1.9-.3 3-.3s2.1.1 3 .3l8.7-5.1c1.3-.7 2.7.2 2.5 1.7L36.5 20.5c1 1.9 1.5 4 1.5 6.3 0 7.7-6.3 13-14 13s-14-5.3-14-13c0-2.3.5-4.4 1.5-6.3Z"/></g><g clip-path="url(#catClipN)"><ellipse cx="15.5" cy="16" rx="7" ry="5" fill="#f59a3f" transform="rotate(-16 15.5 16)"/><ellipse cx="33" cy="14.5" rx="6" ry="4.6" fill="#503a2c" transform="rotate(12 33 14.5)"/><ellipse cx="17" cy="17" rx="6" ry="3.4" fill="#ffffff" opacity="0.35" transform="rotate(-18 17 17)"/></g></svg>'
+};
+function catIconKey(cat){ return (cat && cat.name === 'ナリ') ? 'nari' : 'mii'; }
 var catOpenEditor = { idx:-1 };
 function closeCatEditors(){ catOpenEditor = { idx:-1 }; }
 function toggleCatEditor(idx){
@@ -2061,19 +2137,21 @@ function renderCats(){
     html += '<div class="cat-block">';
     /* 1行：名前・最新の体重・記録ボタンだけ */
     html += '<div class="cat-head">';
-    html += '<span class="cat-ava"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 10.5L5 4.8l4 2.3A8.2 8.2 0 0 1 12 6.7c1 0 2 .14 3 .4l4-2.3-.5 5.7a8 8 0 1 1-13 0z"/><circle cx="9" cy="13.5" r=".4" fill="currentColor"/><circle cx="15" cy="13.5" r=".4" fill="currentColor"/></svg></span>';
+    var ckey = catIconKey(cat);
+    html += '<span class="cat-ava ' + ckey + '">' + CAT_IC[ckey] + '</span>';
     html += '<span class="cat-name">' + escHTML(cat.name) + '</span>';
     if(latest){
       html += '<span class="cat-latest">' + fmtCatKg(latest.w) + '</span>';
     } else {
       html += '<span class="cat-latest unset">未記録</span>';
     }
-    html += '<button class="btn-ghost" type="button" data-cat-rec="' + i + '">記録</button>';
+    html += '<button class="cat-rec-btn" type="button" data-cat-rec="' + i + '">記録</button>';
     html += '</div>';
     /* 入力エリア：体重（kg・小数可、現在の値が入った状態で開く）と、
        小さく置いた誕生日（現在の値が入った状態で開く） */
     var open = (catOpenEditor.idx === i);
     html += '<div class="cat-editor' + (open ? '' : ' hidden') + '">';
+    html += '<div class="sheet-error hidden" data-cat-err="' + i + '" role="alert"></div>';
     html += '<div class="cat-kg-row"><input type="number" data-cat-winput="' + i + '" inputmode="decimal" step="0.1" min="0.1" max="30" placeholder="例：4.2" aria-label="' + escHTML(cat.name) + 'の体重（kg）" value="' + (latest ? latest.w : '') + '"><span class="cat-kg-unit">kg</span></div>';
     html += '<div class="cat-birth-row"><span class="cat-birth-label">誕生日</span><input type="date" data-cat-binput="' + i + '" aria-label="' + escHTML(cat.name) + 'の誕生日" value="' + (cat.birthDate || '') + '"></div>';
     html += '<button class="btn-primary" type="button" data-cat-save="' + i + '">保存する</button>';
@@ -2096,7 +2174,15 @@ function renderCats(){
       var wraw = winp ? String(winp.value || '').trim() : '';
       if(wraw !== ''){
         var w = parseFloat(wraw);
-        if(!(w > 0) || w > 30) return; /* 不正な値は保存せず、入力欄を開いたままにする */
+        if(!(w > 0) || w > 30){
+          /* 不正な値は保存せず、理由をその場（猫の編集エリア内）に表示して開いたままにする */
+          var errEl = document.querySelector('[data-cat-err="' + idx + '"]');
+          if(errEl){
+            errEl.textContent = (babySettings.cats[idx] ? babySettings.cats[idx].name : '猫') + 'の体重は0.1〜30kgの数値で入力してください';
+            errEl.classList.remove('hidden');
+          }
+          return;
+        }
         pushCatWeight(idx, w);
       }
       var binp = document.querySelector('[data-cat-binput="' + idx + '"]');
@@ -2193,18 +2279,22 @@ function scheduleBabySave(){
 }
 function openBabySettings(){
   closeAllSetEditors();
+  clearSheetError('babyOverlay');
   renderBabySettingsUI();
   $('babyOverlay').classList.remove('hidden');
+  refreshScrollLock();
 }
 function closeBabySettings(){
   closeAllSetEditors();
+  clearSheetError('babyOverlay');
   $('babyOverlay').classList.add('hidden');
+  refreshScrollLock();
 }
 
 /* ================= 日別ポップアップ ================= */
 function openDay(date, src){
   var st = dayStatsFrom(src || records, date);
-  $('dayTitle').innerHTML = '<svg viewBox="0 0 48 48" fill="none" stroke="#2ea63e" stroke-width="3" aria-hidden="true"><rect x="7" y="11" width="34" height="30" rx="5"/><path d="M7 21h34M16 6v8M32 6v8"/></svg>' +
+  $('dayTitle').innerHTML = '<svg viewBox="0 0 48 48" fill="none" stroke="var(--green-dark)" stroke-width="3" aria-hidden="true"><rect x="7" y="11" width="34" height="30" rx="5"/><path d="M7 21h34M16 6v8M32 6v8"/></svg>' +
     (date.getMonth()+1) + '月' + date.getDate() + '日（' + WD[date.getDay()] + '）の記録';
   /* 回数のまとめは出さず、その日の記録を「今日のログ」と同じ並びで出す。体重がある日は体重と前日比だけ出す */
   var winfo = dayWeightInfo(date);
@@ -2225,16 +2315,22 @@ function openDay(date, src){
   }
   $('dayOverlay').classList.remove('hidden');
 }
-$('dayCloseBtn').addEventListener('click', function(){ $('dayOverlay').classList.add('hidden'); });
+$('dayCloseBtn').addEventListener('click', function(){ $('dayOverlay').classList.add('hidden'); refreshScrollLock(); });
+$('dayCloseXBtn').addEventListener('click', function(){ $('dayOverlay').classList.add('hidden'); refreshScrollLock(); });
+$('babyFootCloseBtn').addEventListener('click', closeBabySettings);
+$('monthCloseXBtn').addEventListener('click', function(){ $('monthOverlay').classList.add('hidden'); refreshScrollLock(); });
+$('allMonthsCloseXBtn').addEventListener('click', function(){ $('allMonthsOverlay').classList.add('hidden'); refreshScrollLock(); });
+$('editCloseXBtn').addEventListener('click', closeEdit);
+$('updateCloseXBtn').addEventListener('click', closeUpdateNotice);
 $('dayOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
-$('monthCloseBtn').addEventListener('click', function(){ $('monthOverlay').classList.add('hidden'); });
+$('monthCloseBtn').addEventListener('click', function(){ $('monthOverlay').classList.add('hidden'); refreshScrollLock(); });
 $('monthOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
 $('allMonthsBtn').addEventListener('click', function(){
   renderAllMonths();
   $('allMonthsOverlay').classList.remove('hidden');
   loadArchive(365);
 });
-$('allMonthsCloseBtn').addEventListener('click', function(){ $('allMonthsOverlay').classList.add('hidden'); });
+$('allMonthsCloseBtn').addEventListener('click', function(){ $('allMonthsOverlay').classList.add('hidden'); refreshScrollLock(); });
 $('allMonthsOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
 
 /* ================= 編集シート ================= */
@@ -2247,8 +2343,13 @@ function openEdit(rec){
   $('editTitle').innerHTML = '<span style="width:24px;height:24px;display:inline-block;color:#fff;">' + IC[rec.kind] + '</span>記録を編集';
   $('editDateTime').value = toLocalInput(rec.start);
   renderEditOpts();
+  clearSheetError('editOverlay');
   $('dayOverlay').classList.add('hidden');
   $('editOverlay').classList.remove('hidden');
+  refreshScrollLock();
+  /* 開いたら最初の入力欄（日時）へフォーカスを移す */
+  var dt = $('editDateTime');
+  if(dt){ try{ dt.focus({ preventScroll:true }); }catch(e){ try{ dt.focus(); }catch(e2){} } }
 }
 function renderEditOpts(){
   var wrap = $('editOptsWrap'), box = $('editOpts');
@@ -2322,19 +2423,19 @@ for(var pi=0; pi<presets.length; pi++){
     $('editDateTime').value = toLocalInput(new Date(Date.now() - min*60000));
   });
 }
-function closeEdit(){ $('editOverlay').classList.add('hidden'); editing = null; }
+function closeEdit(){ $('editOverlay').classList.add('hidden'); clearSheetError('editOverlay'); editing = null; }
 $('editCancelBtn').addEventListener('click', closeEdit);
 $('editOverlay').addEventListener('click', function(e){ if(e.target===this) closeEdit(); });
 $('editSaveBtn').addEventListener('click', function(){
   if(!editing || busy) return;
   var v = $('editDateTime').value;
-  if(!v){ setStatus('日時を入力してください', true); return; }
+  if(!v){ sheetError('editOverlay', '日時を入力してください'); return; }
   var when = new Date(v);
-  if(isNaN(when.getTime())){ setStatus('日時が正しくありません', true); return; }
+  if(isNaN(when.getTime())){ sheetError('editOverlay', '日時が正しくありません'); return; }
   if(editing.rec && editing.rec.kind === 'memo'){
     var memoText = $('editMemoText').value.trim();
     if(!memoText){
-      setStatus('メモを入力してください', true);
+      sheetError('editOverlay', 'メモを入力してください');
       return;
     }
     editing.text = memoText;
@@ -2345,12 +2446,12 @@ $('editSaveBtn').addEventListener('click', function(){
     if(raw !== ''){
       var parsed = Number(raw);
       if(!isFinite(parsed) || Math.floor(parsed) !== parsed || parsed <= 0){
-        setStatus('ミルクの量は1以上の整数で入力してください', true);
+        sheetError('editOverlay', 'ミルクの量は1以上の整数で入力してください');
         return;
       }
       editing.amount = parsed;
     } else if(!editing.amount || editing.amount <= 0){
-      setStatus('ミルクの量を入力してください', true);
+      sheetError('editOverlay', 'ミルクの量を入力してください');
       return;
     }
   }
@@ -2494,6 +2595,7 @@ function fetchEventsRange(from, to, maxItems){
 function loadArchive(daysBack){
   if(!accessToken || archiveLoading) return;
   if(archiveSpan >= daysBack && (Date.now() - archiveFetchedAt) < 50000) return;
+  setLoadNotes(true);
   var span = Math.max(daysBack, archiveSpan);
   archiveLoading = true;
   var now = new Date();
@@ -2508,14 +2610,7 @@ function loadArchive(daysBack){
     renderDays();
     if(!$('allMonthsOverlay').classList.contains('hidden')) renderAllMonths();
   }).catch(function(){
-  }).then(function(){ archiveLoading = false; });
-}
-function setBusy(b){
-  busy = b;
-  var btns = document.querySelectorAll('.rec-btn');
-  for(var i=0;i<btns.length;i++){ btns[i].disabled = b || !accessToken; }
-  var mb = document.querySelectorAll('.feed-grid button');
-  for(var j=0;j<mb.length;j++){ mb[j].disabled = b || !accessToken; }
+  }).then(function(){ archiveLoading = false; setLoadNotes(false); });
 }
 /* ================= 記録時間ブロック =================
    おむつ・授乳どちらの記録にも効く記録時刻の切り替え。
@@ -2627,7 +2722,8 @@ function saveEdit(rec, when, updated){
     scheduleDelayedReminderSync();
     return loadRecords(true);
   }).catch(function(err){
-    setStatus('保存できませんでした：' + err.message, true);
+    if(!$('editOverlay').classList.contains('hidden')) sheetError('editOverlay', '保存できませんでした：' + err.message);
+    else setStatus('保存できませんでした：' + err.message, true);
   }).then(function(){ setBusy(false); });
 }
 function deleteRecord(rec){
@@ -2643,7 +2739,8 @@ function deleteRecord(rec){
     scheduleDelayedReminderSync();
     return loadRecords(true);
   }).catch(function(err){
-    setStatus('削除できませんでした：' + err.message, true);
+    if(!$('editOverlay').classList.contains('hidden')) sheetError('editOverlay', '削除できませんでした：' + err.message);
+    else setStatus('削除できませんでした：' + err.message, true);
   }).then(function(){ setBusy(false); });
 }
 
@@ -3020,8 +3117,14 @@ for(var sr=0; sr<setRowBtns.length; sr++){
     for(var k=0;k<eds.length;k++) eds[k].classList.add('hidden');
     if(wasHidden){
       /* 開くときは、その項目の現在の値を入力欄に入れた状態にする */
+      if(f === 'birthDate') $('inputBirthDate').value = babySettings.birthDate || '';
       if(f === 'birthWeight') $('inputBirthWeight').value = babySettings.birthWeight || '';
       if(f === 'weight') $('inputWeight').value = babySettings.weight || '';
+      if(f === 'goal'){
+        var cg = customGoal();
+        $('inputGoalMl').value = cg ? cg.ml : '';
+        $('inputGoalTimes').value = cg ? cg.times : '';
+      }
       ed.classList.remove('hidden');
       var inp = ed.querySelector('input');
       if(inp){
@@ -3038,43 +3141,85 @@ function closeSetEditor(field){
   var ed = $('editor-' + field);
   if(ed) ed.classList.add('hidden');
 }
-$('inputBirthDate').addEventListener('change', function(){
-  babySettings.birthDate = this.value || '';
+/* 生年月日も他の項目と同じ作法にする：変えた瞬間の即保存はやめ、
+   「保存する」を押したときにだけ保存して閉じ、キャンセルは保存せず閉じる */
+$('saveBirthDateBtn').addEventListener('click', function(){
+  babySettings.birthDate = $('inputBirthDate').value || '';
   scheduleBabySave();
   closeSetEditor('birthDate');
 });
+$('cancelBirthDateBtn').addEventListener('click', function(){ closeSetEditor('birthDate'); });
 /* 出生体重・現在の体重は、TOPの体重と同じく「保存する」ボタンを
    押したときにだけ保存し、保存と同時に入力欄を閉じる
-   （入力しただけ・フォーカスを外しただけでは保存しない） */
+   （入力しただけ・フォーカスを外しただけでは保存しない）。
+   体重（g）欄の検証：空欄は現行どおり「未設定にする」扱いで通す。
+   値がある場合は min〜max の整数でなければ、理由を表示して
+   閉じずに開いたままにする（編集シートと同じ方式） */
+function readGramField(inp, label){
+  var v = inp.value.trim();
+  if(v === '') return { ok:true, value:'' };
+  var n = Number(v);
+  var min = parseInt(inp.getAttribute('min'), 10);
+  var max = parseInt(inp.getAttribute('max'), 10);
+  if(!isFinite(n) || Math.floor(n) !== n || n < min || n > max){
+    sheetError('babyOverlay', label + 'は' + min + '〜' + max + 'gの整数で入力してください');
+    return { ok:false, value:'' };
+  }
+  return { ok:true, value:n };
+}
 $('saveBirthWeightBtn').addEventListener('click', function(){
-  var v = $('inputBirthWeight').value.trim();
-  babySettings.birthWeight = v === '' ? '' : parseInt(v, 10);
+  var r = readGramField($('inputBirthWeight'), '出生体重');
+  if(!r.ok) return;
+  clearSheetError('babyOverlay');
+  babySettings.birthWeight = r.value;
   scheduleBabySave();
   closeSetEditor('birthWeight');
 });
 $('saveWeightBtn').addEventListener('click', function(){
-  var v = $('inputWeight').value.trim();
-  babySettings.weight = v === '' ? '' : parseInt(v, 10);
-  if(v !== '') pushWeightLog(parseInt(v, 10));
+  var r = readGramField($('inputWeight'), '現在の体重');
+  if(!r.ok) return;
+  clearSheetError('babyOverlay');
+  babySettings.weight = r.value;
+  if(r.value !== '') pushWeightLog(r.value);
   scheduleBabySave();
   closeSetEditor('weight');
 });
 /* キャンセル：保存せずに入力欄を閉じるだけにする */
 $('cancelBirthWeightBtn').addEventListener('click', function(){ closeSetEditor('birthWeight'); });
 $('cancelWeightBtn').addEventListener('click', function(){ closeSetEditor('weight'); });
-/* 目標の直接入力：mlと回数の両方が正の整数のときだけ保存し、
+/* 目標の直接入力：mlと回数の両方が範囲内の整数のときだけ保存し、
    保存と同時に入力欄を閉じる（他の項目と同じルール）。
-   どちらか不正なときは保存せず、入力欄を開いたままにする */
+   範囲は入力欄の min/max（1回量 1〜500ml、回数 1〜20回）を使い、
+   どちらか不正・範囲外のときは保存せず、理由を表示して
+   入力欄を開いたままにする */
 $('saveGoalBtn').addEventListener('click', function(){
-  var ml = parseInt($('inputGoalMl').value, 10);
-  var times = parseInt($('inputGoalTimes').value, 10);
-  if(!(ml > 0) || !(times > 0)) return;
+  var mlInp = $('inputGoalMl');
+  var timesInp = $('inputGoalTimes');
+  var mlMin = parseInt(mlInp.getAttribute('min'), 10);
+  var mlMax = parseInt(mlInp.getAttribute('max'), 10);
+  var timesMin = parseInt(timesInp.getAttribute('min'), 10);
+  var timesMax = parseInt(timesInp.getAttribute('max'), 10);
+  var mlRaw = String(mlInp.value || '').trim();
+  var timesRaw = String(timesInp.value || '').trim();
+  var ml = Number(mlRaw);
+  var times = Number(timesRaw);
+  if(mlRaw === '' || !isFinite(ml) || Math.floor(ml) !== ml || ml < mlMin || ml > mlMax){
+    sheetError('babyOverlay', '目標の1回量は' + mlMin + '〜' + mlMax + 'mlの整数で入力してください');
+    return;
+  }
+  if(timesRaw === '' || !isFinite(times) || Math.floor(times) !== times || times < timesMin || times > timesMax){
+    sheetError('babyOverlay', '目標の回数は' + timesMin + '〜' + timesMax + '回の整数で入力してください');
+    return;
+  }
+  clearSheetError('babyOverlay');
   babySettings.goalMl = ml;
   babySettings.goalTimes = times;
   babySettings.goalBand = '';
   scheduleBabySave();
   closeSetEditor('goal');
 });
+/* キャンセル：保存せずに入力欄を閉じるだけにする */
+$('cancelGoalBtn').addEventListener('click', function(){ closeSetEditor('goal'); });
 /* 目標を未設定に戻す：従来どおり月齢から自動で決まる動作になる */
 $('clearGoalBtn').addEventListener('click', function(){
   babySettings.goalMl = '';
@@ -3096,7 +3241,8 @@ $('cancelSettingsBtn').addEventListener('click', function(){ closeBabySettings()
 $('saveSettingsBtn').addEventListener('click', function(){
   var cid = $('clientIdInput').value.trim();
   var cal = $('calendarIdInput').value.trim() || DEFAULT_CAL;
-  if(!cid){ setStatus('クライアントIDを入力してください', true); return; }
+  if(!cid){ sheetError('babyOverlay', 'クライアントIDを入力してください'); return; }
+  clearSheetError('babyOverlay');
   clientId = cid; calendarId = cal;
   try{
     localStorage.setItem(LS_CID, clientId);
@@ -3141,13 +3287,12 @@ function buildFeedButtons(){
 }
 
 buildFeedButtons();
-/* setBusy対象に授乳ボタンも含めるよう差し替え */
-var _setBusy = setBusy;
-setBusy = function(b){
+/* busy制御はこの1本だけ：おむつ・授乳の全記録ボタンを対象にする */
+function setBusy(b){
   busy = b;
   var all = document.querySelectorAll('.rec-btn, .rec-btn2');
   for(var i=0;i<all.length;i++){ all[i].disabled = b || !accessToken; }
-};
+}
 
 /* ================= 自動更新（相手の変更を反映） ================= */
 function autoRefresh(){
@@ -3206,7 +3351,7 @@ function kbClearTimers(){
 /* 入力欄と一緒に見せたい範囲：同じ編集エリア（保存・キャンセル含む） */
 function kbBlockOf(el){
   if(el.closest){
-    var b = el.closest('.cat-editor, .top-weight-editor, .set-editor, .memo-row, .milk-custom, .conn-box');
+    var b = el.closest('.cat-editor, .top-weight-editor, .set-editor, .memo-row, .milk-custom, .conn-box, .edit-fields');
     if(b) return b;
   }
   return el;
@@ -3243,6 +3388,8 @@ document.addEventListener('focusin', function(e){
   var t = e.target;
   if(!t || !t.tagName) return;
   if(t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA' && t.tagName !== 'SELECT') return;
+  /* 日付欄（生年月日・猫の誕生日・編集の日時など）はフォーカスでピッカーを開く扱いに統一 */
+  if(t.type === 'date' || t.type === 'datetime-local'){ try{ if(t.showPicker) t.showPicker(); }catch(err){} }
   kbInput = t;
   document.body.classList.add('kb-open');
   kbSchedule();
@@ -3261,6 +3408,14 @@ if(window.visualViewport){
     if(kbInput){ kbEnsureVisible(); kbTimers.push(setTimeout(kbEnsureVisible, 200)); }
   });
 }
+
+/* シートの開閉を監視し、開いている間は背景スクロールをロックする */
+(function(){
+  if(!window.MutationObserver) return;
+  var obs = new MutationObserver(function(){ refreshScrollLock(); });
+  var overs = document.querySelectorAll('.overlay');
+  for(var i=0;i<overs.length;i++) obs.observe(overs[i], { attributes:true, attributeFilter:['class'] });
+})();
 
 /* ================= アップデートのお知らせ =================
    判定はページ読み込み時に1回だけ行う（30秒ごとの自動更新では呼ばない）。
