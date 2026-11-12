@@ -1206,6 +1206,12 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-13-15', notes:[
     { c:'表示', t:'月のカレンダーで日付を押すと、その日を右端にした7日間の表示が開くようになりました' }
+  ]},
+  { version:'2026-11-13-16', notes:[
+    { c:'表示', t:'11月の平均は、11日からの記録で計算するようになりました' }
+  ]},
+  { version:'2026-11-13-17', notes:[
+    { c:'記録', t:'猫の体重は、体重だけでも記録できるようになりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1974,10 +1980,14 @@ function monthStats(y, m){
   var now = new Date();
   var isCurrent = (y===now.getFullYear() && m===now.getMonth());
   var todayDate = now.getDate();
+  /* 2026年11月だけは、11日以降の記録だけで平均を出す
+     （10日以前の記録は合計にも日数にも入れない）。他の月は従来どおり */
+  var minDay = (y===2026 && m===10) ? 11 : 1;
   src.forEach(function(r){
     if(r.kind==='memo') return;
     if(r.start.getFullYear()===y && r.start.getMonth()===m){
       var dd = r.start.getDate();
+      if(dd < minDay) return;
       /* 今月は当日（今日）を合計にも日数にも入れない：
          1日が完全に終わった日だけを対象にする */
       if(isCurrent && dd === todayDate) return;
@@ -1996,7 +2006,9 @@ function monthStats(y, m){
      体重の表示はこの期間ルールの対象外で、従来どおり */
   var days = endDay;
   if(count && firstDay !== null){
-    days = endDay - firstDay + 1;
+    /* 2026年11月は期間の開始を11日に固定する（11日に記録が無くても11日から数える） */
+    var startForAvg = (minDay > 1) ? minDay : firstDay;
+    days = endDay - startForAvg + 1;
     if(days < 1) days = 1;
   }
   return {
@@ -2360,8 +2372,9 @@ function catAgeText(cat){
 }
 /* 猫の記録は小さなポップアップで受ける（他の入力と共通の作法）。
    体重（現在の値が入った状態で開く）と誕生日を1つのポップアップにまとめ、
-   検証エラーはポップアップ内に出して閉じない。誕生日の不正値を
-   無言で空にすることはしない */
+   体重の検証エラーはポップアップ内に出して閉じない。
+   誕生日は任意：空欄・不正値でも体重だけは保存でき、誕生日が
+   空欄のときは登録済みの誕生日を消さずに保持する */
 function openCatPop(idx){
   var cat = babySettings.cats[idx];
   if(!cat) return;
@@ -2382,20 +2395,19 @@ function openCatPop(idx){
           }
         }
         var bv = $('popCatBirth').value || '';
+        /* 誕生日の入力で体重の保存を止めない：
+           空欄なら登録済みの誕生日をそのまま保持し（消さない）、
+           正しく入力されているときだけ誕生日も一緒に保存する。
+           不正値・未来の日付は誕生日としては保存せず、既存値を保持する */
+        var bvOk = false;
         if(bv){
           var p = bv.split('-');
           var d = new Date(+p[0], +p[1]-1, +p[2]);
-          if(p.length !== 3 || isNaN(d.getTime()) || fmtDateStr(d) !== bv){
-            popError('誕生日が正しくありません');
-            return false;
-          }
-          if(startOfDay(d) > startOfDay(new Date())){
-            popError('誕生日は今日より後の日付にはできません');
-            return false;
-          }
+          bvOk = p.length === 3 && !isNaN(d.getTime()) && fmtDateStr(d) === bv
+            && startOfDay(d) <= startOfDay(new Date());
         }
         if(w !== null) pushCatWeight(idx, w);
-        cat.birthDate = bv;
+        if(bvOk) cat.birthDate = bv;
         scheduleBabySave();
       }},
       { label:'キャンセル', cls:'btn-sub', onClick:function(){} }
