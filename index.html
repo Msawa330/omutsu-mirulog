@@ -30,6 +30,7 @@
     --accent:#d9a400;
     --today-tint:rgba(255,205,40,.07); --today-ink:#d9a400;
     --coral:#e05252;
+    --sun:#e56b6b; --sat:#5b8dd9;
     --shadow:0 2px 12px rgba(60,80,60,.07), 0 1px 3px rgba(60,80,60,.05);
     /* ===== 共通寸法（余白・角丸・文字・ボタンの高さ） ===== */
     --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
@@ -76,7 +77,19 @@
     display:flex; align-items:center; justify-content:center;
     box-shadow:0 1px 4px rgba(0,90,20,.18);
   }
-  .baby-face svg{width:22px; height:22px;}
+  .baby-face svg{width:30px; height:30px;}
+  /* 曜日だけに付ける土日の色（日付の数字には付けない・月間カレンダーと同じ色）。
+     .wk-head .wk-wd や .day-row .dcell .wd のような文脈側のグレーが
+     単独クラス指定に勝って色が消えないよう、文脈つきでも明示する */
+  .wd-sun{color:var(--sun);}
+  .wd-sat{color:var(--sat);}
+  .wk-head .wk-wd.wd-sun{color:var(--sun);}
+  .wk-head .wk-wd.wd-sat{color:var(--sat);}
+  .day-row .dcell .wd.wd-sun{color:var(--sun);}
+  .day-row .dcell .wd.wd-sat{color:var(--sat);}
+  /* ヘッダー（緑背景）では白文字と見分けがつく濃さの赤／青にする */
+  .now .wd-sun{color:#ff7d7d;}
+  .now .wd-sat{color:#74b9ff;}
   .baby-summary{display:flex; align-items:baseline; gap:8px; min-width:0; white-space:nowrap; overflow:hidden;}
   .baby-age{font-size:15px; font-weight:800; line-height:1.2; white-space:nowrap;}
   .baby-weight{font-size:11px; font-weight:700; opacity:.92; font-variant-numeric:tabular-nums; white-space:nowrap;}
@@ -134,7 +147,7 @@
     border:1px solid var(--line); box-shadow:var(--shadow);
   }
   .btn-ghost{
-    background:transparent; color:var(--ink-sub); font-weight:700; font-size:13px;
+    background:#fff; color:var(--ink-sub); font-weight:700; font-size:13px;
     border:1px solid var(--line); border-radius:999px; padding:8px 14px;
   }
   .signed{display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-sub);}
@@ -166,9 +179,11 @@
   }
   .btn-more{
     display:block; margin:8px auto 2px;
-    background:none; color:var(--green-dark); font-weight:800; font-size:12px;
-    padding:5px 14px;
+    background:#fff; color:var(--green-dark); font-weight:800; font-size:12px;
+    border:1px solid var(--line); border-radius:999px;
+    padding:8px 18px; min-height:var(--btn-h);
   }
+  .btn-more:active{background:var(--green-soft);}
   .btn-danger{
     background:#fff; color:var(--coral); border:1px solid rgba(224,82,82,.5);
     font-weight:800; font-size:14px; border-radius:12px; padding:11px 18px; width:100%; margin-top:10px; min-height:var(--btn-h-lg);
@@ -176,41 +191,40 @@
   .btn-danger.confirm{background:#c0392b; color:#fff; border-color:#c0392b;}
   .nav-row{display:flex; gap:8px; margin-top:10px;}
   .nav-btn{
-    flex:1; border:2px solid var(--green-soft); background:var(--green-soft);
+    flex:1; border:1px solid var(--line); background:#fff;
     color:var(--green-dark); font-size:13px; font-weight:800;
     border-radius:999px; padding:7px 10px; min-height:var(--btn-h);
   }
-  .nav-btn:active{background:var(--green); color:#fff;}
+  .nav-btn:active{background:var(--green); border-color:var(--green); color:#fff;}
   .nav-btn:disabled{background:#f0f3f0; border-color:#f0f3f0; color:#b6bcb6; opacity:1;}
 
   /* ===== 記録時間ブロック ===== */
   .rectime{padding:8px 10px;}
-  .rectime-toggle{display:flex; background:#f0f3f0; border-radius:999px; padding:3px; gap:3px; min-width:0;}
+  .rectime-toggle{display:flex; background:#fff; border:1px solid var(--line); border-radius:999px; padding:3px; gap:3px; min-width:0;}
   .rt-opt{
-    flex:1 1 0; min-width:0; background:transparent; color:var(--ink-sub);
+    flex:1 1 0; min-width:0; background:#fff; color:var(--ink-sub);
     border-radius:999px; padding:4px 0; min-height:36px;
     font-size:12px; font-weight:800; text-align:center;
   }
-  .rt-opt.sel{background:#fff; color:var(--green-dark); box-shadow:0 1px 4px rgba(60,80,60,.14);}
+  .rt-opt.sel{background:var(--green); color:#fff; box-shadow:none;}
   .rectime-set{padding-top:8px;}
   .rt-date{font-size:15px; font-weight:800; color:var(--ink); text-align:center; min-height:1.3em; font-variant-numeric:tabular-nums;}
   .rt-controls{display:flex; align-items:center; justify-content:center; gap:12px; margin-top:2px;}
   .rt-group{display:flex; align-items:center; gap:8px;}
   .rt-step{
-    width:36px; height:36px; min-height:36px; border-radius:50%; background:var(--green-soft); color:var(--green-dark);
-    border:2px solid var(--green-soft); font-size:16px; font-weight:800; line-height:1;
+    width:36px; height:36px; min-height:36px; border-radius:50%; background:#fff; color:var(--green-dark);
+    border:1px solid var(--line); font-size:16px; font-weight:800; line-height:1;
     display:flex; align-items:center; justify-content:center; padding:0;
   }
-  .rt-step:active{background:var(--green); color:#fff;}
+  .rt-step:active{background:var(--green); border-color:var(--green); color:#fff;}
   .rt-num{font-size:20px; font-weight:800; min-width:2ch; text-align:center; font-variant-numeric:tabular-nums;}
   .rt-colon{font-size:20px; font-weight:800;}
 
-  /* ===== 丸い記録ボタン ===== */
-  .btn-row{display:flex; gap:10px; min-width:0;}
+  /* ===== 記録ボタン（おしっこ・うんち・母乳・ミルクを横1行） ===== */
+  .rec-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); column-gap:6px; row-gap:3px; min-width:0;}
   .round-btn{
-    flex:1; display:flex; align-items:center; gap:8px;
-    background:none; border:none; padding:0;
-    text-align:left; min-height:54px; min-width:0;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:none; border:none; padding:0; min-width:0; width:100%;
   }
   .round-btn .disc{
     width:54px; height:54px; flex:0 0 auto;
@@ -220,48 +234,33 @@
   }
   .round-btn .disc svg{width:43px; height:43px; display:block;}
   .round-btn:active .disc{transform:scale(.93);}
-  .round-btn .meta{display:flex; flex-direction:column; gap:1px; min-width:0;}
   .round-btn .lbl{font-size:12px; font-weight:800; color:var(--ink); line-height:1.25; white-space:nowrap;}
-  .round-btn .last{font-size:10px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; line-height:1.25; white-space:nowrap;}
   .disc.pee{background:var(--pee-bg);}
   .disc.poop{background:var(--poop-bg);}
   .disc.breast{background:var(--breast-bg);}
   .disc.milk{background:var(--milk-bg);}
+  /* 前回の表示：ボタンの下に同じ1行でそろえる（3か所とも同じ大きさ・色で、各ボタンの中央）。
+     授乳分は母乳・ミルク2ボタンの下にまとめて1つだけ置き、「次」だけ黄色にする */
+  .rec-last{
+    font-size:11px; font-weight:700; color:var(--ink-sub);
+    font-variant-numeric:tabular-nums; line-height:1.3;
+    text-align:center; min-width:0;
+  }
+  .rec-feed-last{grid-column:3 / span 2; display:flex; align-items:center; justify-content:center; gap:7px; flex-wrap:wrap;}
+  .rec-feed-last .next{color:var(--today-ink); font-weight:800; display:inline-flex; align-items:center; gap:3px;}
+  .next-bell{flex:0 0 auto; width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; color:var(--today-ink);}
+  .next-bell svg{width:14px; height:14px;}
 
-  /* ===== 授乳 ===== */
-  .feed-top{display:flex; align-items:center; gap:10px; min-width:0;}
-  #breastWrap{flex:0 0 auto;}
-  #breastWrap .round-btn{flex:0 0 auto;}
-  .feed-info{flex:1; display:flex; flex-direction:column; gap:4px; min-width:0;}
-  .feed-info .row{
-    display:flex; justify-content:space-between; align-items:center;
-    background:#fafbfa; border-radius:8px; padding:4px 9px;
+  /* ===== ミルクの量ポップアップ（小さな中央モーダル） ===== */
+  .milk-sheet{
+    background:#fff; color:var(--ink); width:100%; max-width:300px; min-width:0;
+    border-radius:var(--r-l); padding:20px 18px calc(18px + env(safe-area-inset-bottom));
+    box-shadow:0 12px 32px rgba(60,80,60,.25);
   }
-  .feed-info .k{font-size:11px; font-weight:800; color:var(--ink-sub);}
-  .feed-info .v{font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; display:inline-flex; align-items:center; gap:4px;}
-  .feed-info .v.next{color:var(--green-dark);}
-  .next-bell{flex:0 0 auto; width:15px; height:15px; display:inline-flex; align-items:center; justify-content:center; color:var(--green-dark);}
-  .next-bell svg{width:15px; height:15px;}
-  .milk-label{font-size:12px; font-weight:800; color:var(--ink); margin:9px 0 6px;}
-  .milk-row{display:flex; justify-content:space-between; gap:2px; min-width:0;}
-  .milk-btn{
-    width:54px; height:54px; min-height:54px; flex:0 0 auto;
-    border-radius:50%; border:none;
-    background:var(--milk-bg); color:#8a6503;
-    position:relative;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    line-height:1; padding:0;
-    transition:transform .08s ease;
-  }
-  .milk-btn:active{transform:scale(.92);}
-  .milk-btn .num{font-size:15px; font-weight:800; font-variant-numeric:tabular-nums;}
-  .milk-btn .unit{font-size:8px; font-weight:700; color:var(--milk); margin-top:1px;}
-  .rec-badge{
-    position:absolute; top:-4px; right:-4px;
-    width:16px; height:16px;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .rec-badge svg{width:14px; height:14px; display:block;}
+  .milk-step-row{display:flex; align-items:center; justify-content:center; gap:18px;}
+  .milk-amt{font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; min-width:3ch; text-align:center; line-height:1.1;}
+  .milk-amt .milk-amt-unit{font-size:14px; font-weight:800; margin-left:2px;}
+  .milk-sheet .btn-primary{margin-top:16px;}
 
   /* ===== 今日のミルク ゲージ ===== */
   .gauge-top{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;}
@@ -287,10 +286,10 @@
   }
   .rec-row:last-child{border-bottom:none;}
   .rec-row:active{background:#fafbfa;}
-  .rec-time{font-variant-numeric:tabular-nums; text-align:right; line-height:1.15;}
+  .rec-time{font-variant-numeric:tabular-nums; text-align:right; line-height:1.2; font-size:13px; font-weight:700; color:var(--ink-sub);}
   .rec-time .d{display:block; font-size:9px; font-weight:700; color:var(--ink-sub);}
-  .rec-time .h{font-size:15px; font-weight:800;}
-  .rec-time .m{font-size:10px; font-weight:700; color:var(--ink-sub);}
+  .rec-time .h{font-size:inherit; font-weight:inherit; color:inherit;}
+  .rec-time .m{font-size:inherit; font-weight:inherit; color:inherit;}
   .badge{
     flex:0 0 auto; width:26px; height:26px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
@@ -312,16 +311,27 @@
     flex:1; min-width:0; background:var(--bg); border:1px solid var(--line); border-radius:10px;
     color:var(--ink); font-size:16px; padding:10px 12px; font-family:inherit;
   }
+  /* 「書き込む」も主ボタン（.btn-primary）と寸法・色を完全一致させる */
   .memo-btn{
-    flex:0 0 auto; background:var(--green); color:#fff; font-weight:800; font-size:14px;
-    border-radius:10px; padding:11px 16px;
+    flex:0 0 auto; background:var(--green); color:#fff; font-weight:800; font-size:15px;
+    border-radius:12px; padding:11px 18px; min-height:var(--btn-h-lg);
   }
   .memo-btn:active{background:var(--green-dark);}
   .memo-btn:disabled{opacity:.45;}
 
   /* ===== 7日間ログ（グリッド：日付列×24時間行） ===== */
-  .wk-grid{display:grid; grid-template-columns:16px repeat(7,minmax(0,1fr)); min-width:0;}
+  .wk-grid{display:grid; grid-template-columns:26px repeat(7,minmax(0,1fr)); min-width:0;}
   .wk-corner{border-bottom:2px solid var(--line);}
+  .wk-corner .wk-hidden{visibility:hidden;}
+  .wk-sumicon{
+    height:21px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .wk-sumicon svg{width:16px; height:16px; flex:0 0 auto; display:block;}
+  .wk-sumicon.pee{background:var(--pee-bg);}
+  .wk-sumicon.poop{background:var(--poop-bg);}
+  .wk-sumicon.breast{background:var(--breast-bg);}
+  .wk-sumicon.milk{background:var(--milk-bg);}
   .wk-head{
     text-align:center; min-width:0;
     padding:3px 0 5px;
@@ -333,12 +343,11 @@
   .wk-head.today-col .wk-md{color:var(--today-ink);}
   .wk-sums{display:flex; flex-direction:column; gap:2px; margin-top:4px; padding:0 1px;}
   .wk-sumrow{
-    border-radius:6px; padding:2px 0;
-    display:flex; align-items:center; justify-content:center; gap:2px;
-    font-size:9px; font-weight:800; line-height:1.15;
+    height:21px; border-radius:6px; padding:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:800; line-height:1.15;
     font-variant-numeric:tabular-nums; white-space:nowrap;
   }
-  .wk-sumrow svg{width:11px; height:11px; flex:0 0 auto; display:block;}
   .wk-sumrow .none{opacity:.5;}
   .wk-sumrow.pee{background:var(--pee-bg); color:var(--pee);}
   .wk-sumrow.poop{background:var(--poop-bg); color:var(--poop);}
@@ -385,8 +394,8 @@
   .cal-weight b{color:var(--ink); font-weight:800;}
   .mcal-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:2px;}
   .mcal-dow{text-align:center; font-size:9px; font-weight:800; color:var(--ink-sub); padding:2px 0;}
-  .mcal-dow.sun{color:#e56b6b;}
-  .mcal-dow.sat{color:#5b8dd9;}
+  .mcal-dow.sun{color:var(--sun);}
+  .mcal-dow.sat{color:var(--sat);}
   .mcal-day{
     text-align:center; font-size:11px; font-weight:700;
     padding:3px 0 2px; border-radius:7px;
@@ -470,7 +479,7 @@
   /* 猫の記録ボタン専用クラス（TOPの .btn-ghost とは分離） */
   .cat-rec-btn{
     margin-left:auto; flex:0 0 auto;
-    border:2px solid var(--green); background:#fff; color:var(--green-dark);
+    border:1px solid var(--line); background:#fff; color:var(--green-dark);
     font-size:12px; font-weight:800; border-radius:999px; padding:4px 14px; min-height:36px;
   }
   .cat-rec-btn:active{background:var(--green-soft);}
@@ -540,12 +549,6 @@
   .sheet label{display:block; font-size:13px; font-weight:700; color:var(--ink-sub); margin:10px 0 6px;}
   .sheet input[type="datetime-local"],
   .sheet input[type="text"]{ width:100%; }
-  .preset-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
-  .preset{
-    background:#fff; color:var(--ink); border:1px solid var(--line);
-    border-radius:10px; padding:9px 14px; font-size:13px; font-weight:700;
-  }
-  .preset:active{background:var(--green-soft);}
   .opt-row{display:flex; gap:8px; flex-wrap:wrap;}
   .opt{
     display:inline-flex; align-items:center; gap:6px; border-radius:14px; padding:10px 14px;
@@ -580,7 +583,7 @@
   /* ===== 設定シート ===== */
   .set-row{
     display:flex; align-items:center; gap:8px; width:100%; text-align:left;
-    background:var(--bg); border:1px solid var(--line); border-radius:14px;
+    background:#fff; border:1px solid var(--line); border-radius:14px;
     padding:9px 12px; margin-top:6px; font-size:15px; color:var(--ink);
   }
   .set-row .set-label{font-weight:700; color:var(--ink); flex:0 0 auto;}
@@ -631,7 +634,6 @@
   @media (prefers-reduced-motion: reduce){
     .anim-pop{ animation:none; }
     .round-btn:active .disc{ transform:none; }
-    .milk-btn:active{ transform:none; }
   }
 
   /* ===== 狭幅端末（〜430px） ===== */
@@ -641,7 +643,6 @@
     .app-header{padding-left:12px; padding-right:12px;}
     .now{font-size:12px;}
     .baby-age{font-size:14px;}
-    .milk-btn{width:50px; height:50px; min-height:50px;}
     .month-row{grid-template-columns:6rem repeat(3,minmax(0,1fr)); gap:8px;}
     .months-head{grid-template-columns:6rem repeat(3,minmax(0,1fr)); gap:8px;}
     .month-row .month-name{font-size:14px;}
@@ -664,8 +665,6 @@
   }
   @media (max-width:360px){
     .now{font-size:11px;}
-    .milk-btn{width:46px; height:46px; min-height:46px;}
-    .milk-btn .num{font-size:13px;}
     .round-btn .disc{width:50px; height:50px;}
     .round-btn .disc svg{width:40px; height:40px;}
     .day-row{grid-template-columns:2.9rem repeat(4,minmax(0,1fr)); font-size:14px;}
@@ -678,7 +677,7 @@
     .age-row .age-label{flex-basis:5.4em;}
     .rec-title{font-size:12.5px;}
     .wk-head .wk-md{font-size:10.5px;}
-    .wk-sumrow{font-size:9px;}
+    .wk-sumrow{font-size:11px;}
     .rt-step{width:36px; height:36px;}
     .settings-btn{padding:5px 8px;}
   }
@@ -693,14 +692,7 @@
     <p class="now" id="nowLine">—</p>
     <div class="baby-row">
       <div class="baby-face" aria-hidden="true">
-        <svg viewBox="0 0 48 48" fill="none" stroke="#3fbf4f" stroke-width="2.4" stroke-linecap="round">
-          <path d="M24 6c-1.5 2.2-4.5 2.4-6 .6"/>
-          <circle cx="24" cy="26" r="15"/>
-          <circle cx="18.5" cy="24" r="1.4" fill="#3fbf4f" stroke="none"/>
-          <circle cx="29.5" cy="24" r="1.4" fill="#3fbf4f" stroke="none"/>
-          <path d="M19.5 30.5c1.4 1.7 2.9 2.5 4.5 2.5s3.1-.8 4.5-2.5"/>
-          <path d="M11.5 27.5c-1 2.5.5 4.8 2.8 5.4M36.5 27.5c1 2.5-.5 4.8-2.8 5.4" stroke-width="2"/>
-        </svg>
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><radialGradient id="baby3Skin" cx="42%" cy="32%" r="80%"><stop offset="0%" stop-color="#fff6e8"/><stop offset="45%" stop-color="#ffe3c2"/><stop offset="80%" stop-color="#ffd0a0"/><stop offset="100%" stop-color="#f9bd8b"/></radialGradient><radialGradient id="baby3Shade" cx="50%" cy="50%" r="50%"><stop offset="72%" stop-color="#e08b4e" stop-opacity="0"/><stop offset="100%" stop-color="#e08b4e" stop-opacity="0.28"/></radialGradient><linearGradient id="baby3Hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9a6a44"/><stop offset="100%" stop-color="#6f4525"/></linearGradient></defs><circle cx="13.5" cy="56" r="6.5" fill="url(#baby3Skin)"/><circle cx="86.5" cy="56" r="6.5" fill="url(#baby3Skin)"/><circle cx="50" cy="53" r="37" fill="url(#baby3Skin)"/><circle cx="50" cy="53" r="37" fill="url(#baby3Shade)"/><ellipse cx="34" cy="34" rx="17" ry="10.5" fill="#ffffff" opacity="0.5" transform="rotate(-18 34 34)"/><ellipse cx="31" cy="64" rx="7" ry="5" fill="#f4937c" opacity="0.5"/><ellipse cx="69" cy="64" rx="7" ry="5" fill="#f4937c" opacity="0.5"/><path d="M50 16.5 C 55.5 12, 60.5 15.8, 58.6 20.2 C 57 23.6, 52.8 23.2, 53.2 20 C 53.5 17.9, 55.8 17.6, 56.3 19.3" fill="none" stroke="url(#baby3Hair)" stroke-width="3.2" stroke-linecap="round"/><path d="M31.5 55 Q 38 59.5 44.5 55" fill="none" stroke="#4d3421" stroke-width="2.8" stroke-linecap="round"/><path d="M55.5 55 Q 62 59.5 68.5 55" fill="none" stroke="#4d3421" stroke-width="2.8" stroke-linecap="round"/><path d="M45.5 66.5 Q 50 69.5 54.5 66.5" fill="none" stroke="#b3613f" stroke-width="2.6" stroke-linecap="round"/></svg>
       </div>
       <span class="baby-summary" id="babySummary"><span class="unset">赤ちゃん設定を入力</span></span>
       <button class="weight-edit" id="weightRecordBtn" type="button" aria-label="体重を記録">
@@ -764,25 +756,18 @@
     </div>
   </section>
 
-  <!-- おむつ -->
-  <section class="panel" aria-label="おむつ">
-    <div class="btn-row">
+  <!-- 記録（おしっこ・うんち・母乳・ミルクを横1行。前回はボタンの下にそろえ、
+       授乳の前回と次は母乳・ミルクの下にまとめて1つだけ出す） -->
+  <section class="panel" aria-label="記録">
+    <div class="rec-grid">
       <button class="round-btn rec-btn" id="btnPee" type="button" disabled></button>
       <button class="round-btn rec-btn" id="btnPoop" type="button" disabled></button>
+      <button class="round-btn rec-btn" id="btnBreast" type="button" disabled></button>
+      <button class="round-btn rec-btn" id="btnMilk" type="button" disabled></button>
+      <span class="rec-last" id="prevPee"></span>
+      <span class="rec-last" id="prevPoop"></span>
+      <span class="rec-last rec-feed-last"><span id="feedPrev"></span><span class="next" id="feedNext"></span></span>
     </div>
-  </section>
-
-  <!-- 授乳 -->
-  <section class="panel" aria-label="授乳">
-    <div class="feed-top">
-      <div id="breastWrap"></div>
-      <div class="feed-info">
-        <div class="row"><span class="k">前回</span><span class="v" id="feedPrev">—</span></div>
-        <div class="row"><span class="k">次の目安</span><span class="v next" id="feedNext">—</span></div>
-      </div>
-    </div>
-    <div class="milk-label">ミルク</div>
-    <div class="milk-row" id="feedGrid"></div>
   </section>
 
   <!-- 今日のミルク ゲージ -->
@@ -985,12 +970,6 @@
     <div class="edit-fields">
     <label for="editDateTime">日時</label>
     <input type="datetime-local" id="editDateTime">
-    <div class="preset-row" id="presetRow">
-      <button class="preset" type="button" data-min="30">30分前</button>
-      <button class="preset" type="button" data-min="60">1時間前</button>
-      <button class="preset" type="button" data-min="90">1時間30分前</button>
-      <button class="preset" type="button" data-min="120">2時間前</button>
-    </div>
     <div id="editMemoWrap" class="hidden">
       <label for="editMemoText">メモ</label>
       <input type="text" id="editMemoText" autocomplete="off">
@@ -1012,13 +991,26 @@
   </div>
 </div>
 
+<!-- ミルクの量ポップアップ（ステッパーと記録・キャンセルだけ） -->
+<div class="overlay center hidden" id="milkOverlay">
+  <div class="milk-sheet" role="dialog" aria-modal="true" aria-label="ミルクの量">
+    <div class="milk-step-row">
+      <button class="rt-step" id="milkMinusBtn" type="button" aria-label="10ml減らす">−</button>
+      <span class="milk-amt"><span id="milkAmount">50</span><span class="milk-amt-unit">ml</span></span>
+      <button class="rt-step" id="milkPlusBtn" type="button" aria-label="10ml増やす">＋</button>
+    </div>
+    <button class="btn-primary" id="milkRecordBtn" type="button">記録</button>
+    <button class="btn-sub" id="milkCancelBtn" type="button">キャンセル</button>
+  </div>
+</div>
+
 <!-- アップデートのお知らせ -->
 <div class="overlay center hidden" id="updateOverlay">
   <div class="update-sheet" role="dialog" aria-modal="true" aria-label="アップデートのお知らせ">
     <div class="sheet-head"><span class="sheet-title">アップデートのお知らせ</span><button class="close-x" id="updateCloseXBtn" type="button" aria-label="閉じる">×</button></div>
     <div class="sheet-error hidden" role="alert"></div>
     <div class="update-lines" id="updateNotes"></div>
-    <div class="sheet-foot"><button class="btn-primary" id="updateCloseBtn" type="button" style="margin-top:0;">閉じる</button></div>
+    <div class="sheet-foot"><button class="btn-sub" id="updateCloseBtn" type="button" style="margin-top:0;">閉じる</button></div>
   </div>
 </div>
 
@@ -1108,6 +1100,21 @@ var CHANGELOG = [
     '入力のしかたや画面の使い方を全体で統一しました',
     '間違った数字を入れたとき、理由がその場で見えるようになりました',
     '猫のアイコンが、みぃとナリそれぞれの顔になりました'
+  ]},
+  { version:'2026-11-13-3', notes:[
+    '赤ちゃんと猫のアイコンが新しくなりました',
+    '土日は曜日の文字に色が付くようになりました',
+    '月のログで日付を開くと、朝の記録から見られるようになりました',
+    '今日のログの時刻の見た目をそろえました',
+    '前回の記録の表示を、おしっこ・うんち・授乳でそろえました',
+    '記録の編集は、数字を入力するだけのシンプルな画面になりました',
+    'ボタンの色を、緑と白の2種類にそろえました',
+    '7日間の見出しがすっきりしました',
+    '記録ボタンが横一列になり、ミルクは押してから量を選ぶ形になりました'
+  ]},
+  { version:'2026-11-13-4', notes:[
+    '7日間のログと一番上の日時でも、土日は曜日の文字に色が付くようになりました',
+    'メモの「書き込む」ボタンも、他の緑のボタンと同じ形にそろえました'
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1242,11 +1249,6 @@ function displayGuide(){
   }
   var fb = AGE_BANDS[0];
   return { guide: { perFeed: RECOMMENDED_ML, times: fb.times, daily: RECOMMENDED_ML * fb.times, band: fb }, fallback: true };
-}
-/* ミルクボタンの選択肢は固定の6個（120・140は入れない）。
-   おすすめ（バッジ対象）は50ml */
-function milkAmounts(){
-  return [40,50,60,70,80,100];
 }
 function fmtGram(v){
   var n = parseFloat(v);
@@ -1397,6 +1399,12 @@ function fmtMD(d){ return (d.getMonth()+1) + '/' + d.getDate(); }
 function fmtNow(d){
   return (d.getMonth()+1) + '月' + d.getDate() + '日（' + WD[d.getDay()] + '） ' + fmtTime(d) + ':' + pad(d.getSeconds());
 }
+function wdClass(d){ var w=d.getDay(); return w===0 ? ' wd-sun' : (w===6 ? ' wd-sat' : ''); }
+function wdSpan(d){ return '<span class="' + wdClass(d).trim() + '">' + WD[d.getDay()] + '</span>'; }
+function fmtNowHTML(d){
+  return (d.getMonth()+1) + '月' + d.getDate() + '日（' + wdSpan(d) + '） ' + fmtTime(d) + ':' + pad(d.getSeconds());
+}
+function setNowLine(){ var el=$('nowLine'); if(el) el.innerHTML = fmtNowHTML(new Date()); }
 function fmtElapsed(from, now){
   var min = Math.floor((now - from) / 60000);
   if(min < 0) min = 0;
@@ -1457,23 +1465,24 @@ function lastRecOfKind(kind){
   for(var i=0;i<records.length;i++){ if(records[i].kind===kind) return records[i]; }
   return null;
 }
+function fmtPrev(rec, now){ return rec ? fmtTime(rec.start) + '（' + fmtElapsed(rec.start, now) + '）' : 'まだなし'; }
 function renderPrev(){
   var now = new Date();
   var pe = lastRecOfKind('pee'), po = lastRecOfKind('poop');
   var peeEl = $('prevPee'), poopEl = $('prevPoop');
-  if(peeEl) peeEl.textContent = pe ? fmtElapsed(pe.start, now) : 'まだなし';
-  if(poopEl) poopEl.textContent = po ? fmtElapsed(po.start, now) : 'まだなし';
+  if(peeEl) peeEl.textContent = fmtPrev(pe, now);
+  if(poopEl) poopEl.textContent = fmtPrev(po, now);
   var fr = lastRecOf('feed');
   var fp = $('feedPrev');
-  if(fp) fp.textContent = fr ? fmtElapsed(fr.start, now) : 'まだなし';
+  if(fp) fp.textContent = fmtPrev(fr, now);
   var fn = $('feedNext');
   if(fn){
     var nextFeed = getNextFeedDate();
     if(nextFeed){
       var bell = babySettings.remind ? '<span class="next-bell" role="img" aria-label="通知あり">' + IC.bell + '</span>' : '';
-      fn.innerHTML = bell + '<span>' + fmtTime(nextFeed) + '</span>';
+      fn.innerHTML = bell + '<span>次 ' + fmtTime(nextFeed) + '</span>';
     } else {
-      fn.textContent = '―';
+      fn.textContent = '';
     }
   }
 }
@@ -1586,7 +1595,7 @@ function dayWeightLineHTML(d){
 }
 function dayRowHTML(d, st){
   return '<button class="day-row" type="button" data-day="' + d.getTime() + '">' +
-    '<span class="dcell"><span class="md">' + fmtMD(d) + '</span><span class="wd">（' + WD[d.getDay()] + '）</span>' + dayWeightLineHTML(d) + '</span>' +
+    '<span class="dcell"><span class="md">' + fmtMD(d) + '</span><span class="wd' + wdClass(d) + '">（' + WD[d.getDay()] + '）</span>' + dayWeightLineHTML(d) + '</span>' +
     '<span class="num">' + (st.pee || '―') + '</span>' +
     '<span class="num">' + (st.poop || '―') + '</span>' +
     '<span class="num ' + (st.breast ? 'hl' : '') + '">' + (st.breast || '―') + '</span>' +
@@ -1596,14 +1605,17 @@ function dayRowHTML(d, st){
 /* ===== 7日間ログ（統合グリッド） =====
    日付列（左が6日前・右が今日）×24時間行。左端に時刻軸。
    列ヘッダー：日付・曜日・体重（g数値のみ、無い日は空行で高さ統一）と
-   その日の集計（おしっこ・うんち・母乳はアイコン＋回数、
-   ミルクはアイコン＋総量、0件は―）。
+   その日の集計（数値のみ）。集計の種類を示すアイコンは、時刻軸と同じく
+   左端の列にだけ縦に並べ、各日の数値と行の高さを揃える（0件は―）。
    記録チップ：おしっこ・うんち・母乳はアイコンのみ、ミルクはアイコン＋量。
    同じセル内のチップの並びは種類順（おしっこ→うんち→母乳→ミルク）で固定し、
    同じ種類同士は時刻順。
    チップをタップすると編集シートが開く。メモはチップにしない */
 function wkSumRowHTML(kind, valHTML){
-  return '<div class="wk-sumrow ' + kind + '">' + IC[kind] + '<span>' + valHTML + '</span></div>';
+  return '<div class="wk-sumrow ' + kind + '"><span>' + valHTML + '</span></div>';
+}
+function wkSumIconHTML(kind){
+  return '<div class="wk-sumicon ' + kind + '">' + IC[kind] + '</div>';
 }
 function wkNone(){ return '<span class="none">―</span>'; }
 var weekOffset = 0;
@@ -1626,13 +1638,22 @@ function renderDays(){
     days.push(d);
   }
   var src = logSource();
-  var html = '<div class="wk-grid"><div class="wk-corner"></div>';
+  var html = '<div class="wk-grid"><div class="wk-corner wk-head" aria-hidden="true">' +
+    '<span class="wk-md wk-hidden">0/0</span>' +
+    '<span class="wk-wd wk-hidden">（日）</span>' +
+    '<span class="wk-w wk-hidden"></span>' +
+    '<div class="wk-sums">' +
+    wkSumIconHTML('pee') +
+    wkSumIconHTML('poop') +
+    wkSumIconHTML('breast') +
+    wkSumIconHTML('milk') +
+    '</div></div>';
   days.forEach(function(d){
     var st = dayStatsFrom(src, d);
     var wInfo = dayWeightInfo(d);
     html += '<div class="wk-head' + (sameDay(d, today) ? ' today-col' : '') + '">' +
       '<span class="wk-md">' + fmtMD(d) + '</span>' +
-      '<span class="wk-wd">（' + WD[d.getDay()] + '）</span>' +
+      '<span class="wk-wd' + wdClass(d) + '">（' + WD[d.getDay()] + '）</span>' +
       '<span class="wk-w">' + (wInfo ? wInfo.w.toLocaleString('ja-JP') : '') + '</span>' +
       '<div class="wk-sums">' +
       wkSumRowHTML('pee', st.pee ? String(st.pee) : wkNone()) +
@@ -1913,7 +1934,7 @@ function openMonth(y, m){
 
 function renderAll(){
   renderPrev(); renderGauge(); renderToday(); renderDays(); renderMonths();
-  $('nowLine').textContent = fmtNow(new Date());
+  setNowLine();
 }
 function bindRecRows(container){
   var rows = container.querySelectorAll('.rec-row');
@@ -2109,8 +2130,8 @@ function renderBabySettingsUI(){
    体重履歴（日付つき）はデータとして保存し続けるが、一覧表示はしない */
 /* 猫アイコン（記録アイコンと同じ水準の抽象形）：丸顔＋耳のシルエットに毛柄だけを入れる。みぃ=茶トラの縞、ナリ=三毛の斑 */
 var CAT_IC = {
-  mii: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="catMiiG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb763"/><stop offset="1" stop-color="#f68c2e"/></linearGradient><clipPath id="catClipM"><path d="M11.5 20.5 9.8 9.2c-.2-1.5 1.2-2.4 2.5-1.7L21 12.6c.9-.2 1.9-.3 3-.3s2.1.1 3 .3l8.7-5.1c1.3-.7 2.7.2 2.5 1.7L36.5 20.5c1 1.9 1.5 4 1.5 6.3 0 7.7-6.3 13-14 13s-14-5.3-14-13c0-2.3.5-4.4 1.5-6.3Z"/></clipPath></defs><g fill="url(#catMiiG)"><path d="M11.5 20.5 9.8 9.2c-.2-1.5 1.2-2.4 2.5-1.7L21 12.6c.9-.2 1.9-.3 3-.3s2.1.1 3 .3l8.7-5.1c1.3-.7 2.7.2 2.5 1.7L36.5 20.5c1 1.9 1.5 4 1.5 6.3 0 7.7-6.3 13-14 13s-14-5.3-14-13c0-2.3.5-4.4 1.5-6.3Z"/></g><g clip-path="url(#catClipM)"><g stroke="#dd7414" stroke-width="2.6" stroke-linecap="round" fill="none"><path d="M24 13.5v5"/><path d="M17.5 15l1 4.6"/><path d="M30.5 15l-1 4.6"/></g><ellipse cx="17" cy="17" rx="6" ry="3.4" fill="#ffffff" opacity="0.35" transform="rotate(-18 17 17)"/></g></svg>',
-  nari: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="catNariG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f0dfc2"/></linearGradient><clipPath id="catClipN"><path d="M11.5 20.5 9.8 9.2c-.2-1.5 1.2-2.4 2.5-1.7L21 12.6c.9-.2 1.9-.3 3-.3s2.1.1 3 .3l8.7-5.1c1.3-.7 2.7.2 2.5 1.7L36.5 20.5c1 1.9 1.5 4 1.5 6.3 0 7.7-6.3 13-14 13s-14-5.3-14-13c0-2.3.5-4.4 1.5-6.3Z"/></clipPath></defs><g fill="url(#catNariG)"><path d="M11.5 20.5 9.8 9.2c-.2-1.5 1.2-2.4 2.5-1.7L21 12.6c.9-.2 1.9-.3 3-.3s2.1.1 3 .3l8.7-5.1c1.3-.7 2.7.2 2.5 1.7L36.5 20.5c1 1.9 1.5 4 1.5 6.3 0 7.7-6.3 13-14 13s-14-5.3-14-13c0-2.3.5-4.4 1.5-6.3Z"/></g><g clip-path="url(#catClipN)"><ellipse cx="15.5" cy="16" rx="7" ry="5" fill="#f59a3f" transform="rotate(-16 15.5 16)"/><ellipse cx="33" cy="14.5" rx="6" ry="4.6" fill="#503a2c" transform="rotate(12 33 14.5)"/><ellipse cx="17" cy="17" rx="6" ry="3.4" fill="#ffffff" opacity="0.35" transform="rotate(-18 17 17)"/></g></svg>'
+  mii: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><radialGradient id="catMiiFur2" cx="50%" cy="36%" r="75%"><stop offset="0%" stop-color="#ffe2b0"/><stop offset="55%" stop-color="#ffb763"/><stop offset="100%" stop-color="#f68c2e"/></radialGradient><clipPath id="catClipM2"><path d="M21 40 L15 13 Q14 6.5 20.5 9.5 L41 21 Q46 24 43 30.5 L37 42 Z"/><path d="M79 40 L85 13 Q86 6.5 79.5 9.5 L59 21 Q54 24 57 30.5 L63 42 Z"/><ellipse cx="50" cy="57" rx="34" ry="31"/></clipPath></defs><path d="M21 40 L15 13 Q14 6.5 20.5 9.5 L41 21 Q46 24 43 30.5 L37 42 Z" fill="url(#catMiiFur2)" stroke="#f68c2e" stroke-width="2.5" stroke-linejoin="round"/><path d="M79 40 L85 13 Q86 6.5 79.5 9.5 L59 21 Q54 24 57 30.5 L63 42 Z" fill="url(#catMiiFur2)" stroke="#f68c2e" stroke-width="2.5" stroke-linejoin="round"/><path d="M24.5 33.5 L21 17 Q20.8 13 24 15.2 L36 23.5 Q38.6 25.4 37.2 29 L33.8 37 Z" fill="#ffb3c1" opacity="0.7"/><path d="M75.5 33.5 L79 17 Q79.2 13 76 15.2 L64 23.5 Q61.4 25.4 62.8 29 L66.2 37 Z" fill="#ffb3c1" opacity="0.7"/><ellipse cx="50" cy="57" rx="34" ry="31" fill="url(#catMiiFur2)" stroke="rgba(214,116,20,0.45)" stroke-width="1"/><g clip-path="url(#catClipM2)"><g stroke="#d96f0e" stroke-linecap="round" fill="none"><path d="M50 27 L50 38.5" stroke-width="5"/><path d="M39 29 L40.8 39" stroke-width="5"/><path d="M61 29 L59.2 39" stroke-width="5"/></g><ellipse cx="50" cy="86" rx="27" ry="9" fill="#7a4a12" opacity="0.05"/></g><circle cx="38" cy="58" r="3" fill="#46332a"/><circle cx="62" cy="58" r="3" fill="#46332a"/><ellipse cx="33" cy="31" rx="12.5" ry="6.5" fill="#ffffff" opacity="0.30" transform="rotate(-18 33 31)"/><ellipse cx="28" cy="27" rx="5" ry="2.8" fill="#ffffff" opacity="0.5" transform="rotate(-18 28 27)"/></svg>',
+  nari: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><radialGradient id="catNariFur2" cx="50%" cy="36%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="60%" stop-color="#fdf8ef"/><stop offset="100%" stop-color="#f2e5cf"/></radialGradient><clipPath id="catClipN2"><path d="M21 40 L15 13 Q14 6.5 20.5 9.5 L41 21 Q46 24 43 30.5 L37 42 Z"/><path d="M79 40 L85 13 Q86 6.5 79.5 9.5 L59 21 Q54 24 57 30.5 L63 42 Z"/><ellipse cx="50" cy="57" rx="34" ry="31"/></clipPath></defs><path d="M21 40 L15 13 Q14 6.5 20.5 9.5 L41 21 Q46 24 43 30.5 L37 42 Z" fill="url(#catNariFur2)" stroke="#ecdcbf" stroke-width="2.5" stroke-linejoin="round"/><path d="M79 40 L85 13 Q86 6.5 79.5 9.5 L59 21 Q54 24 57 30.5 L63 42 Z" fill="url(#catNariFur2)" stroke="#ecdcbf" stroke-width="2.5" stroke-linejoin="round"/><path d="M24.5 33.5 L21 17 Q20.8 13 24 15.2 L36 23.5 Q38.6 25.4 37.2 29 L33.8 37 Z" fill="#ffb3c1" opacity="0.7"/><path d="M75.5 33.5 L79 17 Q79.2 13 76 15.2 L64 23.5 Q61.4 25.4 62.8 29 L66.2 37 Z" fill="#ffb3c1" opacity="0.7"/><ellipse cx="50" cy="57" rx="34" ry="31" fill="url(#catNariFur2)" stroke="rgba(198,168,120,0.5)" stroke-width="1"/><g clip-path="url(#catClipN2)"><g><ellipse cx="24" cy="21" rx="22" ry="16.5" fill="#f59a3f" transform="rotate(-13 24 21)"/><ellipse cx="79" cy="20" rx="18" ry="15.5" fill="#503a2c" transform="rotate(10 79 20)"/></g><ellipse cx="50" cy="86" rx="27" ry="9" fill="#7a4a12" opacity="0.05"/></g><circle cx="38" cy="58" r="3" fill="#46332a"/><circle cx="62" cy="58" r="3" fill="#46332a"/><ellipse cx="33" cy="31" rx="12.5" ry="6.5" fill="#ffffff" opacity="0.30" transform="rotate(-18 33 31)"/><ellipse cx="28" cy="27" rx="5" ry="2.8" fill="#ffffff" opacity="0.5" transform="rotate(-18 28 27)"/></svg>'
 };
 function catIconKey(cat){ return (cat && cat.name === 'ナリ') ? 'nari' : 'mii'; }
 var catOpenEditor = { idx:-1 };
@@ -2204,7 +2225,6 @@ function renderBabyUI(){
   renderBabySummary();
   renderBabySettingsUI();
   renderCats();
-  buildFeedButtons();
   renderAll();
 }
 /* ================= 赤ちゃん設定 カレンダー同期 ================= */
@@ -2294,8 +2314,7 @@ function closeBabySettings(){
 /* ================= 日別ポップアップ ================= */
 function openDay(date, src){
   var st = dayStatsFrom(src || records, date);
-  $('dayTitle').innerHTML = '<svg viewBox="0 0 48 48" fill="none" stroke="var(--green-dark)" stroke-width="3" aria-hidden="true"><rect x="7" y="11" width="34" height="30" rx="5"/><path d="M7 21h34M16 6v8M32 6v8"/></svg>' +
-    (date.getMonth()+1) + '月' + date.getDate() + '日（' + WD[date.getDay()] + '）の記録';
+  $('dayTitle').innerHTML = (date.getMonth()+1) + '月' + date.getDate() + '日（' + wdSpan(date) + '）の記録';
   /* 回数のまとめは出さず、その日の記録を「今日のログ」と同じ並びで出す。体重がある日は体重と前日比だけ出す */
   var winfo = dayWeightInfo(date);
   if(winfo){
@@ -2310,10 +2329,13 @@ function openDay(date, src){
   if(!st.list.length){
     $('dayList').innerHTML = '<div class="empty">この日の記録はありません</div>';
   } else {
-    $('dayList').innerHTML = st.list.map(function(r){ return recRowHTML(r, false); }).join('');
+    var asc = st.list.slice().sort(function(a,b){ return a.start - b.start; });
+    $('dayList').innerHTML = asc.map(function(r){ return recRowHTML(r, false); }).join('');
     bindRecRows($('dayList'));
   }
   $('dayOverlay').classList.remove('hidden');
+  var daySheet = $('dayOverlay').querySelector('.sheet');
+  if(daySheet) daySheet.scrollTop = 0;
 }
 $('dayCloseBtn').addEventListener('click', function(){ $('dayOverlay').classList.add('hidden'); refreshScrollLock(); });
 $('dayCloseXBtn').addEventListener('click', function(){ $('dayOverlay').classList.add('hidden'); refreshScrollLock(); });
@@ -2340,7 +2362,7 @@ function openEdit(rec){
   deleteArmed = false;
   var del = $('editDeleteBtn');
   del.textContent = 'この記録を削除'; del.classList.remove('confirm');
-  $('editTitle').innerHTML = '<span style="width:24px;height:24px;display:inline-block;color:#fff;">' + IC[rec.kind] + '</span>記録を編集';
+  $('editTitle').textContent = '記録を編集';
   $('editDateTime').value = toLocalInput(rec.start);
   renderEditOpts();
   clearSheetError('editOverlay');
@@ -2375,14 +2397,10 @@ function renderEditOpts(){
     if(milkCustom) milkCustom.classList.add('hidden');
   } else if(rec.kind==='milk'){
     $('editOptsLabel').textContent = 'ミルクの量';
-    var amounts = milkAmounts().slice();
-    if(editing.amount && amounts.indexOf(editing.amount) < 0){ amounts.push(editing.amount); amounts.sort(function(a,b){return a-b;}); }
-    html = amounts.map(function(v){
-      return '<button class="opt milk' + (editing.amount===v?' sel':'') + '" type="button" data-v="' + v + '">' + IC.milk + v + 'ml</button>';
-    }).join('');
-    wrap.classList.remove('hidden'); box.innerHTML = html;
+    wrap.classList.remove('hidden'); box.innerHTML = '';
     if(milkCustom) milkCustom.classList.remove('hidden');
     if(milkInput) milkInput.value = editing.amount ? String(editing.amount) : '';
+    return;
   } else {
     wrap.classList.add('hidden'); box.innerHTML = '';
     if(milkCustom) milkCustom.classList.add('hidden');
@@ -2392,7 +2410,6 @@ function renderEditOpts(){
   for(var i=0;i<opts.length;i++){
     opts[i].addEventListener('click', function(){
       if(this.getAttribute('data-k')) editing.kind = this.getAttribute('data-k');
-      if(this.getAttribute('data-v')) editing.amount = parseInt(this.getAttribute('data-v'), 10);
       renderEditOpts();
     });
   }
@@ -2407,22 +2424,8 @@ function renderEditOpts(){
     var parsed = Number(raw);
     if(!isFinite(parsed) || Math.floor(parsed) !== parsed || parsed <= 0) return;
     editing.amount = parsed;
-    var box = $('editOpts');
-    if(!box) return;
-    var opts = box.querySelectorAll('.opt');
-    for(var i=0;i<opts.length;i++){
-      var v = opts[i].getAttribute('data-v');
-      if(v !== null) opts[i].classList.toggle('sel', parseInt(v, 10) === parsed);
-    }
   });
 })();
-var presets = $('presetRow').querySelectorAll('.preset');
-for(var pi=0; pi<presets.length; pi++){
-  presets[pi].addEventListener('click', function(){
-    var min = parseInt(this.getAttribute('data-min'), 10);
-    $('editDateTime').value = toLocalInput(new Date(Date.now() - min*60000));
-  });
-}
 function closeEdit(){ $('editOverlay').classList.add('hidden'); clearSheetError('editOverlay'); editing = null; }
 $('editCancelBtn').addEventListener('click', closeEdit);
 $('editOverlay').addEventListener('click', function(e){ if(e.target===this) closeEdit(); });
@@ -2629,7 +2632,7 @@ function renderRecTime(){
   var box = $('rtSetBox');
   if(recTimeMode === 'set' && recTimeDate){
     box.classList.remove('hidden');
-    $('rtDateLabel').textContent = (recTimeDate.getMonth()+1) + '月' + recTimeDate.getDate() + '日（' + WD[recTimeDate.getDay()] + '）';
+    $('rtDateLabel').innerHTML = (recTimeDate.getMonth()+1) + '月' + recTimeDate.getDate() + '日（' + wdSpan(recTimeDate) + '）';
     $('rtHour').textContent = pad(recTimeDate.getHours());
     $('rtMin').textContent = pad(recTimeDate.getMinutes());
   } else {
@@ -3258,39 +3261,52 @@ $('saveSettingsBtn').addEventListener('click', function(){
   setStatus('設定を保存しました。「Googleでサインイン」を押してください');
 });
 
-/* ================= 記録ボタン構築 ================= */
-$('btnPee').innerHTML = '<span class="disc pee">' + IC.pee + '</span><span class="meta"><span class="lbl">おしっこ</span><span class="last" id="prevPee"></span></span>';
-$('btnPoop').innerHTML = '<span class="disc poop">' + IC.poop + '</span><span class="meta"><span class="lbl">うんち</span><span class="last" id="prevPoop"></span></span>';
+/* ================= 記録ボタン構築 =================
+   おしっこ・うんち・母乳・ミルクの4つを横1行に並べる。
+   おしっこ・うんち・母乳は押したら従来どおり即記録し、ミルクだけは
+   押してから小さなポップアップで量を決めて記録する */
+$('btnPee').innerHTML = '<span class="disc pee">' + IC.pee + '</span><span class="lbl">おしっこ</span>';
+$('btnPoop').innerHTML = '<span class="disc poop">' + IC.poop + '</span><span class="lbl">うんち</span>';
+$('btnBreast').innerHTML = '<span class="disc breast">' + IC.breast + '</span><span class="lbl">母乳</span>';
+$('btnMilk').innerHTML = '<span class="disc milk">' + IC.milk + '</span><span class="lbl">ミルク</span>';
 $('btnPee').addEventListener('click', function(){ createRecord('pee', 0); });
 $('btnPoop').addEventListener('click', function(){ createRecord('poop', 0); });
-function buildFeedButtons(){
-  var dg = displayGuide();
-  var amounts = milkAmounts();
-  $('breastWrap').innerHTML = '<button class="round-btn rec-btn2" type="button" id="btnBreast" disabled>' +
-    '<span class="disc breast">' + IC.breast + '</span>' +
-    '<span class="meta"><span class="lbl">母乳</span></span></button>';
-  var html = '';
-  amounts.forEach(function(v){
-    var badge = (dg && v === dg.guide.perFeed) ? '<span class="rec-badge">' + IC.milk + '</span>' : '';
-    html += '<button class="milk-btn rec-btn2" type="button" data-ml="' + v + '" disabled>' +
-      '<span class="num">' + v + '</span><span class="unit">ml</span>' + badge + '</button>';
-  });
-  $('feedGrid').innerHTML = html;
-  $('btnBreast').addEventListener('click', function(){ createRecord('breast', 0); });
-  var ms = $('feedGrid').querySelectorAll('.milk-btn');
-  for(var i=0;i<ms.length;i++){
-    ms[i].addEventListener('click', function(){
-      createRecord('milk', parseInt(this.getAttribute('data-ml'), 10));
-    });
-  }
-  if(typeof setBusy === 'function') setBusy(busy);
-}
+$('btnBreast').addEventListener('click', function(){ createRecord('breast', 0); });
+$('btnMilk').addEventListener('click', function(){ openMilkPopup(); });
 
-buildFeedButtons();
-/* busy制御はこの1本だけ：おむつ・授乳の全記録ボタンを対象にする */
+/* ================= ミルクの量ポップアップ =================
+   初期値は今の「おすすめ」の量（目標設定があれば目標の1回量、なければ50ml）。
+   10ml単位で10〜200ml。「記録」でその量を記録して閉じ、
+   「キャンセル」と背景タップでは記録せずに閉じる */
+var milkPopupMl = 50;
+function renderMilkPopup(){ $('milkAmount').textContent = milkPopupMl; }
+function openMilkPopup(){
+  if(!accessToken){ setStatus('サインインしてください', true); return; }
+  var dg = displayGuide();
+  var recMl = dg ? dg.guide.perFeed : RECOMMENDED_ML;
+  milkPopupMl = Math.min(200, Math.max(10, recMl));
+  renderMilkPopup();
+  $('milkOverlay').classList.remove('hidden');
+  refreshScrollLock();
+}
+function closeMilkPopup(){
+  $('milkOverlay').classList.add('hidden');
+  refreshScrollLock();
+}
+$('milkMinusBtn').addEventListener('click', function(){ milkPopupMl = Math.max(10, milkPopupMl - 10); renderMilkPopup(); });
+$('milkPlusBtn').addEventListener('click', function(){ milkPopupMl = Math.min(200, milkPopupMl + 10); renderMilkPopup(); });
+$('milkCancelBtn').addEventListener('click', closeMilkPopup);
+$('milkOverlay').addEventListener('click', function(e){ if(e.target===this) closeMilkPopup(); });
+$('milkRecordBtn').addEventListener('click', function(){
+  var ml = milkPopupMl;
+  closeMilkPopup();
+  createRecord('milk', ml);
+});
+
+/* busy制御はこの1本だけ：4つの記録ボタンを対象にする */
 function setBusy(b){
   busy = b;
-  var all = document.querySelectorAll('.rec-btn, .rec-btn2');
+  var all = document.querySelectorAll('.rec-btn');
   for(var i=0;i<all.length;i++){ all[i].disabled = b || !accessToken; }
 }
 
@@ -3306,6 +3322,7 @@ function autoRefresh(){
   if(!$('monthOverlay').classList.contains('hidden')) return;
   if(!$('allMonthsOverlay').classList.contains('hidden')) return;
   if(!$('updateOverlay').classList.contains('hidden')) return;
+  if(!$('milkOverlay').classList.contains('hidden')) return;
   if(tokenValid()){
     /* 期限までの残りが少ないときは、切れる前に先に裏で取り直す。
        その間も今のトークンで読み込みは続ける */
@@ -3324,7 +3341,7 @@ window.addEventListener('focus', function(){ autoRefresh(); });
 
 /* ================= 時計（30秒更新） ================= */
 setInterval(function(){
-  $('nowLine').textContent = fmtNow(new Date());
+  setNowLine();
   renderPrev();
   renderWeightRecordBtn();
   updateNowHour();
@@ -3332,7 +3349,7 @@ setInterval(function(){
 
 /* 秒表示をリアルタイムに進める（1秒ごとに日時だけ更新） */
 setInterval(function(){
-  $('nowLine').textContent = fmtNow(new Date());
+  setNowLine();
 }, 1000);
 
 /* ================= 入力欄をキーボードの上に見せる =================
@@ -3463,7 +3480,7 @@ $('updateOverlay').addEventListener('click', function(e){ if(e.target===this) cl
 document.addEventListener('click', function(ev){
   var t = ev.target;
   if(!t || !t.closest) return;
-  var btn = t.closest('.round-btn, .milk-btn, .weight-edit');
+  var btn = t.closest('.round-btn, .weight-edit');
   if(!btn) return;
   var target = btn.classList.contains('round-btn') ? btn.querySelector('.disc') : btn;
   if(!target) return;
@@ -3476,7 +3493,7 @@ document.addEventListener('click', function(ev){
 checkUpdateNotice();
 $('calendarIdInput').value = calendarId;
 $('clientIdInput').value = clientId;
-$('nowLine').textContent = fmtNow(new Date());
+setNowLine();
 renderRecTime();
 renderBabyUI();
 updateAuthUI();
