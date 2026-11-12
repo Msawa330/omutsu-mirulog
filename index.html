@@ -331,6 +331,27 @@
   .top-weight-editor .btn-primary{margin-top:8px;}
   .set-editor .btn-primary{margin-top:8px;}
 
+  /* ===== 猫の体重ブロック（TOP最下部） ===== */
+  .cat-block{padding:7px 0 9px; border-bottom:1px solid var(--divider); min-width:0;}
+  .cat-block:last-child{border-bottom:none; padding-bottom:3px;}
+  .cat-head{display:flex; align-items:center; gap:8px; min-width:0; padding:2px 0;}
+  .cat-name{font-size:17px; font-weight:800; flex:0 0 auto;}
+  .cat-latest{font-size:17px; font-weight:800; color:var(--accent); flex:1 1 auto; min-width:0; white-space:nowrap;}
+  .cat-latest.unset{color:var(--sub); font-weight:700; font-size:14px;}
+  .cat-head .btn-ghost{flex:0 0 auto;}
+  .cat-editor{margin-top:8px;}
+  .cat-editor input{
+    width:100%; background:var(--panel); border:1px solid var(--divider); border-radius:10px;
+    color:var(--text); font-size:16px; padding:10px 12px; font-family:inherit; color-scheme:dark;
+  }
+  .cat-editor .btn-primary{margin-top:8px;}
+  .cat-kg-row{display:flex; align-items:center; gap:8px;}
+  .cat-kg-row input{flex:1 1 auto; min-width:0;}
+  .cat-kg-unit{font-size:15px; font-weight:800; flex:0 0 auto;}
+  .cat-birth-row{display:flex; align-items:center; gap:8px; margin-top:8px;}
+  .cat-birth-label{font-size:12px; font-weight:700; color:var(--sub); flex:0 0 auto;}
+  .cat-birth-row input{flex:1 1 auto; min-width:0; font-size:14px; padding:7px 10px;}
+
   /* ===== 前回行の次回目安 ===== */
   .prevrow .next-time{margin-left:auto; flex:0 1 auto; min-width:0; color:var(--accent); font-size:13px; font-weight:800; white-space:nowrap; padding-left:6px; display:inline-flex; align-items:center; gap:4px;}
   .prevrow .next-time .next-bell{flex:0 0 auto; width:15px; height:15px; display:inline-flex; align-items:center; justify-content:center; color:var(--accent);}
@@ -457,6 +478,10 @@
     .opt{padding:9px 11px; font-size:14px;}
     .day-total{gap:10px;}
   }
+  /* ===== 入力中：キーボードに隠れないよう下方向のスクロール余白を確保 =====
+     フォーカス中だけ付け足す（縦方向のみ。横には影響しない） */
+  body.kb-open .wrap{padding-bottom:55vh;}
+  body.kb-open .sheet{padding-bottom:48vh;}
   @media (max-width:360px){
     .now{font-size:11px;}
     .prevrow .elapsed{font-size:11px;}
@@ -560,6 +585,14 @@
     <div id="monthsBody"></div>
   </section>
   <button class="btn-more" id="allMonthsBtn" type="button">もっと見る</button>
+
+  <!-- 猫の体重 -->
+  <div class="sec-head">
+    <span>猫の体重</span>
+  </div>
+  <section class="panel" aria-label="猫の体重">
+    <div id="catList"></div>
+  </section>
 
   <footer>
     <div class="authbar">
@@ -801,7 +834,7 @@ var deleteArmed = false;
 var LS_BABY = 'omutsumirulog.babySettings';
 var SETTINGS_TITLE = '赤ちゃん設定（アプリ用）';
 var SETTINGS_MARKER = 'muse-baby-settings:';
-var babySettings = { birthDate:'', birthWeight:'', weight:'', remind:false, weightLog:[], goalMl:'', goalTimes:'', goalBand:'' };
+var babySettings = { birthDate:'', birthWeight:'', weight:'', remind:false, weightLog:[], goalMl:'', goalTimes:'', goalBand:'', cats: defaultCats() };
 try{
   var savedBaby = localStorage.getItem(LS_BABY);
   if(savedBaby){
@@ -815,6 +848,7 @@ try{
       if(parsedBaby.goalTimes !== undefined && parsedBaby.goalTimes !== null) babySettings.goalTimes = parsedBaby.goalTimes;
       if(parsedBaby.goalBand !== undefined && parsedBaby.goalBand !== null) babySettings.goalBand = parsedBaby.goalBand;
       if(Array.isArray(parsedBaby.weightLog)) babySettings.weightLog = cleanWeightLog(parsedBaby.weightLog);
+      if(Array.isArray(parsedBaby.cats)) babySettings.cats = cleanCats(parsedBaby.cats);
     }
   }
 }catch(e){}
@@ -927,6 +961,64 @@ function cleanWeightLog(arr){
   }
   out.sort(function(a,b){ return a.d < b.d ? -1 : (a.d > b.d ? 1 : 0); });
   return out;
+}
+/* ================= 猫（みぃ・ナリ）の設定 =================
+   猫の誕生日と体重履歴（kg・日付つき）は babySettings.cats に持たせ、
+   赤ちゃん設定と同じ設定イベントJSONに含めて夫婦で同期する。
+   赤ちゃんの体重・集計とは完全に分離し、このブロック内だけで使う */
+function defaultCats(){
+  return ['みぃ', 'ナリ'].map(function(n){ return { name:n, birthDate:'', weightLog:[] }; });
+}
+function cleanCatWeightLog(arr){
+  if(!Array.isArray(arr)) return [];
+  var out = [];
+  for(var i=0;i<arr.length;i++){
+    var e = arr[i];
+    if(e && typeof e.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.d)){
+      var w = parseFloat(e.w);
+      if(w > 0) out.push({ d: e.d, w: Math.round(w * 100) / 100 });
+    }
+  }
+  out.sort(function(a,b){ return a.d < b.d ? -1 : (a.d > b.d ? 1 : 0); });
+  return out;
+}
+function cleanCats(arr){
+  var out = defaultCats();
+  if(!Array.isArray(arr)) return out;
+  for(var i=0;i<out.length && i<arr.length;i++){
+    var c = arr[i];
+    if(!c || typeof c !== 'object') continue;
+    if(typeof c.birthDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(c.birthDate)) out[i].birthDate = c.birthDate;
+    out[i].weightLog = cleanCatWeightLog(c.weightLog);
+  }
+  return out;
+}
+function fmtCatKg(w){
+  return (Math.round(parseFloat(w) * 100) / 100) + 'kg';
+}
+function fmtYMD(ds){
+  return String(ds || '').replace(/-/g, '/');
+}
+function catLatest(cat){
+  if(!cat || !cat.weightLog || !cat.weightLog.length) return null;
+  return cat.weightLog[cat.weightLog.length - 1];
+}
+/* 猫の体重を今日の日付で履歴に記録する（同日は上書き） */
+function pushCatWeight(idx, w){
+  var cat = babySettings.cats[idx];
+  if(!cat) return;
+  w = Math.round(parseFloat(w) * 100) / 100;
+  if(!(w > 0)) return;
+  var today = fmtDateStr(new Date());
+  var log = cat.weightLog || [];
+  var found = false;
+  for(var i=0;i<log.length;i++){
+    if(log[i].d === today){ log[i].w = w; found = true; break; }
+  }
+  if(!found) log.push({ d: today, w: w });
+  log.sort(function(a,b){ return a.d < b.d ? -1 : (a.d > b.d ? 1 : 0); });
+  if(log.length > 500) log = log.slice(log.length - 500);
+  cat.weightLog = log;
 }
 /* 体重が変更されたら当日の履歴として記録する（同日は上書き） */
 function pushWeightLog(w){
@@ -1515,9 +1607,92 @@ function renderBabySettingsUI(){
     });
   }
 }
+/* ================= 猫の体重ブロック 描画 =================
+   メイン画面は各猫1行（名前・最新の体重・記録ボタン）だけ。
+   記録ボタンを押すと入力エリアが開き、体重入力の下に誕生日を小さく置く。
+   編集欄は赤ちゃんの体重と同じ作り：開くときは現在の値が入った状態で開き、
+   保存すると閉じ、キャンセルでも閉じる。開いている欄は1つだけ。
+   体重履歴（日付つき）はデータとして保存し続けるが、一覧表示はしない */
+var catOpenEditor = { idx:-1 };
+function closeCatEditors(){ catOpenEditor = { idx:-1 }; }
+function toggleCatEditor(idx){
+  if(catOpenEditor.idx === idx) closeCatEditors();
+  else catOpenEditor = { idx: idx };
+  renderCats();
+  if(catOpenEditor.idx === idx){
+    var inp = document.querySelector('[data-cat-winput="' + idx + '"]');
+    if(inp){
+      try{ inp.focus({ preventScroll:true }); }
+      catch(e){ try{ inp.focus(); }catch(e2){} }
+    }
+  }
+}
+function renderCats(){
+  var wrap = $('catList');
+  if(!wrap) return;
+  var cats = babySettings.cats || defaultCats();
+  var html = '';
+  cats.forEach(function(cat, i){
+    var latest = catLatest(cat);
+    html += '<div class="cat-block">';
+    /* 1行：名前・最新の体重・記録ボタンだけ */
+    html += '<div class="cat-head">';
+    html += '<span class="cat-name">' + escHTML(cat.name) + '</span>';
+    if(latest){
+      html += '<span class="cat-latest">' + fmtCatKg(latest.w) + '</span>';
+    } else {
+      html += '<span class="cat-latest unset">未記録</span>';
+    }
+    html += '<button class="btn-ghost" type="button" data-cat-rec="' + i + '">記録</button>';
+    html += '</div>';
+    /* 入力エリア：体重（kg・小数可、現在の値が入った状態で開く）と、
+       小さく置いた誕生日（現在の値が入った状態で開く） */
+    var open = (catOpenEditor.idx === i);
+    html += '<div class="cat-editor' + (open ? '' : ' hidden') + '">';
+    html += '<div class="cat-kg-row"><input type="number" data-cat-winput="' + i + '" inputmode="decimal" step="0.1" min="0.1" max="30" placeholder="例：4.2" aria-label="' + escHTML(cat.name) + 'の体重（kg）" value="' + (latest ? latest.w : '') + '"><span class="cat-kg-unit">kg</span></div>';
+    html += '<div class="cat-birth-row"><span class="cat-birth-label">誕生日</span><input type="date" data-cat-binput="' + i + '" aria-label="' + escHTML(cat.name) + 'の誕生日" value="' + (cat.birthDate || '') + '"></div>';
+    html += '<button class="btn-primary" type="button" data-cat-save="' + i + '">保存する</button>';
+    html += '<button class="btn-sub" type="button" data-cat-cancel="' + i + '">キャンセル</button>';
+    html += '</div>';
+    html += '</div>';
+  });
+  wrap.innerHTML = html;
+  var recs = wrap.querySelectorAll('[data-cat-rec]');
+  for(var r=0; r<recs.length; r++){
+    recs[r].addEventListener('click', function(){
+      toggleCatEditor(parseInt(this.getAttribute('data-cat-rec'), 10));
+    });
+  }
+  var saves = wrap.querySelectorAll('[data-cat-save]');
+  for(var s=0; s<saves.length; s++){
+    saves[s].addEventListener('click', function(){
+      var idx = parseInt(this.getAttribute('data-cat-save'), 10);
+      var winp = document.querySelector('[data-cat-winput="' + idx + '"]');
+      var wraw = winp ? String(winp.value || '').trim() : '';
+      if(wraw !== ''){
+        var w = parseFloat(wraw);
+        if(!(w > 0) || w > 30) return; /* 不正な値は保存せず、入力欄を開いたままにする */
+        pushCatWeight(idx, w);
+      }
+      var binp = document.querySelector('[data-cat-binput="' + idx + '"]');
+      var bv = binp ? (binp.value || '') : '';
+      if(babySettings.cats[idx]) babySettings.cats[idx].birthDate = /^\d{4}-\d{2}-\d{2}$/.test(bv) ? bv : '';
+      closeCatEditors();
+      scheduleBabySave();
+    });
+  }
+  var cancels = wrap.querySelectorAll('[data-cat-cancel]');
+  for(var c=0; c<cancels.length; c++){
+    cancels[c].addEventListener('click', function(){
+      closeCatEditors();
+      renderCats();
+    });
+  }
+}
 function renderBabyUI(){
   renderBabySummary();
   renderBabySettingsUI();
+  renderCats();
   buildFeedButtons();
   renderAll();
 }
@@ -1532,6 +1707,7 @@ function applyBabySettings(obj){
   if(obj.goalTimes !== undefined && obj.goalTimes !== null) babySettings.goalTimes = obj.goalTimes;
   if(obj.goalBand !== undefined && obj.goalBand !== null) babySettings.goalBand = obj.goalBand;
   if(Array.isArray(obj.weightLog)) babySettings.weightLog = cleanWeightLog(obj.weightLog);
+  if(Array.isArray(obj.cats)) babySettings.cats = cleanCats(obj.cats);
   saveBabyLocal();
   renderBabyUI();
   /* 相手がリマインドを切り替えた場合も、この端末から予定を追随させる */
@@ -2665,6 +2841,7 @@ function autoRefresh(){
   if(!$('dayOverlay').classList.contains('hidden')) return;
   if(!$('babyOverlay').classList.contains('hidden')) return;
   if(!$('topWeightEditor').classList.contains('hidden')) return;
+  if(catOpenEditor.idx >= 0) return;
   if(!$('monthOverlay').classList.contains('hidden')) return;
   if(!$('allMonthsOverlay').classList.contains('hidden')) return;
   if(!$('viewerOverlay').classList.contains('hidden')) return;
@@ -2690,6 +2867,78 @@ setInterval(function(){
   renderPrev();
   renderWeightRecordBtn();
 }, 30000);
+
+/* ================= 入力欄をキーボードの上に見せる =================
+   すべての入力欄（テキスト・数値・日付）共通の処理。フォーカスした入力欄と、
+   同じ編集エリア内にある保存・キャンセルボタンが、ソフトウェアキーボードの
+   上に見える位置までスクロールする。キーボードの表示には時間がかかることが
+   あるため、フォーカス直後だけでなく時間差で何度か合わせ直し、
+   visualViewport の変化（キーボードの開閉）にも追随する。
+   スクロールは縦方向のみで、横スクロール・横ぶれは出さない */
+var kbInput = null;
+var kbTimers = [];
+function kbClearTimers(){
+  for(var i=0;i<kbTimers.length;i++) clearTimeout(kbTimers[i]);
+  kbTimers = [];
+}
+/* 入力欄と一緒に見せたい範囲：同じ編集エリア（保存・キャンセル含む） */
+function kbBlockOf(el){
+  if(el.closest){
+    var b = el.closest('.cat-editor, .top-weight-editor, .set-editor, .memo-row, .milk-custom, .conn-box');
+    if(b) return b;
+  }
+  return el;
+}
+function kbEnsureVisible(){
+  var el = kbInput;
+  if(!el || document.activeElement !== el) return;
+  var vv = window.visualViewport;
+  var vTop = vv ? vv.offsetTop : 0;
+  var vBottom = vv ? (vv.offsetTop + vv.height) : window.innerHeight;
+  var margin = 14;
+  var rect = kbBlockOf(el).getBoundingClientRect();
+  /* エリア全体が見える高さに収まらないときは入力欄自体を優先する */
+  if(rect.height > (vBottom - vTop) - margin * 2) rect = el.getBoundingClientRect();
+  var delta = 0;
+  if(rect.bottom > vBottom - margin) delta = rect.bottom - (vBottom - margin);
+  else if(rect.top < vTop + margin) delta = rect.top - (vTop + margin);
+  if(!delta) return;
+  var rest = delta;
+  var sheet = el.closest ? el.closest('.sheet') : null;
+  if(sheet){
+    var before = sheet.scrollTop;
+    sheet.scrollTop = before + rest;
+    rest -= (sheet.scrollTop - before);
+  }
+  if(rest) window.scrollBy(0, rest);
+}
+function kbSchedule(){
+  kbClearTimers();
+  var delays = [80, 300, 600, 1000, 1500];
+  for(var i=0;i<delays.length;i++) kbTimers.push(setTimeout(kbEnsureVisible, delays[i]));
+}
+document.addEventListener('focusin', function(e){
+  var t = e.target;
+  if(!t || !t.tagName) return;
+  if(t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA' && t.tagName !== 'SELECT') return;
+  kbInput = t;
+  document.body.classList.add('kb-open');
+  kbSchedule();
+});
+document.addEventListener('focusout', function(){
+  setTimeout(function(){
+    var a = document.activeElement;
+    if(a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT')) return;
+    kbInput = null;
+    kbClearTimers();
+    document.body.classList.remove('kb-open');
+  }, 80);
+});
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', function(){
+    if(kbInput){ kbEnsureVisible(); kbTimers.push(setTimeout(kbEnsureVisible, 200)); }
+  });
+}
 
 /* ================= 初期化 ================= */
 $('calendarIdInput').value = calendarId;
