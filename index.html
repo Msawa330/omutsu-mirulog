@@ -329,12 +329,19 @@
   .memo-panel{padding-top:6px; padding-bottom:6px;}
   .memo-open{
     display:flex; align-items:center; gap:8px; width:100%;
-    min-height:36px; padding:2px 0; text-align:left;
+    min-height:36px; padding:0; text-align:left;
     font-size:13px; font-weight:800; color:var(--ink);
   }
   .memo-open .memo-ic{width:19px; height:19px; color:var(--ink-sub); display:inline-flex; flex:0 0 auto;}
   .memo-open .memo-ic svg{width:19px; height:19px; display:block;}
-  .memo-open .memo-act{margin-left:auto; color:var(--green-dark); font-size:13px; font-weight:800; flex:0 0 auto;}
+  /* 「書く」は猫の「記録」ボタン（.cat-rec-btn）とまったく同じ見た目にする：
+     白背景＋枠線・グレー文字・13px/700・角丸10・padding 9px 14px・高さ36 */
+  .memo-open .memo-act{
+    margin-left:auto; flex:0 0 auto;
+    display:inline-flex; align-items:center; justify-content:center;
+    border:1px solid var(--line); background:#fff; color:var(--ink-sub);
+    font-size:13px; font-weight:700; border-radius:10px; padding:9px 14px; min-height:36px; line-height:1.2;
+  }
   .memo-open .memo-chev{color:var(--ink-sub); font-size:18px; line-height:1; flex:0 0 auto;}
   .memo-open:active{opacity:.65;}
 
@@ -634,7 +641,7 @@
   .set-row .set-label{font-weight:700; color:var(--ink); flex:0 0 auto;}
   .set-row .set-value{flex:1; min-width:0; text-align:right; font-weight:800; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .set-row .set-value.unset{color:var(--ink-sub); font-weight:700;}
-  .set-row .set-chev{color:var(--green-dark); font-size:20px; font-weight:800; line-height:1; flex:0 0 auto;}
+  .set-row .set-chev{color:var(--ink-sub); font-size:20px; font-weight:400; line-height:1; flex:0 0 auto;}
   .age-table{margin-top:6px; border:1px solid var(--line); border-radius:16px; overflow:hidden; max-width:100%;}
   .age-row{display:flex; gap:10px; padding:8px 14px; background:#fff; border-bottom:1px solid var(--line); font-size:13.5px; align-items:center; min-width:0; width:100%; text-align:left; font-family:inherit; cursor:pointer;}
   .age-row:last-child{border-bottom:none;}
@@ -1172,6 +1179,15 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-13-10', notes:[
     { c:'表示', t:'猫の年齢も、体重と同じ行に表示されるようになりました' }
+  ]},
+  { version:'2026-11-13-11', notes:[
+    { c:'デザイン', t:'設定の各項目の「›」の色を、通常のグレーに戻しました' }
+  ]},
+  { version:'2026-11-13-12', notes:[
+    { c:'デザイン', t:'メモの「書く」が、他の「記録」と同じ緑のボタンになりました' }
+  ]},
+  { version:'2026-11-13-13', notes:[
+    { c:'デザイン', t:'メモの「書く」ボタンを、猫の「記録」ボタンと同じ白いボタンにしました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
