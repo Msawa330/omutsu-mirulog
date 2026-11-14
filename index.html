@@ -679,8 +679,28 @@
     100%{ transform:scale(1); }
   }
   .anim-pop{ animation:pop .34s cubic-bezier(.34,1.4,.64,1); }
+
+  /* ===== 記録ボタンのキラキラ飛び散り（案3） =====
+     押した瞬間に、種類の色の小さな粒（丸・しずく・星）が円盤の周りに
+     飛び散ってふわっと消える。粒は .disc の中に絶対配置し、飛距離は
+     画面端でもはみ出して横スクロールの原因にならない控えめな範囲にする */
+  .spark-layer{position:absolute; inset:0; pointer-events:none;}
+  .spark-p{
+    position:absolute; left:50%; top:50%;
+    pointer-events:none;
+    animation:sparkFly .62s cubic-bezier(.17,.67,.35,1) forwards;
+  }
+  .spark-p.dot{border-radius:50%;}
+  .spark-p.drop{border-radius:0 50% 50% 50%;}
+  .spark-p.star{clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);}
+  @keyframes sparkFly{
+    0%{ transform:translate(-50%,-50%) rotate(0deg) scale(.4); opacity:1; }
+    70%{ opacity:1; }
+    100%{ transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(1); opacity:0; }
+  }
   @media (prefers-reduced-motion: reduce){
     .anim-pop{ animation:none; }
+    .spark-p{ animation:none; }
     .round-btn:active .disc{ transform:none; }
   }
 
@@ -1212,6 +1232,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-13-17', notes:[
     { c:'記録', t:'猫の体重は、体重だけでも記録できるようになりました' }
+  ]},
+  { version:'2026-11-14-1', notes:[
+    { c:'デザイン', t:'記録ボタンを押すと、キラキラが飛び散るようになりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -3524,10 +3547,52 @@ $('btnPee').innerHTML = '<span class="disc pee">' + IC.pee + '</span><span class
 $('btnPoop').innerHTML = '<span class="disc poop">' + IC.poop + '</span><span class="lbl">うんち</span>';
 $('btnBreast').innerHTML = '<span class="disc breast">' + IC.breast + '</span><span class="lbl">母乳</span>';
 $('btnMilk').innerHTML = '<span class="disc milk">' + IC.milk + '</span><span class="lbl">ミルク</span>';
-$('btnPee').addEventListener('click', function(){ createRecord('pee', 0); });
-$('btnPoop').addEventListener('click', function(){ createRecord('poop', 0); });
-$('btnBreast').addEventListener('click', function(){ createRecord('breast', 0); });
-$('btnMilk').addEventListener('click', function(){ openMilkPopup(); });
+
+/* ===== キラキラ飛び散り（案3） =====
+   記録ボタンを押した瞬間に、その種類の色の粒6〜8個（丸・しずく・星の
+   混ざった形）がボタンの周りに飛び散ってふわっと消える。
+   色はパステル背景の上でも見える濃さにする。ボタンのポップ
+   （.anim-pop）は従来の共通ハンドラが担当し、こちらは粒だけを出す。
+   見た目だけの演出で、記録の保存フローには関与しない。
+   ミルクは丸ボタンのタップで出し、量ポップアップ内の「記録」には付けない */
+var SPARK_COLORS = {
+  pee:    ['#2f9fd8', '#2f83b8', '#6cc3ec'],
+  poop:   ['#a5713a', '#96692f', '#c99a5f'],
+  breast: ['#e2609a', '#d14f86', '#f28bbd'],
+  milk:   ['#e0a100', '#c98f00', '#f2bc2e']
+};
+function burstSparkles(btn, kind){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var disc = btn.querySelector('.disc');
+  if(!disc) return;
+  var colors = SPARK_COLORS[kind] || SPARK_COLORS.pee;
+  var layer = document.createElement('span');
+  layer.className = 'spark-layer';
+  disc.appendChild(layer);
+  var shapes = ['dot', 'drop', 'star'];
+  var n = 6 + Math.floor(Math.random() * 3); /* 6〜8個 */
+  for(var i = 0; i < n; i++){
+    var p = document.createElement('span');
+    var shape = shapes[i % shapes.length];
+    var size = shape === 'star' ? 9 + Math.random() * 3 : 5 + Math.random() * 3.5;
+    var ang = (Math.PI * 2 * i / n) + (Math.random() - 0.5) * 0.7;
+    var dist = 24 + Math.random() * 12; /* 24〜36px：画面端でもはみ出さない範囲 */
+    p.className = 'spark-p ' + shape;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.background = colors[i % colors.length];
+    p.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(1) + 'px');
+    p.style.setProperty('--dy', (Math.sin(ang) * dist).toFixed(1) + 'px');
+    p.style.setProperty('--rot', Math.round(Math.random() * 160 - 80) + 'deg');
+    layer.appendChild(p);
+  }
+  setTimeout(function(){ if(layer.parentNode) layer.parentNode.removeChild(layer); }, 750);
+}
+
+$('btnPee').addEventListener('click', function(){ burstSparkles(this, 'pee'); createRecord('pee', 0); });
+$('btnPoop').addEventListener('click', function(){ burstSparkles(this, 'poop'); createRecord('poop', 0); });
+$('btnBreast').addEventListener('click', function(){ burstSparkles(this, 'breast'); createRecord('breast', 0); });
+$('btnMilk').addEventListener('click', function(){ burstSparkles(this, 'milk'); openMilkPopup(); });
 
 /* ================= ミルクの量ポップアップ =================
    初期値は今の「おすすめ」の量（目標設定があれば目標の1回量、なければ50ml）。
