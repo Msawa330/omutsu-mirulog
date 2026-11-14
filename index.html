@@ -22,7 +22,7 @@
   :root{
     --green:#3fbf4f; --green-dark:#2ea63e; --green-soft:#e8f9ec;
     --ink:#333840; --ink-sub:#7a8288;
-    --page:#eef1ee; --bg:#f7f8f7; --card:#ffffff; --line:#e9ede9;
+    --page:#f7f8f7; --bg:#f7f8f7; --card:#ffffff; --line:#e9ede9;
     --pee-bg:#d9f1fb; --pee:#2f83b8;
     --poop-bg:#f3e4d3; --poop:#96692f;
     --breast-bg:#fbe0ec; --breast:#d14f86;
@@ -89,7 +89,7 @@
   .day-row .dcell .wd.wd-sat{color:var(--sat);}
   /* ヘッダー（緑背景）では白文字と見分けがつく濃さの赤／青にする */
   .now .wd-sun{color:#ff7d7d;}
-  .now .wd-sat{color:#74b9ff;}
+  .now .wd-sat{color:#a8dcff;}
   .baby-summary{display:flex; align-items:baseline; gap:8px; min-width:0; white-space:nowrap; overflow:hidden;}
   .baby-age{font-size:15px; font-weight:800; line-height:1.2; white-space:nowrap;}
   .baby-weight{font-size:11px; font-weight:700; opacity:.92; font-variant-numeric:tabular-nums; white-space:nowrap;}
@@ -285,7 +285,15 @@
     font-family:inherit; text-align:right;
   }
   .gauge-goal-btn:active{opacity:.6;}
-  .gauge-goal-pencil{width:13px; height:13px; display:inline-flex; align-items:center; justify-content:center; color:var(--green-dark); flex:0 0 auto;}
+  /* 鉛筆は小さな丸いボタン（白＋枠線の円形）にして、押せることが分かる見た目にする */
+  .gauge-goal-pencil{
+    width:26px; height:26px; border-radius:50%;
+    background:#fff; border:1px solid var(--line);
+    box-shadow:0 1px 3px rgba(60,80,60,.10);
+    display:inline-flex; align-items:center; justify-content:center;
+    color:var(--green-dark); flex:0 0 auto;
+  }
+  .gauge-goal-btn:active .gauge-goal-pencil{background:var(--green-soft);}
   .gauge-goal-pencil svg{width:13px; height:13px; display:block;}
   .gauge-track{height:10px; background:#f1f2f0; border-radius:999px; overflow:hidden;}
   .gauge-fill{height:100%; width:0; background:linear-gradient(90deg,#ffd94d,#ffc61a); border-radius:999px; transition:width .3s ease;}
@@ -342,7 +350,6 @@
     border:1px solid var(--line); background:#fff; color:var(--ink-sub);
     font-size:13px; font-weight:700; border-radius:10px; padding:9px 14px; min-height:36px; line-height:1.2;
   }
-  .memo-open .memo-chev{color:var(--ink-sub); font-size:18px; line-height:1; flex:0 0 auto;}
   .memo-open:active{opacity:.65;}
 
   /* ===== 7日間ログ（グリッド：日付列×24時間行） ===== */
@@ -358,6 +365,8 @@
   .wk-sumicon.poop{background:var(--poop-bg);}
   .wk-sumicon.breast{background:var(--breast-bg);}
   .wk-sumicon.milk{background:var(--milk-bg);}
+  .wk-sumicon.weight{background:#eef0ee; color:var(--ink-sub);}
+  .wk-sumicon.memo{background:#eef0ee; color:#7a8288;}
   .wk-head{
     text-align:center; min-width:0;
     padding:3px 0 5px;
@@ -379,6 +388,8 @@
   .wk-sumrow.poop{background:var(--poop-bg); color:var(--poop);}
   .wk-sumrow.breast{background:var(--breast-bg); color:var(--breast);}
   .wk-sumrow.milk{background:var(--milk-bg); color:#8a6503;}
+  .wk-sumrow.weight{background:#eef0ee; color:var(--ink);}
+  .wk-sumrow.memo{background:#eef0ee; color:#7a8288;}
   .wk-axis{
     font-size:9px; font-weight:700; color:#b6bcb6;
     display:flex; align-items:flex-start; justify-content:center;
@@ -419,12 +430,10 @@
 
   /* ===== 月間のログ ===== */
   .cal-head{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:6px;}
-  .cal-month{font-size:13px; font-weight:800; color:var(--ink); padding:0; display:inline-flex; align-items:center; gap:3px;}
-  .cal-month .chev{color:var(--ink-sub); font-size:16px; line-height:1;}
-  .cal-weight{font-size:11px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;}
-  .cal-weight b{color:var(--ink); font-weight:800;}
-  .cal-weight .w-ic, .mv-weight .w-ic{width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; color:var(--ink-sub);}
-  .cal-weight .w-ic svg, .mv-weight .w-ic svg{width:14px; height:14px; display:block;}
+  /* 月の見出しは表示専用テキスト（ボタンではない） */
+  .cal-month{font-size:13px; font-weight:800; color:var(--ink);}
+  .mv-weight .w-ic{width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; color:var(--ink-sub);}
+  .mv-weight .w-ic svg{width:14px; height:14px; display:block;}
   .mcal-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:2px;}
   .mcal-dow{text-align:center; font-size:9px; font-weight:800; color:var(--ink-sub); padding:2px 0;}
   .mcal-dow.sun{color:var(--sun);}
@@ -442,7 +451,7 @@
   .mcal-day .dot.none{background:transparent;}
   .mcal-day.today{background:var(--today-tint); color:var(--today-ink); font-weight:800;}
   .mcal-day.today .dot{background:var(--today-ink);}
-  .month-stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:9px;}
+  .month-stats{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin-top:9px;}
   .mstat{border-radius:10px; padding:5px 4px; text-align:center; min-width:0;}
   .mstat .k{display:flex; align-items:center; justify-content:center; gap:3px; font-size:9px; font-weight:800;}
   .mstat .k svg{width:13px; height:13px; display:block; flex:0 0 auto;}
@@ -451,6 +460,7 @@
   .mstat.poop{background:var(--poop-bg);} .mstat.poop .k{color:var(--poop);}
   .mstat.breast{background:var(--breast-bg);} .mstat.breast .k{color:var(--breast);}
   .mstat.milk{background:var(--milk-bg);} .mstat.milk .k{color:var(--milk);}
+  .mstat.weight{background:#eef0ee;} .mstat.weight .k{color:var(--ink-sub);}
 
   /* ===== 月別・日別の一覧（シート内） ===== */
   .month-row{
@@ -476,7 +486,6 @@
     padding:10px 2px 12px; border-bottom:1px solid var(--line); color:var(--ink); min-width:0;
   }
   .month-view-row:last-child{border-bottom:none;}
-  .month-view-row:active{background:#fafbfa;}
   .mv-head{display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; min-width:0;}
   .mv-name{font-size:15px; font-weight:800; white-space:nowrap;}
   .mv-weight{font-size:11px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;}
@@ -863,7 +872,6 @@
       <span class="memo-ic"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5h19l8 8v30H11z"/><path d="M30 5v8h8"/><path d="M18 24h13M18 31h13M18 17h6"/></svg></span>
       <span>メモ</span>
       <span class="memo-act">書く</span>
-      <span class="memo-chev">›</span>
     </button>
   </section>
 
@@ -982,16 +990,6 @@
   </div>
 </div>
 
-<!-- 月別 日一覧 -->
-<div class="overlay hidden" id="monthOverlay">
-  <div class="sheet" role="dialog" aria-modal="true">
-    <h3><span id="monthTitle">―</span><button class="close-x" id="monthCloseXBtn" type="button" aria-label="閉じる">×</button></h3>
-    <div class="sheet-error hidden" role="alert"></div>
-    <div id="monthDays"></div>
-    <div class="sheet-foot"><button class="btn-sub" id="monthCloseBtn" type="button" style="margin-top:0;">閉じる</button></div>
-  </div>
-</div>
-
 <!-- 月間ビューワー（全月一覧） -->
 <div class="overlay hidden" id="allMonthsOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
@@ -1085,7 +1083,7 @@ var IC = {
   poop: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gPoop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9b183"/><stop offset="1" stop-color="#9c6b3d"/></linearGradient></defs><path d="M24.6 5.2c2.6-.3 4.6 1.6 4.6 3.9 0 .7-.2 1.4-.5 2 3.4 1 5.9 4.2 5.9 8 0 1.3-.3 2.5-.8 3.6 3.4 1.4 5.7 4.6 5.7 8.4 0 5.9-4.9 9.7-15.5 9.7S8.5 37 8.5 31.1c0-3.8 2.3-7 5.7-8.4-.5-1.1-.8-2.3-.8-3.6 0-3.8 2.5-7 5.9-8-.3-.6-.5-1.3-.5-2 0-2.1 1.7-3.7 5.8-3.9Z" fill="url(#gPoop)"/><ellipse cx="17.5" cy="14.5" rx="4.6" ry="2.8" fill="#ffffff" opacity="0.35" transform="rotate(-18 17.5 14.5)"/><path d="M15.5 23.5c2.8 1.6 6 2.3 9.5 2.1" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" opacity="0.28"/></svg>',
   breast: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gBreast" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7a8c4"/><stop offset="1" stop-color="#e0528a"/></linearGradient></defs><path d="M24 41.5S7.5 30.6 7.5 19.7C7.5 13.4 12.2 9.2 17.3 9.2c3 0 5.5 1.5 6.7 3.7 1.2-2.2 3.7-3.7 6.7-3.7 5.1 0 9.8 4.2 9.8 10.5C40.5 30.6 24 41.5 24 41.5Z" fill="url(#gBreast)"/><ellipse cx="16.5" cy="16.5" rx="4.6" ry="3" fill="#ffffff" opacity="0.5" transform="rotate(-24 16.5 16.5)"/><path d="M24 20.5c0 0-4.2 4.9-4.2 7.6a4.2 4.2 0 0 0 8.4 0C28.2 25.4 24 20.5 24 20.5Z" fill="#ffffff" opacity="0.9"/></svg>',
   milk: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gMilk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd968"/><stop offset="1" stop-color="#e39a00"/></linearGradient><linearGradient id="gMilkIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf4"/><stop offset="1" stop-color="#ffedb8"/></linearGradient></defs><path d="M24 3.5c3 0 4.8 2.7 4.8 5.5 0 1.9-.8 3.2-1.6 4.6h-6.4c-.8-1.4-1.6-2.7-1.6-4.6 0-2.8 1.8-5.5 4.8-5.5Z" fill="url(#gMilk)"/><rect x="15" y="13.6" width="18" height="5.4" rx="2.7" fill="#d98e00"/><path d="M16.8 19h14.4c1.7 2.7 2.5 5.2 2.5 8.6v11A5.4 5.4 0 0 1 28.3 44H19.7a5.4 5.4 0 0 1-5.4-5.4v-11c0-3.4.8-5.9 2.5-8.6Z" fill="url(#gMilk)"/><path d="M17.3 27.5h13.4v11.1a2.9 2.9 0 0 1-2.9 2.9h-7.6a2.9 2.9 0 0 1-2.9-2.9V27.5Z" fill="url(#gMilkIn)"/><ellipse cx="20" cy="23.5" rx="2.6" ry="4" fill="#ffffff" opacity="0.5" transform="rotate(-12 20 23.5)"/><path d="M27.5 31.5h3.2M27.5 35.5h3.2" stroke="#d98e00" stroke-width="1.8" stroke-linecap="round"/></svg>',
-  scale: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="6.5" width="35" height="35" rx="8"/><rect x="16" y="11" width="16" height="8" rx="2.4"/><path d="M20.5 15h7"/><path d="M17.6 24.6c2 0 3.4 1.6 3.4 3.8v4.9c0 2.2-1.4 3.8-3.4 3.8s-3.4-1.6-3.4-3.8v-4.9c0-2.2 1.4-3.8 3.4-3.8Z"/><path d="M30.4 24.6c2 0 3.4 1.6 3.4 3.8v4.9c0 2.2-1.4 3.8-3.4 3.8s-3.4-1.6-3.4-3.8v-4.9c0-2.2 1.4-3.8 3.4-3.8Z"/></svg>',
+  scale: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="7" width="36" height="34" rx="9" fill="#b39ddb"/><rect x="15" y="12" width="18" height="9" rx="3" fill="#ffffff"/><rect x="19.5" y="15.4" width="9" height="2.2" rx="1.1" fill="#b39ddb"/><circle cx="13.5" cy="33.5" r="2.1" fill="#ffffff"/><circle cx="34.5" cy="33.5" r="2.1" fill="#ffffff"/></svg>',
   diaper: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 8.5h37l-2.5 12.3c-1 4.7-3.9 7.2-7.5 8.9-3.2 1.5-5.2 3.7-6 7.4l-.5 2.4h-4l-.5-2.4c-.8-3.7-2.8-5.9-6-7.4-3.6-1.7-6.5-4.2-7.5-8.9L5.5 8.5Z"/><path d="M6.8 15.8h34.4"/><path d="M13 11.8h.01M35 11.8h.01" stroke-width="3.8"/></svg>',
   bell: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 7.5a13.5 13.5 0 0 1 13.5 13.5c0 5.8 1.7 8.2 3 10.5H7.5c1.3-2.3 3-4.7 3-10.5A13.5 13.5 0 0 1 24 7.5Z"/><path d="M19.2 38.5a5 5 0 0 0 9.6 0"/><path d="M24 7.5V5"/></svg>',
   memo: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5h19l8 8v30H11z"/><path d="M30 5v8h8"/><path d="M18 24h13M18 31h13M18 17h6"/></svg>'
@@ -1235,6 +1233,18 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-14-1', notes:[
     { c:'デザイン', t:'記録ボタンを押すと、キラキラが飛び散るようになりました' }
+  ]},
+  { version:'2026-11-14-2', notes:[
+    { c:'デザイン', t:'メモの「書く」ボタンの横の「›」を消しました' },
+    { c:'デザイン', t:'一番上の緑の部分と下の画面のつなぎ目で、色の違いが見えないようになりました' },
+    { c:'デザイン', t:'一番上の土曜日の文字を、見やすい明るい青にしました' },
+    { c:'デザイン', t:'ミルクの目標の横の鉛筆が、丸いボタンになりました' },
+    { c:'表示', t:'7日間のログに、体重とメモの数も表示されるようになりました' },
+    { c:'表示', t:'月のログで、体重の増減が他の記録と同じ並びに表示されるようになりました' },
+    { c:'表示', t:'月の見出しは、押しても開かない表示だけの形になりました' }
+  ]},
+  { version:'2026-11-14-3', notes:[
+    { c:'デザイン', t:'体重のアイコンを、ラベンダー色の体重計のデザインに変えました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1752,7 +1762,7 @@ $('todayMoreBtn').addEventListener('click', function(){
 });
 function dayStats(date){ return dayStatsFrom(records, date); }
 function dayStatsFrom(src, date){
-  var st = { pee:0, poop:0, breast:0, milk:0, list:[] };
+  var st = { pee:0, poop:0, breast:0, milk:0, memo:0, list:[] };
   src.forEach(function(r){
     if(sameDay(r.start, date)){
       st.list.push(r);
@@ -1760,6 +1770,7 @@ function dayStatsFrom(src, date){
       else if(r.kind==='poop') st.poop++;
       else if(r.kind==='breast') st.breast++;
       else if(r.kind==='milk') st.milk += (r.amount||0);
+      else if(r.kind==='memo') st.memo++;
     }
   });
   return st;
@@ -1809,7 +1820,8 @@ function dayRowHTML(d, st){
    左端の列にだけ縦に並べ、各日の数値と行の高さを揃える（0件は―）。
    記録チップ：おしっこ・うんち・母乳・メモはアイコンのみ、ミルクはアイコン＋量。
    同じセル内のチップの並びは種類順（おしっこ→うんち→母乳→ミルク→メモ）で固定し、
-   同じ種類同士は時刻順。メモは見出しの集計（4種類の数）には数えない。
+   同じ種類同士は時刻順。集計の行は上から おしっこ・うんち・母乳・ミルク・
+   体重・メモ の順で、体重はgの数値（記録のない日は空白）、メモは件数を出す。
    チップをタップすると、その日の記録一覧が開く（他のチップと同じ） */
 function wkSumRowHTML(kind, valHTML){
   return '<div class="wk-sumrow ' + kind + '"><span>' + valHTML + '</span></div>';
@@ -1841,6 +1853,8 @@ function buildWeekGridHTML(days, src, highlightDay, isCurrentWeek){
     wkSumIconHTML('poop') +
     wkSumIconHTML('breast') +
     wkSumIconHTML('milk') +
+    '<div class="wk-sumicon weight">' + IC.scale + '</div>' +
+    wkSumIconHTML('memo') +
     '</div></div>';
   days.forEach(function(d){
     var st = dayStatsFrom(src, d);
@@ -1854,6 +1868,8 @@ function buildWeekGridHTML(days, src, highlightDay, isCurrentWeek){
       wkSumRowHTML('poop', st.poop ? String(st.poop) : wkNone()) +
       wkSumRowHTML('breast', st.breast ? String(st.breast) : wkNone()) +
       wkSumRowHTML('milk', st.milk ? String(st.milk) : wkNone()) +
+      wkSumRowHTML('weight', wInfo ? wInfo.w.toLocaleString('ja-JP') : '') +
+      wkSumRowHTML('memo', st.memo ? String(st.memo) : wkNone()) +
       '</div></div>';
   });
   var slots = {};
@@ -2064,6 +2080,15 @@ function fmtWeightRange(y, m){
   var d = r.diff > 0 ? '+' + r.diff : (r.diff < 0 ? '−' + Math.abs(r.diff) : '±0');
   return r.first.toLocaleString('ja-JP') + ' → ' + r.last.toLocaleString('ja-JP') + '（' + d + '）';
 }
+/* 月のログの体重ブロック用：平均ではなく「月初からの増減」だけを出す。
+   その月に体重の記録がなければ null（月の範囲計算が null を返す）で '―' */
+function fmtMonthWeightDiff(y, m){
+  var r = monthWeightRange(y, m);
+  if(!r) return '―';
+  if(r.diff > 0) return '+' + r.diff;
+  if(r.diff < 0) return '−' + Math.abs(r.diff);
+  return '±0';
+}
 function mvStatHTML(kind, name, val){
   return '<span class="mv-stat ' + kind + '"><span class="k">' + IC[kind] + '<span>' + name + '</span></span><span class="v">' + val + '</span></span>';
 }
@@ -2071,7 +2096,8 @@ function monthRowHTML(y, m){
   var st = monthStats(y, m);
   /* 月間ビューワー：月ごとに体重の変化と4種類の1日平均をシンプルに並べる。
      平均は monthStats の期間ルール（初めて記録がある日から）で計算済み */
-  return '<button class="month-view-row" type="button" data-y="' + y + '" data-m="' + m + '">' +
+  /* 月間ビューワーの各月行は表示専用（押せない）。月名・体重変化・1日平均だけを並べる */
+  return '<div class="month-view-row">' +
     '<span class="mv-head"><span class="mv-name">' + y + '年' + (m+1) + '月</span>' +
     '<span class="mv-weight"><span class="w-ic" aria-hidden="true">' + IC.scale + '</span>体重 <b>' + fmtWeightRange(y, m) + '</b></span></span>' +
     '<span class="mv-stats">' +
@@ -2080,15 +2106,7 @@ function monthRowHTML(y, m){
     mvStatHTML('breast', '母乳', st.breastAvg === null ? '―' : fmtAvg(st.breastAvg) + '回') +
     mvStatHTML('milk', 'ミルク', st.milkAvg === null ? '―' : String(st.milkAvg) + 'ml') +
     '</span>' +
-    '</button>';
-}
-function bindMonthRows(container){
-  var rows = container.querySelectorAll('.month-row, .month-view-row');
-  for(var i=0;i<rows.length;i++){
-    rows[i].addEventListener('click', function(){
-      openMonth(parseInt(this.getAttribute('data-y'), 10), parseInt(this.getAttribute('data-m'), 10));
-    });
-  }
+    '</div>';
 }
 function monthsHeadHTML(){
   return '<div class="months-head" aria-hidden="true">' +
@@ -2104,7 +2122,8 @@ function fmtAvg(v){
   return String(Math.round(v * 10) / 10);
 }
 function mstatHTML(kind, name, val){
-  return '<div class="mstat ' + kind + '"><div class="k">' + IC[kind] + '<span>' + name + '</span></div><div class="v">' + val + '</div></div>';
+  var ic = (kind === 'weight') ? IC.scale : IC[kind];
+  return '<div class="mstat ' + kind + '"><div class="k">' + ic + '<span>' + name + '</span></div><div class="v">' + val + '</div></div>';
 }
 function renderMonths(){
   var now = new Date();
@@ -2117,8 +2136,7 @@ function renderMonths(){
     if(r.start.getFullYear()===y && r.start.getMonth()===m) hasDay[r.start.getDate()] = true;
   });
   var html = '<div class="cal-head">' +
-    '<button class="cal-month" type="button" id="monthTitleBtn">' + y + '年' + (m+1) + '月<span class="chev">›</span></button>' +
-    '<span class="cal-weight"><span class="w-ic" aria-hidden="true">' + IC.scale + '</span>体重 <b>' + fmtWeightRange(y, m) + '</b></span></div>';
+    '<span class="cal-month">' + y + '年' + (m+1) + '月</span></div>';
   html += '<div class="mcal-grid">';
   for(var wi=0; wi<7; wi++){
     html += '<div class="mcal-dow' + (wi===0 ? ' sun' : wi===6 ? ' sat' : '') + '">' + WD[wi] + '</div>';
@@ -2142,10 +2160,9 @@ function renderMonths(){
     mstatHTML('poop', 'うんち', fmtAvg(st.poopAvg)) +
     mstatHTML('breast', '母乳', fmtAvg(st.breastAvg)) +
     mstatHTML('milk', 'ミルク', st.milkAvg === null ? '―' : String(st.milkAvg)) +
+    mstatHTML('weight', '体重', fmtMonthWeightDiff(y, m)) +
     '</div>';
   $('monthsBody').innerHTML = html;
-  var titleBtn = $('monthTitleBtn');
-  if(titleBtn) titleBtn.addEventListener('click', function(){ openMonth(y, m); });
   var dayBtns = $('monthsBody').querySelectorAll('.mcal-day.has');
   for(var i=0;i<dayBtns.length;i++){
     dayBtns[i].addEventListener('click', function(){
@@ -2190,32 +2207,7 @@ function renderAllMonths(){
     return;
   }
   $('allMonthsBody').innerHTML = list.map(function(ym){ return monthRowHTML(ym[0], ym[1]); }).join('');
-  bindMonthRows($('allMonthsBody'));
 }
-function openMonth(y, m){
-  $('allMonthsOverlay').classList.add('hidden');
-  $('monthTitle').textContent = y + '年' + (m+1) + '月';
-  var src = logSource();
-  var today = startOfDay(new Date());
-  var lastDay = new Date(y, m+1, 0).getDate();
-  var html = '';
-  for(var dn = lastDay; dn >= 1; dn--){
-    var d = new Date(y, m, dn);
-    if(d.getTime() > today.getTime()) continue;
-    html += dayRowHTML(d, dayStatsFrom(src, d));
-  }
-  $('monthDays').innerHTML = html || '<div class="empty">この月の記録はありません</div>';
-  var rows = $('monthDays').querySelectorAll('.day-row');
-  for(var i=0;i<rows.length;i++){
-    rows[i].addEventListener('click', function(){
-      var dd = new Date(parseInt(this.getAttribute('data-day'), 10));
-      $('monthOverlay').classList.add('hidden');
-      openDay(dd, logSource());
-    });
-  }
-  $('monthOverlay').classList.remove('hidden');
-}
-
 function renderAll(){
   renderPrev(); renderGauge(); renderToday(); renderDays(); renderMonths();
   setNowLine();
@@ -2593,13 +2585,10 @@ $('weekCloseBtn').addEventListener('click', closeWeekView);
 $('weekCloseXBtn').addEventListener('click', closeWeekView);
 $('weekOverlay').addEventListener('click', function(e){ if(e.target===this) closeWeekView(); });
 $('babyFootCloseBtn').addEventListener('click', closeBabySettings);
-$('monthCloseXBtn').addEventListener('click', function(){ $('monthOverlay').classList.add('hidden'); refreshScrollLock(); });
 $('allMonthsCloseXBtn').addEventListener('click', function(){ $('allMonthsOverlay').classList.add('hidden'); refreshScrollLock(); });
 $('editCloseXBtn').addEventListener('click', closeEdit);
 $('updateCloseXBtn').addEventListener('click', closeUpdateNotice);
 $('dayOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
-$('monthCloseBtn').addEventListener('click', function(){ $('monthOverlay').classList.add('hidden'); refreshScrollLock(); });
-$('monthOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
 $('allMonthsBtn').addEventListener('click', function(){
   renderAllMonths();
   $('allMonthsOverlay').classList.remove('hidden');
@@ -3639,7 +3628,6 @@ function autoRefresh(){
   if(!$('dayOverlay').classList.contains('hidden')) return;
   if(!$('babyOverlay').classList.contains('hidden')) return;
   if(!$('popOverlay').classList.contains('hidden')) return;
-  if(!$('monthOverlay').classList.contains('hidden')) return;
   if(!$('allMonthsOverlay').classList.contains('hidden')) return;
   if(!$('updateOverlay').classList.contains('hidden')) return;
   if(!$('milkOverlay').classList.contains('hidden')) return;
