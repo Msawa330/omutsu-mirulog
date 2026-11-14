@@ -375,7 +375,6 @@
   }
   .wk-head .wk-md{display:block; font-size:11px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.3;}
   .wk-head .wk-wd{display:block; font-size:9px; font-weight:700; color:var(--ink-sub); line-height:1.3;}
-  .wk-head .wk-w{display:block; min-height:11px; font-size:9px; font-weight:700; color:var(--weight); font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.3;}
   .wk-head.today-col .wk-md{color:var(--green-dark);}
   .wk-sums{display:flex; flex-direction:column; gap:2px; margin-top:4px; padding:0 1px;}
   .wk-sumrow{
@@ -389,7 +388,7 @@
   .wk-sumrow.poop{background:var(--poop-bg); color:var(--poop);}
   .wk-sumrow.breast{background:var(--breast-bg); color:var(--breast);}
   .wk-sumrow.milk{background:var(--milk-bg); color:#8a6503;}
-  .wk-sumrow.weight{background:var(--weight-bg); color:var(--weight);}
+  .wk-sumrow.weight{background:var(--weight-bg); color:var(--weight); font-size:11px;}
   .wk-sumrow.memo{background:#eef0ee; color:#7a8288;}
   .wk-axis{
     font-size:9px; font-weight:700; color:#b6bcb6;
@@ -457,11 +456,11 @@
   .mstat .k{display:flex; align-items:center; justify-content:center; gap:3px; font-size:9px; font-weight:800;}
   .mstat .k svg{width:13px; height:13px; display:block; flex:0 0 auto;}
   .mstat .v{font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; margin-top:1px; color:var(--ink);}
-  .mstat.pee{background:var(--pee-bg);} .mstat.pee .k{color:var(--pee);}
-  .mstat.poop{background:var(--poop-bg);} .mstat.poop .k{color:var(--poop);}
-  .mstat.breast{background:var(--breast-bg);} .mstat.breast .k{color:var(--breast);}
-  .mstat.milk{background:var(--milk-bg);} .mstat.milk .k{color:var(--milk);}
-  .mstat.weight{background:var(--weight-bg);} .mstat.weight .k{color:var(--weight);} .mstat.weight .v{color:var(--weight);}
+  .mstat.pee{background:var(--pee-bg);} .mstat.pee .k{color:var(--pee);} .mstat.pee .v{color:var(--pee);}
+  .mstat.poop{background:var(--poop-bg);} .mstat.poop .k{color:var(--poop);} .mstat.poop .v{color:var(--poop);}
+  .mstat.breast{background:var(--breast-bg);} .mstat.breast .k{color:var(--breast);} .mstat.breast .v{color:var(--breast);}
+  .mstat.milk{background:var(--milk-bg);} .mstat.milk .k{color:var(--milk);} .mstat.milk .v{color:#8a6503;}
+  .mstat.weight{background:var(--weight-bg);} .mstat.weight .k{color:var(--weight);} .mstat.weight .v{color:var(--weight); font-size:11px;}
 
   /* ===== 月別・日別の一覧（シート内） ===== */
   .month-row{
@@ -496,10 +495,10 @@
   .mv-stat .k{display:flex; align-items:center; justify-content:center; gap:3px; font-size:9px; font-weight:800;}
   .mv-stat .k svg{width:13px; height:13px; display:block; flex:0 0 auto;}
   .mv-stat .v{display:block; font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; margin-top:1px; color:var(--ink);}
-  .mv-stat.pee{background:var(--pee-bg);} .mv-stat.pee .k{color:var(--pee);}
-  .mv-stat.poop{background:var(--poop-bg);} .mv-stat.poop .k{color:var(--poop);}
-  .mv-stat.breast{background:var(--breast-bg);} .mv-stat.breast .k{color:var(--breast);}
-  .mv-stat.milk{background:var(--milk-bg);} .mv-stat.milk .k{color:var(--milk);}
+  .mv-stat.pee{background:var(--pee-bg);} .mv-stat.pee .k{color:var(--pee);} .mv-stat.pee .v{color:var(--pee);}
+  .mv-stat.poop{background:var(--poop-bg);} .mv-stat.poop .k{color:var(--poop);} .mv-stat.poop .v{color:var(--poop);}
+  .mv-stat.breast{background:var(--breast-bg);} .mv-stat.breast .k{color:var(--breast);} .mv-stat.breast .v{color:var(--breast);}
+  .mv-stat.milk{background:var(--milk-bg);} .mv-stat.milk .k{color:var(--milk);} .mv-stat.milk .v{color:#8a6503;}
   .day-row{
     display:grid; grid-template-columns:3.4rem repeat(4,minmax(0,1fr)); align-items:center; min-width:0;
     width:100%; background:transparent; text-align:center; padding:5px 2px;
@@ -515,7 +514,9 @@
   .day-row .dcell .wline .wdiff{color:var(--weight); font-weight:700;}
   .day-row .dcell .wline .wdiff.neg{color:var(--weight);}
   .day-row .num{text-align:center;}
-  /* 日別一覧の授乳の数は種類色で示す（黄色はミルクだけ） */
+  /* 日別一覧の数は種類色で示す（黄色はミルクだけ） */
+  .day-row .hlp{color:var(--pee); font-weight:800;}
+  .day-row .hlpo{color:var(--poop); font-weight:800;}
   .day-row .hl{color:var(--milk); font-weight:800;}
   .day-row .hlb{color:var(--breast); font-weight:800;}
   .days-head{
@@ -1249,6 +1250,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-14-4', notes:[
     { c:'デザイン', t:'体重の表示の色を、アイコンに合わせてラベンダー色にそろえました' }
+  ]},
+  { version:'2026-11-14-5', notes:[
+    { c:'表示', t:'7日間の見出しの体重を消し、統計の数値の色を種類ごとにそろえました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1811,16 +1815,15 @@ function dayWeightLineHTML(d){
 function dayRowHTML(d, st){
   return '<button class="day-row" type="button" data-day="' + d.getTime() + '">' +
     '<span class="dcell"><span class="md">' + fmtMD(d) + '</span><span class="wd' + wdClass(d) + '">（' + WD[d.getDay()] + '）</span>' + dayWeightLineHTML(d) + '</span>' +
-    '<span class="num">' + (st.pee || '―') + '</span>' +
-    '<span class="num">' + (st.poop || '―') + '</span>' +
+    '<span class="num ' + (st.pee ? 'hlp' : '') + '">' + (st.pee || '―') + '</span>' +
+    '<span class="num ' + (st.poop ? 'hlpo' : '') + '">' + (st.poop || '―') + '</span>' +
     '<span class="num ' + (st.breast ? 'hlb' : '') + '">' + (st.breast || '―') + '</span>' +
     '<span class="num ' + (st.milk ? 'hl' : '') + '">' + (st.milk ? st.milk + 'ml' : '―') + '</span>' +
     '</button>';
 }
 /* ===== 7日間ログ（統合グリッド） =====
    日付列（左が6日前・右が今日）×24時間行。左端に時刻軸。
-   列ヘッダー：日付・曜日・体重（g数値のみ、無い日は空行で高さ統一）と
-   その日の集計（数値のみ）。集計の種類を示すアイコンは、時刻軸と同じく
+   列ヘッダー：日付・曜日とその日の集計（数値のみ）。集計の種類を示すアイコンは、時刻軸と同じく
    左端の列にだけ縦に並べ、各日の数値と行の高さを揃える（0件は―）。
    記録チップ：おしっこ・うんち・母乳・メモはアイコンのみ、ミルクはアイコン＋量。
    同じセル内のチップの並びは種類順（おしっこ→うんち→母乳→ミルク→メモ）で固定し、
@@ -1851,7 +1854,6 @@ function buildWeekGridHTML(days, src, highlightDay, isCurrentWeek){
   var html = '<div class="wk-grid"><div class="wk-corner wk-head" aria-hidden="true">' +
     '<span class="wk-md wk-hidden">0/0</span>' +
     '<span class="wk-wd wk-hidden">（日）</span>' +
-    '<span class="wk-w wk-hidden"></span>' +
     '<div class="wk-sums">' +
     wkSumIconHTML('pee') +
     wkSumIconHTML('poop') +
@@ -1866,7 +1868,6 @@ function buildWeekGridHTML(days, src, highlightDay, isCurrentWeek){
     html += '<div class="wk-head' + (sameDay(d, highlightDay) ? ' today-col' : '') + '" data-dayts="' + startOfDay(d).getTime() + '" role="button" tabindex="0" aria-label="' + fmtMD(d) + 'の記録を一覧で見る">' +
       '<span class="wk-md">' + fmtMD(d) + '</span>' +
       '<span class="wk-wd' + wdClass(d) + '">（' + WD[d.getDay()] + '）</span>' +
-      '<span class="wk-w">' + (wInfo ? wInfo.w.toLocaleString('ja-JP') : '') + '</span>' +
       '<div class="wk-sums">' +
       wkSumRowHTML('pee', st.pee ? String(st.pee) : wkNone()) +
       wkSumRowHTML('poop', st.poop ? String(st.poop) : wkNone()) +
