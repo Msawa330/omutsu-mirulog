@@ -27,6 +27,7 @@
     --poop-bg:#f3e4d3; --poop:#96692f;
     --breast-bg:#fbe0ec; --breast:#d14f86;
     --milk-bg:#fdefc0; --milk:#a97b06;
+    --weight-bg:#ede7f6; --weight:#7e57c2;
     /* 今日の強調は7日間・月間とも緑系で統一する（黄色はミルク専用） */
     --today-tint:rgba(63,191,79,.10); --today-ink:#2ea63e;
     --coral:#e05252;
@@ -365,7 +366,7 @@
   .wk-sumicon.poop{background:var(--poop-bg);}
   .wk-sumicon.breast{background:var(--breast-bg);}
   .wk-sumicon.milk{background:var(--milk-bg);}
-  .wk-sumicon.weight{background:#eef0ee; color:var(--ink-sub);}
+  .wk-sumicon.weight{background:var(--weight-bg); color:var(--weight);}
   .wk-sumicon.memo{background:#eef0ee; color:#7a8288;}
   .wk-head{
     text-align:center; min-width:0;
@@ -374,7 +375,7 @@
   }
   .wk-head .wk-md{display:block; font-size:11px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.3;}
   .wk-head .wk-wd{display:block; font-size:9px; font-weight:700; color:var(--ink-sub); line-height:1.3;}
-  .wk-head .wk-w{display:block; min-height:11px; font-size:9px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.3;}
+  .wk-head .wk-w{display:block; min-height:11px; font-size:9px; font-weight:700; color:var(--weight); font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.3;}
   .wk-head.today-col .wk-md{color:var(--green-dark);}
   .wk-sums{display:flex; flex-direction:column; gap:2px; margin-top:4px; padding:0 1px;}
   .wk-sumrow{
@@ -388,7 +389,7 @@
   .wk-sumrow.poop{background:var(--poop-bg); color:var(--poop);}
   .wk-sumrow.breast{background:var(--breast-bg); color:var(--breast);}
   .wk-sumrow.milk{background:var(--milk-bg); color:#8a6503;}
-  .wk-sumrow.weight{background:#eef0ee; color:var(--ink);}
+  .wk-sumrow.weight{background:var(--weight-bg); color:var(--weight);}
   .wk-sumrow.memo{background:#eef0ee; color:#7a8288;}
   .wk-axis{
     font-size:9px; font-weight:700; color:#b6bcb6;
@@ -432,7 +433,7 @@
   .cal-head{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:6px;}
   /* 月の見出しは表示専用テキスト（ボタンではない） */
   .cal-month{font-size:13px; font-weight:800; color:var(--ink);}
-  .mv-weight .w-ic{width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; color:var(--ink-sub);}
+  .mv-weight .w-ic{width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; color:var(--weight);}
   .mv-weight .w-ic svg{width:14px; height:14px; display:block;}
   .mcal-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:2px;}
   .mcal-dow{text-align:center; font-size:9px; font-weight:800; color:var(--ink-sub); padding:2px 0;}
@@ -460,7 +461,7 @@
   .mstat.poop{background:var(--poop-bg);} .mstat.poop .k{color:var(--poop);}
   .mstat.breast{background:var(--breast-bg);} .mstat.breast .k{color:var(--breast);}
   .mstat.milk{background:var(--milk-bg);} .mstat.milk .k{color:var(--milk);}
-  .mstat.weight{background:#eef0ee;} .mstat.weight .k{color:var(--ink-sub);}
+  .mstat.weight{background:var(--weight-bg);} .mstat.weight .k{color:var(--weight);} .mstat.weight .v{color:var(--weight);}
 
   /* ===== 月別・日別の一覧（シート内） ===== */
   .month-row{
@@ -488,8 +489,8 @@
   .month-view-row:last-child{border-bottom:none;}
   .mv-head{display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; min-width:0;}
   .mv-name{font-size:15px; font-weight:800; white-space:nowrap;}
-  .mv-weight{font-size:11px; font-weight:700; color:var(--ink-sub); font-variant-numeric:tabular-nums; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;}
-  .mv-weight b{color:var(--ink); font-weight:800;}
+  .mv-weight{font-size:11px; font-weight:700; color:var(--weight); font-variant-numeric:tabular-nums; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;}
+  .mv-weight b{color:var(--weight); font-weight:800;}
   .mv-stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:7px;}
   .mv-stat{border-radius:10px; padding:5px 4px; text-align:center; min-width:0; display:block;}
   .mv-stat .k{display:flex; align-items:center; justify-content:center; gap:3px; font-size:9px; font-weight:800;}
@@ -510,9 +511,9 @@
   .day-row .dcell{text-align:left; line-height:1.25; padding-left:2px;}
   .day-row .dcell .md{font-size:15px; font-weight:800; display:block;}
   .day-row .dcell .wd{font-size:12px; color:var(--ink-sub); font-weight:700; display:block;}
-  .day-row .dcell .wline{font-size:10.5px; color:var(--ink); font-weight:700; display:block; white-space:nowrap; letter-spacing:-0.03em; margin-top:1px;}
-  .day-row .dcell .wline .wdiff{color:var(--ink-sub); font-weight:700;}
-  .day-row .dcell .wline .wdiff.neg{color:var(--ink-sub);}
+  .day-row .dcell .wline{font-size:10.5px; color:var(--weight); font-weight:700; display:block; white-space:nowrap; letter-spacing:-0.03em; margin-top:1px;}
+  .day-row .dcell .wline .wdiff{color:var(--weight); font-weight:700;}
+  .day-row .dcell .wline .wdiff.neg{color:var(--weight);}
   .day-row .num{text-align:center;}
   /* 日別一覧の授乳の数は種類色で示す（黄色はミルクだけ） */
   .day-row .hl{color:var(--milk); font-weight:800;}
@@ -523,10 +524,10 @@
   }
   .days-head .hcell{display:flex; align-items:center; justify-content:center; min-width:0;}
   .days-head svg{width:22px; height:22px;}
-  .day-total{display:flex; gap:14px; flex-wrap:wrap; font-size:13.5px; color:var(--ink-sub); margin-bottom:8px; font-weight:700;}
+  .day-total{display:flex; gap:14px; flex-wrap:wrap; font-size:13.5px; color:var(--weight); margin-bottom:8px; font-weight:700;}
   .day-total:empty{display:none;}
-  .day-total .hl{color:var(--ink); font-weight:800;}
-  .day-total .neg{color:var(--ink-sub); font-weight:800;}
+  .day-total .hl{color:var(--weight); font-weight:800;}
+  .day-total .neg{color:var(--weight); font-weight:800;}
 
   /* ===== 猫の体重 ===== */
   .cat-block{padding:5px 0; border-bottom:1px solid var(--line); min-width:0;}
@@ -1245,6 +1246,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-14-3', notes:[
     { c:'デザイン', t:'体重のアイコンを、ラベンダー色の体重計のデザインに変えました' }
+  ]},
+  { version:'2026-11-14-4', notes:[
+    { c:'デザイン', t:'体重の表示の色を、アイコンに合わせてラベンダー色にそろえました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
