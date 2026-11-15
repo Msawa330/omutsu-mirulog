@@ -307,7 +307,7 @@
     width:2px; background:var(--line); transform:translateX(-1px);
   }
   .rec-row{
-    display:grid; grid-template-columns:46px 26px minmax(0,1fr);
+    display:grid; grid-template-columns:46px 26px minmax(0,1fr) auto;
     align-items:center; column-gap:8px;
     width:100%; max-width:100%; min-width:0; text-align:left;
     background:transparent; padding:5px 0; border-bottom:1px solid var(--line);
@@ -332,6 +332,8 @@
   .badge.memo{background:#eef0ee; color:#7a8288;}
   .badge.memo svg{width:15px; height:15px;}
   .rec-title{font-size:13px; font-weight:800; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  /* 記録者名：行の右端に、時間と同じグレーで時間より小さく出す */
+  .rec-creator{font-size:10px; font-weight:700; color:var(--ink-sub); white-space:nowrap; line-height:1.2;}
   .empty{font-size:14px; color:var(--ink-sub); padding:5px 2px;}
 
   /* ===== メモ（TOPは細い1行だけに抑え、入力は小さなポップアップで） ===== */
@@ -1256,6 +1258,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-14-6', notes:[
     { c:'表示', t:'月の統計の体重の数値の大きさを、他と同じにそろえました' }
+  ]},
+  { version:'2026-11-15-1', notes:[
+    { c:'表示', t:'今日のログに、記録した人の名前（ひろゆき／くみこ）が表示されるようにしました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1714,10 +1719,12 @@ function recRowHTML(rec, showDate){
   var now = new Date();
   var isPast = !sameDay(rec.start, now);
   var dateHTML = (showDate && isPast) ? '<span class="d">' + fmtMD(rec.start) + '</span>' : '';
+  var creatorHTML = rec.creator ? '<span class="rec-creator">' + rec.creator + '</span>' : '<span></span>';
   return '<button class="rec-row" type="button" data-eid="' + rec.id + '">' +
     '<span class="rec-time">' + dateHTML + '<span class="h">' + pad(rec.start.getHours()) + '</span><span class="m">:' + pad(rec.start.getMinutes()) + '</span></span>' +
     badgeHTML(rec) +
-    '<span class="rec-title">' + labelOf(rec) + '</span></button>';
+    '<span class="rec-title">' + labelOf(rec) + '</span>' +
+    creatorHTML + '</button>';
 }
 function renderGauge(){
   var wrap = $('milkGaugeWrap');
@@ -2751,6 +2758,17 @@ function markerJSON(kind, amount, text){
   if(kind==='memo') o.text = text || '';
   return 'muse-baby-log:' + JSON.stringify(o);
 }
+/* 記録者名：カレンダーのイベントの作成者（creator）のメールアドレスで判定する。
+   過去の記録もイベントに作成者が残っているので、同じ判定でそのまま表示できる。
+   どちらのアカウントでもない作成者の記録には名前を出さない */
+var CREATOR_NAMES = {
+  'emsawa@gmail.com': 'ひろゆき',
+  'cjgjc.3150@gmail.com': 'くみこ'
+};
+function creatorNameOf(ev){
+  if(!ev || !ev.creator || !ev.creator.email) return '';
+  return CREATOR_NAMES[String(ev.creator.email).toLowerCase()] || '';
+}
 function parseEvent(ev){
   if(!ev || !ev.start || !ev.start.dateTime) return null;
   var start = new Date(ev.start.dateTime);
@@ -2786,7 +2804,7 @@ function parseEvent(ev){
     var m2 = title.match(/(\d+)\s*ml/i);
     if(m2) amount = parseInt(m2[1], 10);
   }
-  return { id: ev.id, start: start, kind: kind, amount: amount, text: text };
+  return { id: ev.id, start: start, kind: kind, amount: amount, text: text, creator: creatorNameOf(ev) };
 }
 function eventBody(kind, amount, when, text){
   var end = new Date(when.getTime() + 5*60000);
