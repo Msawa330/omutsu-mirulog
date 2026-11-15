@@ -28,6 +28,7 @@
     --breast-bg:#fbe0ec; --breast:#d14f86;
     --milk-bg:#fdefc0; --milk:#a97b06;
     --weight-bg:#ede7f6; --weight:#7e57c2;
+    --clean-bg:#cdeef0; --clean:#0e7d86;
     /* 今日の強調は7日間・月間とも緑系で統一する（黄色はミルク専用） */
     --today-tint:rgba(63,191,79,.10); --today-ink:#2ea63e;
     --coral:#e05252;
@@ -299,6 +300,28 @@
   .gauge-track{height:10px; background:#f1f2f0; border-radius:999px; overflow:hidden;}
   .gauge-fill{height:100%; width:0; background:linear-gradient(90deg,#ffd94d,#ffc61a); border-radius:999px; transition:width .3s ease;}
 
+  /* ===== リマインドブロック（ゲージとは独立したブロック・時期が来た項目だけ出す） =====
+     普段はブロックごと非表示。各項目は丸いアイコン＋名称＋前回の時間を1行で出す */
+  .remind-list{display:flex; flex-direction:column; gap:6px;}
+  .remind-item{
+    display:flex; align-items:center; gap:9px; width:100%; min-width:0;
+    text-align:left; padding:6px 8px; border-radius:12px;
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+  }
+  .remind-item:active{opacity:.65;}
+  .remind-ic{
+    width:34px; height:34px; border-radius:50%; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .remind-ic svg{width:26px; height:26px; display:block;}
+  .remind-ic.clean{background:var(--clean-bg);}
+  .remind-ic.weight{background:var(--weight-bg);}
+  .remind-label{font-size:13px; font-weight:800; flex:0 0 auto;}
+  .remind-last{
+    margin-left:auto; font-size:12px; font-weight:700; color:var(--ink-sub);
+    font-variant-numeric:tabular-nums; white-space:nowrap; min-width:0;
+  }
+
   /* ===== 今日のログ（タイムライン） ===== */
   .rec-list{display:flex; flex-direction:column; position:relative;}
   .rec-list::before{
@@ -331,6 +354,7 @@
   .badge.milk{background:var(--milk-bg);}
   .badge.memo{background:#eef0ee; color:#7a8288;}
   .badge.memo svg{width:15px; height:15px;}
+  .badge.clean{background:var(--clean-bg);}
   .rec-title{font-size:13px; font-weight:800; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   /* 記録者名：行の右端に、時間と同じグレーで時間より小さく出す */
   .rec-creator{font-size:10px; font-weight:700; color:var(--ink-sub); white-space:nowrap; line-height:1.2;}
@@ -425,6 +449,7 @@
     font-size:9px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap;
   }
   .wk-chip.memo{background:#eef0ee; color:#7a8288;}
+  .wk-chip.clean{background:var(--clean-bg);}
   .wk-chip:active{filter:brightness(.96);}
   /* 7日間ログ：列（見出し・セル）のどこを押してもその日の一覧が開く */
   .wk-head[data-dayts], .wk-cell[data-dayts]{cursor:pointer;}
@@ -861,6 +886,24 @@
     <div class="gauge-track"><div class="gauge-fill" id="gaugeFill"></div></div>
   </section>
 
+  <!-- リマインド（ゲージとは独立したブロック。普段は丸ごと非表示で、
+       期限までの残り時間が間隔の4％を切った項目だけを出す） -->
+  <section class="panel hidden" id="remindPanel" aria-label="リマインド">
+    <div class="card-head">
+      <span class="card-title">リマインド</span>
+    </div>
+    <div class="remind-list" id="remindList"></div>
+  </section>
+
+  <!-- メモ（リマインドブロックの下に置く。リマインドが非表示のときはゲージのすぐ下に来る） -->
+  <section class="panel memo-panel" aria-label="メモ">
+    <button class="memo-open" id="memoOpenBtn" type="button">
+      <span class="memo-ic"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5h19l8 8v30H11z"/><path d="M30 5v8h8"/><path d="M18 24h13M18 31h13M18 17h6"/></svg></span>
+      <span>メモ</span>
+      <span class="memo-act">書く</span>
+    </button>
+  </section>
+
   <!-- 今日のログ -->
   <section class="panel" aria-label="今日のログ">
     <div class="card-head">
@@ -868,15 +911,6 @@
     </div>
     <div class="rec-list" id="todayList"></div>
     <button class="btn-more hidden" id="todayMoreBtn" type="button">もっと見る</button>
-  </section>
-
-  <!-- メモ（TOPは細い1行だけ。タップで小さなポップアップが開いて入力する） -->
-  <section class="panel memo-panel" aria-label="メモ">
-    <button class="memo-open" id="memoOpenBtn" type="button">
-      <span class="memo-ic"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5h19l8 8v30H11z"/><path d="M30 5v8h8"/><path d="M18 24h13M18 31h13M18 17h6"/></svg></span>
-      <span>メモ</span>
-      <span class="memo-act">書く</span>
-    </button>
   </section>
 
   <!-- 7日間のログ -->
@@ -946,6 +980,18 @@
     <button class="set-row" type="button" data-edit="goal">
       <span class="set-label">ミルクの目標</span>
       <span class="set-value unset" id="valGoal">未設定</span>
+      <span class="set-chev">›</span>
+    </button>
+
+    <p class="sheet-sec-label">お世話の間隔</p>
+    <button class="set-row" type="button" data-edit="cleanInterval">
+      <span class="set-label">洗浄液の交換の間隔</span>
+      <span class="set-value" id="valCleanInterval">23時間</span>
+      <span class="set-chev">›</span>
+    </button>
+    <button class="set-row" type="button" data-edit="weightInterval">
+      <span class="set-label">体重測定の間隔</span>
+      <span class="set-value" id="valWeightInterval">3日</span>
       <span class="set-chev">›</span>
     </button>
 
@@ -1088,6 +1134,7 @@ var IC = {
   breast: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gBreast" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7a8c4"/><stop offset="1" stop-color="#e0528a"/></linearGradient></defs><path d="M24 41.5S7.5 30.6 7.5 19.7C7.5 13.4 12.2 9.2 17.3 9.2c3 0 5.5 1.5 6.7 3.7 1.2-2.2 3.7-3.7 6.7-3.7 5.1 0 9.8 4.2 9.8 10.5C40.5 30.6 24 41.5 24 41.5Z" fill="url(#gBreast)"/><ellipse cx="16.5" cy="16.5" rx="4.6" ry="3" fill="#ffffff" opacity="0.5" transform="rotate(-24 16.5 16.5)"/><path d="M24 20.5c0 0-4.2 4.9-4.2 7.6a4.2 4.2 0 0 0 8.4 0C28.2 25.4 24 20.5 24 20.5Z" fill="#ffffff" opacity="0.9"/></svg>',
   milk: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gMilk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd968"/><stop offset="1" stop-color="#e39a00"/></linearGradient><linearGradient id="gMilkIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf4"/><stop offset="1" stop-color="#ffedb8"/></linearGradient></defs><path d="M24 3.5c3 0 4.8 2.7 4.8 5.5 0 1.9-.8 3.2-1.6 4.6h-6.4c-.8-1.4-1.6-2.7-1.6-4.6 0-2.8 1.8-5.5 4.8-5.5Z" fill="url(#gMilk)"/><rect x="15" y="13.6" width="18" height="5.4" rx="2.7" fill="#d98e00"/><path d="M16.8 19h14.4c1.7 2.7 2.5 5.2 2.5 8.6v11A5.4 5.4 0 0 1 28.3 44H19.7a5.4 5.4 0 0 1-5.4-5.4v-11c0-3.4.8-5.9 2.5-8.6Z" fill="url(#gMilk)"/><path d="M17.3 27.5h13.4v11.1a2.9 2.9 0 0 1-2.9 2.9h-7.6a2.9 2.9 0 0 1-2.9-2.9V27.5Z" fill="url(#gMilkIn)"/><ellipse cx="20" cy="23.5" rx="2.6" ry="4" fill="#ffffff" opacity="0.5" transform="rotate(-12 20 23.5)"/><path d="M27.5 31.5h3.2M27.5 35.5h3.2" stroke="#d98e00" stroke-width="1.8" stroke-linecap="round"/></svg>',
   scale: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="7" width="36" height="34" rx="9" fill="#b39ddb"/><rect x="15" y="12" width="18" height="9" rx="3" fill="#ffffff"/><rect x="19.5" y="15.4" width="9" height="2.2" rx="1.1" fill="#b39ddb"/><circle cx="13.5" cy="33.5" r="2.1" fill="#ffffff"/><circle cx="34.5" cy="33.5" r="2.1" fill="#ffffff"/></svg>',
+  clean: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M19.5 19v-3.6c0-1.6 1.3-2.9 2.9-2.9h3.2c1.6 0 2.9 1.3 2.9 2.9V19h5.5a9 9 0 0 1 9 9v1a9 9 0 0 1-9 9H14a9 9 0 0 1-9-9v-1a9 9 0 0 1 9-9h5.5Z" fill="#0e7d86"/></svg>',
   diaper: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 8.5h37l-2.5 12.3c-1 4.7-3.9 7.2-7.5 8.9-3.2 1.5-5.2 3.7-6 7.4l-.5 2.4h-4l-.5-2.4c-.8-3.7-2.8-5.9-6-7.4-3.6-1.7-6.5-4.2-7.5-8.9L5.5 8.5Z"/><path d="M6.8 15.8h34.4"/><path d="M13 11.8h.01M35 11.8h.01" stroke-width="3.8"/></svg>',
   bell: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 7.5a13.5 13.5 0 0 1 13.5 13.5c0 5.8 1.7 8.2 3 10.5H7.5c1.3-2.3 3-4.7 3-10.5A13.5 13.5 0 0 1 24 7.5Z"/><path d="M19.2 38.5a5 5 0 0 0 9.6 0"/><path d="M24 7.5V5"/></svg>',
   memo: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5h19l8 8v30H11z"/><path d="M30 5v8h8"/><path d="M18 24h13M18 31h13M18 17h6"/></svg>'
@@ -1097,7 +1144,8 @@ var KIND = {
   poop:   { label:'うんち',   cat:'diaper' },
   breast: { label:'母乳',     cat:'feed' },
   milk:   { label:'ミルク',   cat:'feed' },
-  memo:   { label:'メモ',     cat:'memo' }
+  memo:   { label:'メモ',     cat:'memo' },
+  clean:  { label:'洗浄液',   cat:'care' }
 };
 function icon(kind, cls){ return IC[kind]; }
 function escHTML(s){
@@ -1107,6 +1155,7 @@ function escHTML(s){
 }
 function labelOf(rec){
   if(rec.kind==='memo') return escHTML(rec.text || 'メモ');
+  if(rec.kind==='clean') return '洗浄液の交換';
   if(rec.kind==='milk') return 'ミルク ' + (rec.amount||0) + 'ml';
   return KIND[rec.kind].label;
 }
@@ -1114,6 +1163,7 @@ function titleOf(rec){
   if(rec.kind==='pee') return 'オムツ：おしっこ';
   if(rec.kind==='poop') return 'オムツ：うんち';
   if(rec.kind==='breast') return '授乳：母乳';
+  if(rec.kind==='clean') return '洗浄液の交換';
   if(rec.kind==='memo') return rec.text ? 'メモ：' + rec.text : 'メモ';
   return '授乳：ミルク ' + (rec.amount||0) + 'ml';
 }
@@ -1261,6 +1311,15 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-15-1', notes:[
     { c:'表示', t:'今日のログに、記録した人の名前（ひろゆき／くみこ）が表示されるようにしました' }
+  ]},
+  { version:'2026-11-16-1', notes:[
+    { c:'表示', t:'時期が来ると、洗浄液の交換と体重測定がゲージの下に表示されるようにしました' }
+  ]},
+  { version:'2026-11-16-2', notes:[
+    { c:'表示', t:'時期が近づくと、洗浄液の交換と体重測定がリマインドに表示されるようにしました' }
+  ]},
+  { version:'2026-11-16-3', notes:[
+    { c:'表示', t:'7日間のログの集計に、洗浄液の数は表示されないようになりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1297,7 +1356,7 @@ var deleteArmed = false;
 var LS_BABY = 'omutsumirulog.babySettings';
 var SETTINGS_TITLE = '赤ちゃん設定（アプリ用）';
 var SETTINGS_MARKER = 'muse-baby-settings:';
-var babySettings = { birthDate:'', birthWeight:'', weight:'', remind:false, weightLog:[], goalMl:'', goalTimes:'', goalBand:'', cats: defaultCats() };
+var babySettings = { birthDate:'', birthWeight:'', weight:'', remind:false, weightLog:[], goalMl:'', goalTimes:'', goalBand:'', cleanHours:23, weightDays:3, cleanBaseAt:'2026-11-16T01:00', weightBaseAt:'2026-11-15T20:00', weightLastAt:'', cats: defaultCats() };
 try{
   var savedBaby = localStorage.getItem(LS_BABY);
   if(savedBaby){
@@ -1310,6 +1369,11 @@ try{
       if(parsedBaby.goalMl !== undefined && parsedBaby.goalMl !== null) babySettings.goalMl = parsedBaby.goalMl;
       if(parsedBaby.goalTimes !== undefined && parsedBaby.goalTimes !== null) babySettings.goalTimes = parsedBaby.goalTimes;
       if(parsedBaby.goalBand !== undefined && parsedBaby.goalBand !== null) babySettings.goalBand = parsedBaby.goalBand;
+      if(parsedBaby.cleanHours !== undefined && parsedBaby.cleanHours !== null) babySettings.cleanHours = parsedBaby.cleanHours;
+      if(parsedBaby.weightDays !== undefined && parsedBaby.weightDays !== null) babySettings.weightDays = parsedBaby.weightDays;
+      if(typeof parsedBaby.cleanBaseAt === 'string' && parsedBaby.cleanBaseAt) babySettings.cleanBaseAt = parsedBaby.cleanBaseAt;
+      if(typeof parsedBaby.weightBaseAt === 'string' && parsedBaby.weightBaseAt) babySettings.weightBaseAt = parsedBaby.weightBaseAt;
+      if(typeof parsedBaby.weightLastAt === 'string') babySettings.weightLastAt = parsedBaby.weightLastAt;
       if(Array.isArray(parsedBaby.weightLog)) babySettings.weightLog = cleanWeightLog(parsedBaby.weightLog);
       if(Array.isArray(parsedBaby.cats)) babySettings.cats = cleanCats(parsedBaby.cats);
     }
@@ -1478,10 +1542,12 @@ function pushCatWeight(idx, w){
   if(log.length > 500) log = log.slice(log.length - 500);
   cat.weightLog = log;
 }
-/* 体重が変更されたら当日の履歴として記録する（同日は上書き） */
+/* 体重が変更されたら当日の履歴として記録する（同日は上書き）。
+   あわせて測定した日時も残し、体重リマインドの「前回」にする */
 function pushWeightLog(w){
   w = parseInt(w, 10);
   if(!w || w <= 0) return;
+  babySettings.weightLastAt = new Date().toISOString();
   var today = fmtDateStr(new Date());
   var log = babySettings.weightLog || [];
   var found = false;
@@ -1744,6 +1810,97 @@ function renderGauge(){
   $('gaugeGoal').textContent = '目標 ' + goal + 'ml';
   wrap.classList.remove('hidden');
 }
+/* ================= リマインドブロック =================
+   ゲージとは独立したブロックで、普段は丸ごと非表示。
+   期限は「前回実施した日時＋間隔」で、期限までの残り時間が
+   間隔の4％を切ったら表示する。期限を過ぎても表示は変えず、
+   実施するまで出し続ける。各項目は丸いアイコン＋名称＋
+   前回実施した時間を1行で出す（期限はTOPに出さない）。
+   初回の前回日時は赤ちゃん設定に保存して夫婦で同期し
+   （体重=2026-11-15 20:00、洗浄液=2026-11-16 01:00）、
+   実際の記録が入ったらそちらが新しい前回になる */
+var REMIND_RATIO = 0.04;
+function cleanIntervalHours(){
+  var n = parseInt(babySettings.cleanHours, 10);
+  return (n > 0) ? n : 23;
+}
+function weightIntervalDays(){
+  var n = parseInt(babySettings.weightDays, 10);
+  return (n > 0) ? n : 3;
+}
+function parseLocalDT(s){
+  if(typeof s !== 'string' || !s) return null;
+  var d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+/* 洗浄液の前回：交換の記録と初回日時（設定）のうち新しい方 */
+function lastCleanDateTime(){
+  var best = parseLocalDT(babySettings.cleanBaseAt);
+  var src = (typeof logSource === 'function') ? logSource() : records;
+  for(var i=0;i<src.length;i++){
+    if(src[i].kind !== 'clean') continue;
+    if(!best || src[i].start > best) best = src[i].start;
+  }
+  return best;
+}
+/* 体重の前回：体重を記録した日時。日時が残っていない履歴だけの
+   ときは、その日の20時として扱う（初回日時の時刻に合わせる） */
+function lastWeightDateTime(){
+  var best = parseLocalDT(babySettings.weightBaseAt);
+  var lastAt = parseLocalDT(babySettings.weightLastAt);
+  if(lastAt && (!best || lastAt > best)) best = lastAt;
+  var log = babySettings.weightLog || [];
+  if(log.length){
+    var p = String(log[log.length - 1].d).split('-');
+    if(p.length === 3){
+      var d = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10), 20, 0);
+      /* 履歴の日付の方が新しい日なら、その日の20時を前回にする。
+         同じ日なら、実際に記録した日時（lastAt）の方を優先する */
+      if(!isNaN(d.getTime()) && (!best || startOfDay(d) > startOfDay(best))) best = d;
+    }
+  }
+  return best;
+}
+/* 残り時間が間隔の4％を切っていたら表示する（過ぎても表示し続ける） */
+function remindDue(last, intervalMs){
+  if(!last || !(intervalMs > 0)) return false;
+  return (last.getTime() + intervalMs - Date.now()) < intervalMs * REMIND_RATIO;
+}
+function fmtRemindLast(d){
+  return '前回 ' + fmtMD(d) + ' ' + d.getHours() + ':' + pad(d.getMinutes());
+}
+function renderRemind(){
+  var panel = $('remindPanel'), list = $('remindList');
+  if(!panel || !list) return;
+  var html = '';
+  /* 洗浄液（記録の読み込みが終わるまでは判定しない） */
+  if(recordsLoaded){
+    var lastClean = lastCleanDateTime();
+    if(remindDue(lastClean, cleanIntervalHours() * 3600000)){
+      html += '<button class="remind-item" type="button" id="remindCleanBtn">' +
+        '<span class="remind-ic clean">' + IC.clean + '</span>' +
+        '<span class="remind-label">洗浄液</span>' +
+        '<span class="remind-last">' + fmtRemindLast(lastClean) + '</span></button>';
+    }
+  }
+  /* 体重 */
+  var lastW = lastWeightDateTime();
+  if(remindDue(lastW, weightIntervalDays() * 86400000)){
+    html += '<button class="remind-item" type="button" id="remindWeightBtn">' +
+      '<span class="remind-ic weight">' + IC.scale + '</span>' +
+      '<span class="remind-label">体重</span>' +
+      '<span class="remind-last">' + fmtRemindLast(lastW) + '</span></button>';
+  }
+  list.innerHTML = html;
+  panel.classList.toggle('hidden', !html);
+  var cb = $('remindCleanBtn');
+  if(cb) cb.addEventListener('click', function(){
+    if(!accessToken){ setStatus('サインインしてください', true); return; }
+    createRecord('clean', 0);
+  });
+  var wb = $('remindWeightBtn');
+  if(wb) wb.addEventListener('click', function(){ openWeightRecordPop(); });
+}
 /* 今日のログ：既定は新しい順に直近4件まで（記録とメモを合わせて）。
    残りは「もっと見る」でその場に展開して全部見られ、もう一度押すと閉じる。
    今日の記録が少ないときは、従来どおり直近の過去記録を補って出す */
@@ -1780,6 +1937,9 @@ $('todayMoreBtn').addEventListener('click', function(){
 });
 function dayStats(date){ return dayStatsFrom(records, date); }
 function dayStatsFrom(src, date){
+  /* 洗浄液（clean）は集計の対象外：件数・合計・平均のいずれにも含めず、
+     メモなど他の集計にも合算しない。list には表示用として含める
+     （今日のログ・日一覧・7日間ログのチップ／行としての表示は従来どおり） */
   var st = { pee:0, poop:0, breast:0, milk:0, memo:0, list:[] };
   src.forEach(function(r){
     if(sameDay(r.start, date)){
@@ -1898,7 +2058,7 @@ function buildWeekGridHTML(days, src, highlightDay, isCurrentWeek){
       }
     }
   });
-  var WK_KIND_ORDER = { pee:0, poop:1, breast:2, milk:3, memo:4 };
+  var WK_KIND_ORDER = { pee:0, poop:1, breast:2, milk:3, memo:4, clean:5 };
   Object.keys(slots).forEach(function(k){
     slots[k].sort(function(a,b){
       var dd = (WK_KIND_ORDER[a.kind] || 0) - (WK_KIND_ORDER[b.kind] || 0);
@@ -2038,7 +2198,7 @@ function monthStats(y, m){
      （10日以前の記録は合計にも日数にも入れない）。他の月は従来どおり */
   var minDay = (y===2026 && m===10) ? 11 : 1;
   src.forEach(function(r){
-    if(r.kind==='memo') return;
+    if(r.kind==='memo' || r.kind==='clean') return;
     if(r.start.getFullYear()===y && r.start.getMonth()===m){
       var dd = r.start.getDate();
       if(dd < minDay) return;
@@ -2205,7 +2365,7 @@ function renderAllMonths(){
   var seen = {}, list = [], i;
   for(i=0;i<src.length;i++){
     var r = src[i];
-    if(r.kind==='memo') continue;
+    if(r.kind==='memo' || r.kind==='clean') continue;
     var key = r.start.getFullYear() * 12 + r.start.getMonth();
     if(!seen[key]){ seen[key] = true; list.push([r.start.getFullYear(), r.start.getMonth()]); }
   }
@@ -2224,7 +2384,7 @@ function renderAllMonths(){
   $('allMonthsBody').innerHTML = list.map(function(ym){ return monthRowHTML(ym[0], ym[1]); }).join('');
 }
 function renderAll(){
-  renderPrev(); renderGauge(); renderToday(); renderDays(); renderMonths();
+  renderPrev(); renderGauge(); renderRemind(); renderToday(); renderDays(); renderMonths();
   setNowLine();
 }
 function bindRecRows(container){
@@ -2291,7 +2451,7 @@ function renderBabySummary(){
    保存すると今日の分として記録され、閉じる（ポップアップの共通作法）。
    検証エラーはポップアップ内に出し、TOPのステータス欄には出さない。
    TOPの体重の数字自体は表示専用で、タップしても開かない */
-$('weightRecordBtn').addEventListener('click', function(){
+function openWeightRecordPop(){
   openGramPop({
     title:'体重を記録', label:'現在の体重', min:500, max:20000,
     allowEmpty:false, initial:babySettings.weight,
@@ -2301,7 +2461,8 @@ $('weightRecordBtn').addEventListener('click', function(){
       scheduleBabySave();
     }
   });
-});
+}
+$('weightRecordBtn').addEventListener('click', openWeightRecordPop);
 function renderBabySettingsUI(){
   var bd = $('valBirthDate'), bw = $('valBirthWeight'), wt = $('valWeight');
   if(bd){
@@ -2321,6 +2482,10 @@ function renderBabySettingsUI(){
     vc.textContent = clientId ? '設定済み' : '未設定';
     vc.classList.toggle('unset', !clientId);
   }
+  var vci = $('valCleanInterval');
+  if(vci) vci.textContent = cleanIntervalHours() + '時間';
+  var vwi = $('valWeightInterval');
+  if(vwi) vwi.textContent = weightIntervalDays() + '日';
   var tog = $('remindToggle');
   tog.classList.toggle('on', !!babySettings.remind);
   tog.setAttribute('aria-checked', babySettings.remind ? 'true' : 'false');
@@ -2496,6 +2661,11 @@ function applyBabySettings(obj){
   if(obj.goalMl !== undefined && obj.goalMl !== null) babySettings.goalMl = obj.goalMl;
   if(obj.goalTimes !== undefined && obj.goalTimes !== null) babySettings.goalTimes = obj.goalTimes;
   if(obj.goalBand !== undefined && obj.goalBand !== null) babySettings.goalBand = obj.goalBand;
+  if(obj.cleanHours !== undefined && obj.cleanHours !== null) babySettings.cleanHours = obj.cleanHours;
+  if(obj.weightDays !== undefined && obj.weightDays !== null) babySettings.weightDays = obj.weightDays;
+  if(typeof obj.cleanBaseAt === 'string' && obj.cleanBaseAt) babySettings.cleanBaseAt = obj.cleanBaseAt;
+  if(typeof obj.weightBaseAt === 'string' && obj.weightBaseAt) babySettings.weightBaseAt = obj.weightBaseAt;
+  if(typeof obj.weightLastAt === 'string') babySettings.weightLastAt = obj.weightLastAt;
   if(Array.isArray(obj.weightLog)) babySettings.weightLog = cleanWeightLog(obj.weightLog);
   if(Array.isArray(obj.cats)) babySettings.cats = cleanCats(obj.cats);
   saveBabyLocal();
@@ -2784,7 +2954,9 @@ function parseEvent(ev){
   }
   var title = (ev.summary || '').replace(/\s+/g, ' ').trim();
   if(!kind){
-    if(/^メモ/.test(title)){
+    if(title.indexOf('洗浄液') >= 0){
+      kind = 'clean';
+    } else if(/^メモ/.test(title)){
       kind = 'memo';
       text = title.replace(/^メモ[:：]\s*/, '');
       if(text === title) text = '';
@@ -2878,6 +3050,7 @@ function loadArchive(daysBack){
     archiveRecords = list;
     archiveSpan = span;
     archiveFetchedAt = Date.now();
+    renderRemind();
     renderMonths();
     renderDays();
     if(!$('weekOverlay').classList.contains('hidden')) renderWeekOverlay();
@@ -3405,6 +3578,8 @@ for(var sr=0; sr<setRowBtns.length; sr++){
     else if(f === 'birthWeight') openBirthWeightPop();
     else if(f === 'weight') openSettingsWeightPop();
     else if(f === 'goal') openGoalPop();
+    else if(f === 'cleanInterval') openCleanIntervalPop();
+    else if(f === 'weightInterval') openWeightIntervalPop();
     else if(f === 'conn') openConnPop();
   });
 }
@@ -3507,6 +3682,43 @@ function openGoalPop(){
       tm.placeholder = '例：' + (dg ? dg.guide.times : 8);
       focusPopInput(ml);
     });
+}
+/* リマインドの間隔の入力：現在の値が入った状態で開き、
+   保存したら閉じる（既存の統一ポップアップの作法）。
+   洗浄液は時間単位、体重は日単位で入力する。
+   設定値は赤ちゃん設定に保存して夫婦で同期する */
+function openIntervalPop(o){
+  openPop(o.title,
+    '<div class="num-unit-row"><input type="number" id="popInterval" inputmode="numeric" pattern="[0-9]*" min="1" max="' + o.max + '" step="1" aria-label="' + o.title + '（' + o.unit + '）"><span class="unit-label">' + o.unit + '</span></div>',
+    [
+      { label:'保存する', cls:'btn-primary', onClick:function(){
+        var raw = String($('popInterval').value || '').trim();
+        var n = Number(raw);
+        if(raw === '' || !isFinite(n) || Math.floor(n) !== n || n < 1 || n > o.max){
+          popError(o.title + 'は1〜' + o.max + o.unit + 'の整数で入力してください');
+          return false;
+        }
+        o.onSave(n);
+      }},
+      { label:'キャンセル', cls:'btn-sub', onClick:function(){} }
+    ],
+    function(){
+      var inp = $('popInterval');
+      inp.value = o.initial;
+      focusPopInput(inp);
+    });
+}
+function openCleanIntervalPop(){
+  openIntervalPop({
+    title:'洗浄液の交換の間隔', unit:'時間', max:720, initial: cleanIntervalHours(),
+    onSave:function(n){ babySettings.cleanHours = n; scheduleBabySave(); }
+  });
+}
+function openWeightIntervalPop(){
+  openIntervalPop({
+    title:'体重測定の間隔', unit:'日', max:365, initial: weightIntervalDays(),
+    onSave:function(n){ babySettings.weightDays = n; scheduleBabySave(); }
+  });
 }
 /* TOPの「今日のミルク」の目標（鉛筆）からも、設定と同じ目標の編集を開く */
 $('gaugeGoalBtn').addEventListener('click', function(){ openGoalPop(); });
@@ -3678,6 +3890,7 @@ window.addEventListener('focus', function(){ autoRefresh(); });
 setInterval(function(){
   setNowLine();
   renderPrev();
+  renderRemind();
   renderWeightRecordBtn();
   updateNowHour();
 }, 30000);
