@@ -355,6 +355,7 @@
   .badge.memo{background:#eef0ee; color:#7a8288;}
   .badge.memo svg{width:15px; height:15px;}
   .badge.clean{background:var(--clean-bg);}
+  .badge.weight{background:var(--weight-bg);}
   .rec-title{font-size:13px; font-weight:800; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   /* 記録者名：行の右端に、時間と同じグレーで時間より小さく出す */
   .rec-creator{font-size:10px; font-weight:700; color:var(--ink-sub); white-space:nowrap; line-height:1.2;}
@@ -450,6 +451,7 @@
   }
   .wk-chip.memo{background:#eef0ee; color:#7a8288;}
   .wk-chip.clean{background:var(--clean-bg);}
+  .wk-chip.weight{background:var(--weight-bg);}
   .wk-chip:active{filter:brightness(.96);}
   /* 7日間ログ：列（見出し・セル）のどこを押してもその日の一覧が開く */
   .wk-head[data-dayts], .wk-cell[data-dayts]{cursor:pointer;}
@@ -1134,6 +1136,8 @@ var IC = {
   breast: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gBreast" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7a8c4"/><stop offset="1" stop-color="#e0528a"/></linearGradient></defs><path d="M24 41.5S7.5 30.6 7.5 19.7C7.5 13.4 12.2 9.2 17.3 9.2c3 0 5.5 1.5 6.7 3.7 1.2-2.2 3.7-3.7 6.7-3.7 5.1 0 9.8 4.2 9.8 10.5C40.5 30.6 24 41.5 24 41.5Z" fill="url(#gBreast)"/><ellipse cx="16.5" cy="16.5" rx="4.6" ry="3" fill="#ffffff" opacity="0.5" transform="rotate(-24 16.5 16.5)"/><path d="M24 20.5c0 0-4.2 4.9-4.2 7.6a4.2 4.2 0 0 0 8.4 0C28.2 25.4 24 20.5 24 20.5Z" fill="#ffffff" opacity="0.9"/></svg>',
   milk: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gMilk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd968"/><stop offset="1" stop-color="#e39a00"/></linearGradient><linearGradient id="gMilkIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf4"/><stop offset="1" stop-color="#ffedb8"/></linearGradient></defs><path d="M24 3.5c3 0 4.8 2.7 4.8 5.5 0 1.9-.8 3.2-1.6 4.6h-6.4c-.8-1.4-1.6-2.7-1.6-4.6 0-2.8 1.8-5.5 4.8-5.5Z" fill="url(#gMilk)"/><rect x="15" y="13.6" width="18" height="5.4" rx="2.7" fill="#d98e00"/><path d="M16.8 19h14.4c1.7 2.7 2.5 5.2 2.5 8.6v11A5.4 5.4 0 0 1 28.3 44H19.7a5.4 5.4 0 0 1-5.4-5.4v-11c0-3.4.8-5.9 2.5-8.6Z" fill="url(#gMilk)"/><path d="M17.3 27.5h13.4v11.1a2.9 2.9 0 0 1-2.9 2.9h-7.6a2.9 2.9 0 0 1-2.9-2.9V27.5Z" fill="url(#gMilkIn)"/><ellipse cx="20" cy="23.5" rx="2.6" ry="4" fill="#ffffff" opacity="0.5" transform="rotate(-12 20 23.5)"/><path d="M27.5 31.5h3.2M27.5 35.5h3.2" stroke="#d98e00" stroke-width="1.8" stroke-linecap="round"/></svg>',
   scale: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="7" width="36" height="34" rx="9" fill="#b39ddb"/><rect x="15" y="12" width="18" height="9" rx="3" fill="#ffffff"/><rect x="19.5" y="15.4" width="9" height="2.2" rx="1.1" fill="#b39ddb"/><circle cx="13.5" cy="33.5" r="2.1" fill="#ffffff"/><circle cx="34.5" cy="33.5" r="2.1" fill="#ffffff"/></svg>',
+  /* 体重の記録（ログ行・チップ用）：体重計アイコンは scale と同じものを使う */
+  weight: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="7" width="36" height="34" rx="9" fill="#b39ddb"/><rect x="15" y="12" width="18" height="9" rx="3" fill="#ffffff"/><rect x="19.5" y="15.4" width="9" height="2.2" rx="1.1" fill="#b39ddb"/><circle cx="13.5" cy="33.5" r="2.1" fill="#ffffff"/><circle cx="34.5" cy="33.5" r="2.1" fill="#ffffff"/></svg>',
   clean: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M19.5 19v-3.6c0-1.6 1.3-2.9 2.9-2.9h3.2c1.6 0 2.9 1.3 2.9 2.9V19h5.5a9 9 0 0 1 9 9v1a9 9 0 0 1-9 9H14a9 9 0 0 1-9-9v-1a9 9 0 0 1 9-9h5.5Z" fill="#0e7d86"/></svg>',
   diaper: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 8.5h37l-2.5 12.3c-1 4.7-3.9 7.2-7.5 8.9-3.2 1.5-5.2 3.7-6 7.4l-.5 2.4h-4l-.5-2.4c-.8-3.7-2.8-5.9-6-7.4-3.6-1.7-6.5-4.2-7.5-8.9L5.5 8.5Z"/><path d="M6.8 15.8h34.4"/><path d="M13 11.8h.01M35 11.8h.01" stroke-width="3.8"/></svg>',
   bell: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 7.5a13.5 13.5 0 0 1 13.5 13.5c0 5.8 1.7 8.2 3 10.5H7.5c1.3-2.3 3-4.7 3-10.5A13.5 13.5 0 0 1 24 7.5Z"/><path d="M19.2 38.5a5 5 0 0 0 9.6 0"/><path d="M24 7.5V5"/></svg>',
@@ -1145,7 +1149,8 @@ var KIND = {
   breast: { label:'母乳',     cat:'feed' },
   milk:   { label:'ミルク',   cat:'feed' },
   memo:   { label:'メモ',     cat:'memo' },
-  clean:  { label:'洗浄液',   cat:'care' }
+  clean:  { label:'洗浄液',   cat:'care' },
+  weight: { label:'体重',     cat:'care' }
 };
 function icon(kind, cls){ return IC[kind]; }
 function escHTML(s){
@@ -1156,6 +1161,7 @@ function escHTML(s){
 function labelOf(rec){
   if(rec.kind==='memo') return escHTML(rec.text || 'メモ');
   if(rec.kind==='clean') return '洗浄液の交換';
+  if(rec.kind==='weight') return rec.amount ? '体重 ' + fmtGram(rec.amount) : '体重';
   if(rec.kind==='milk') return 'ミルク ' + (rec.amount||0) + 'ml';
   return KIND[rec.kind].label;
 }
@@ -1164,6 +1170,7 @@ function titleOf(rec){
   if(rec.kind==='poop') return 'オムツ：うんち';
   if(rec.kind==='breast') return '授乳：母乳';
   if(rec.kind==='clean') return '洗浄液の交換';
+  if(rec.kind==='weight') return '体重：' + (rec.amount||0) + 'g';
   if(rec.kind==='memo') return rec.text ? 'メモ：' + rec.text : 'メモ';
   return '授乳：ミルク ' + (rec.amount||0) + 'ml';
 }
@@ -1320,6 +1327,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-16-3', notes:[
     { c:'表示', t:'7日間のログの集計に、洗浄液の数は表示されないようになりました' }
+  ]},
+  { version:'2026-11-16-4', notes:[
+    { c:'表示', t:'体重も、時間と記録した人つきでログに表示されるようにしました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1843,12 +1853,19 @@ function lastCleanDateTime(){
   }
   return best;
 }
-/* 体重の前回：体重を記録した日時。日時が残っていない履歴だけの
+/* 体重の前回：体重を記録した日時。カレンダーに残した体重の記録
+   （イベント）も実績として数え、設定の日時・履歴とあわせて一番
+   新しいものを前回にする。日時が残っていない履歴だけの
    ときは、その日の20時として扱う（初回日時の時刻に合わせる） */
 function lastWeightDateTime(){
   var best = parseLocalDT(babySettings.weightBaseAt);
   var lastAt = parseLocalDT(babySettings.weightLastAt);
   if(lastAt && (!best || lastAt > best)) best = lastAt;
+  var src = (typeof logSource === 'function') ? logSource() : records;
+  for(var i=0;i<src.length;i++){
+    if(src[i].kind !== 'weight') continue;
+    if(!best || src[i].start > best) best = src[i].start;
+  }
   var log = babySettings.weightLog || [];
   if(log.length){
     var p = String(log[log.length - 1].d).split('-');
@@ -1995,8 +2012,10 @@ function dayRowHTML(d, st){
    日付列（左が6日前・右が今日）×24時間行。左端に時刻軸。
    列ヘッダー：日付・曜日とその日の集計（数値のみ）。集計の種類を示すアイコンは、時刻軸と同じく
    左端の列にだけ縦に並べ、各日の数値と行の高さを揃える（0件は―）。
-   記録チップ：おしっこ・うんち・母乳・メモはアイコンのみ、ミルクはアイコン＋量。
-   同じセル内のチップの並びは種類順（おしっこ→うんち→母乳→ミルク→メモ）で固定し、
+   記録チップ：おしっこ・うんち・母乳・メモ・体重はアイコンのみ、ミルクはアイコン＋量。
+   体重の記録もチップはアイコンのみで、その日の体重の数値は集計の行
+   （weightLog由来の従来表示）でのみ出す。
+   同じセル内のチップの並びは種類順（おしっこ→うんち→母乳→ミルク→体重→メモ）で固定し、
    同じ種類同士は時刻順。集計の行は上から おしっこ・うんち・母乳・ミルク・
    体重・メモ の順で、体重はgの数値（記録のない日は空白）、メモは件数を出す。
    チップをタップすると、その日の記録一覧が開く（他のチップと同じ） */
@@ -2058,7 +2077,7 @@ function buildWeekGridHTML(days, src, highlightDay, isCurrentWeek){
       }
     }
   });
-  var WK_KIND_ORDER = { pee:0, poop:1, breast:2, milk:3, memo:4, clean:5 };
+  var WK_KIND_ORDER = { pee:0, poop:1, breast:2, milk:3, weight:4, memo:5, clean:6 };
   Object.keys(slots).forEach(function(k){
     slots[k].sort(function(a,b){
       var dd = (WK_KIND_ORDER[a.kind] || 0) - (WK_KIND_ORDER[b.kind] || 0);
@@ -2198,7 +2217,7 @@ function monthStats(y, m){
      （10日以前の記録は合計にも日数にも入れない）。他の月は従来どおり */
   var minDay = (y===2026 && m===10) ? 11 : 1;
   src.forEach(function(r){
-    if(r.kind==='memo' || r.kind==='clean') return;
+    if(r.kind==='memo' || r.kind==='clean' || r.kind==='weight') return;
     if(r.start.getFullYear()===y && r.start.getMonth()===m){
       var dd = r.start.getDate();
       if(dd < minDay) return;
@@ -2365,7 +2384,7 @@ function renderAllMonths(){
   var seen = {}, list = [], i;
   for(i=0;i<src.length;i++){
     var r = src[i];
-    if(r.kind==='memo' || r.kind==='clean') continue;
+    if(r.kind==='memo' || r.kind==='clean' || r.kind==='weight') continue;
     var key = r.start.getFullYear() * 12 + r.start.getMonth();
     if(!seen[key]){ seen[key] = true; list.push([r.start.getFullYear(), r.start.getMonth()]); }
   }
@@ -2458,6 +2477,7 @@ function openWeightRecordPop(){
     onSave:function(v){
       babySettings.weight = v;
       pushWeightLog(v);
+      createWeightRecordEvent(v);
       scheduleBabySave();
     }
   });
@@ -2924,7 +2944,7 @@ function apiFetch(path, options){
 }
 function markerJSON(kind, amount, text){
   var o = { v:1, kind:kind };
-  if(kind==='milk') o.amount = amount;
+  if(kind==='milk' || kind==='weight') o.amount = amount;
   if(kind==='memo') o.text = text || '';
   return 'muse-baby-log:' + JSON.stringify(o);
 }
@@ -2956,6 +2976,10 @@ function parseEvent(ev){
   if(!kind){
     if(title.indexOf('洗浄液') >= 0){
       kind = 'clean';
+    } else if(/^体重/.test(title)){
+      kind = 'weight';
+      var wm = title.match(/(\d[\d,]*)\s*g/);
+      if(wm) amount = parseInt(wm[1].replace(/,/g, ''), 10);
     } else if(/^メモ/.test(title)){
       kind = 'memo';
       text = title.replace(/^メモ[:：]\s*/, '');
@@ -2975,6 +2999,10 @@ function parseEvent(ev){
   if(kind==='milk' && !amount){
     var m2 = title.match(/(\d+)\s*ml/i);
     if(m2) amount = parseInt(m2[1], 10);
+  }
+  if(kind==='weight' && !amount){
+    var m3 = title.match(/(\d[\d,]*)\s*g/);
+    if(m3) amount = parseInt(m3[1].replace(/,/g, ''), 10);
   }
   return { id: ev.id, start: start, kind: kind, amount: amount, text: text, creator: creatorNameOf(ev) };
 }
@@ -3126,6 +3154,22 @@ function createRecord(kind, amount){
   }).catch(function(err){
     setStatus('記録できませんでした：' + err.message, true);
   }).then(function(){ setBusy(false); });
+}
+/* 体重を保存したときのカレンダー記録：他の記録と同じく「赤ちゃん記録」
+   カレンダーへイベントとして残す（時刻は保存した時刻）。記録した人は
+   イベントの作成者から他の記録と同じ仕組みで表示される。
+   このイベントは表示専用で、体重の値そのものの記録（設定の weightLog）
+   や集計には影響させない。イベントの削除・編集も weightLog には触れない */
+function createWeightRecordEvent(w){
+  if(!accessToken) return;
+  var body = eventBody('weight', w, new Date());
+  apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events', {
+    method: 'POST', body: JSON.stringify(body)
+  }).then(function(){
+    return loadRecords(true);
+  }).catch(function(err){
+    setStatus('体重をログに残せませんでした：' + err.message, true);
+  });
 }
 /* メモの書き込み：その時点の時刻でカレンダーにイベントとして保存する。
    入力は小さなポップアップで受け、空のメモは理由をポップアップ内に
@@ -3630,7 +3674,7 @@ function openSettingsWeightPop(){
     allowEmpty:true, initial:babySettings.weight,
     onSave:function(v){
       babySettings.weight = v;
-      if(v !== '') pushWeightLog(v);
+      if(v !== ''){ pushWeightLog(v); createWeightRecordEvent(v); }
       scheduleBabySave();
     }
   });
