@@ -1330,6 +1330,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-16-4', notes:[
     { c:'表示', t:'体重も、時間と記録した人つきでログに表示されるようにしました' }
+  ]},
+  { version:'2026-11-16-5', notes:[
+    { c:'改善', t:'サインインの有効期限が切れても、裏で自動的に取り直してそのまま使えるようにしました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1344,14 +1347,19 @@ var accessToken = null, tokenExpiry = 0, tokenClient = null;
 var silentAuth = false;
 /* サイレント再取得の先行更新・再試行まわり。
    期限までの残りが REFRESH_MARGIN_MS 以下になったら、切れる前に裏で取り直す。
-   失敗したら間隔を置いて SILENT_RETRY_DELAYS の回数まで自動で再試行し、
-   それでもダメなときだけ従来どおりサインインを求める */
+   失敗してもあきらめず、間隔を置いて自動で再試行し続ける（間隔は
+   SILENT_RETRY_DELAYS を順に使い、最後の間隔で繰り返す）。
+   裏に回っている間に止まった分は、アプリに戻ってきたときの
+   autoRefresh で再開する。サインインを求めるのは、API が 401 を返し、
+   裏での取り直し＋再試行でも回復しなかったときだけ */
 var REFRESH_MARGIN_MS = 10 * 60 * 1000;
-var SILENT_RETRY_DELAYS = [5000, 15000, 45000];
+var SILENT_RETRY_DELAYS = [5000, 15000, 45000, 60000];
 var silentRetryCount = 0;
 var silentRetryTimer = null;
 var silentInFlight = false;
-var silentGaveUp = false;
+/* 401 を受けた apiFetch が「裏での取り直しの完了」を待つための待ち行列。
+   取り直しが成功したら true、待機がタイムアウトしたら false で呼ぶ */
+var tokenRefreshWaiters = [];
 /* 認証リクエストの1本化ガード：自動のサイレント再取得と手動サインインの
    どちらが実行中でも、もう一方は requestAccessToken を新たに送らない。
    重なって送ると Google が 400 を返すため、実行中はそちらに寄せる */
@@ -2922,15 +2930,32 @@ $('editDeleteBtn').addEventListener('click', function(){
 
 /* ================= Google Calendar API ================= */
 function apiFetch(path, options){
+  return apiFetchAttempt(path, options, false);
+}
+function apiFetchAttempt(path, options, retried){
   options = options || {};
-  options.headers = options.headers || {};
-  options.headers['Authorization'] = 'Bearer ' + accessToken;
-  if(options.body) options.headers['Content-Type'] = 'application/json';
-  return fetch('https://www.googleapis.com/calendar/v3' + path, options).then(function(res){
+  /* リトライ時に新しいトークンで組み直せるよう、元の options は書き換えず
+     送信用のオブジェクトを毎回作る */
+  var sendOpts = {};
+  for(var k in options){ if(k !== 'headers') sendOpts[k] = options[k]; }
+  sendOpts.headers = {};
+  sendOpts.headers['Authorization'] = 'Bearer ' + accessToken;
+  if(sendOpts.body) sendOpts.headers['Content-Type'] = 'application/json';
+  return fetch('https://www.googleapis.com/calendar/v3' + path, sendOpts).then(function(res){
     if(res.status === 401){
-      accessToken = null; tokenExpiry = 0;
-      updateAuthUI();
-      throw new Error('サインインの有効期限が切れました。もう一度サインインしてください。');
+      if(retried){
+        accessToken = null; tokenExpiry = 0;
+        updateAuthUI();
+        throw new Error('サインインの有効期限が切れました。もう一度サインインしてください。');
+      }
+      /* 期限切れはまず裏で取り直してから1回だけ再試行する。
+         取り直せた場合はサインインを求めず、そのまま処理を続ける */
+      return refreshTokenSilent().then(function(ok){
+        if(ok && accessToken) return apiFetchAttempt(path, options, true);
+        accessToken = null; tokenExpiry = 0;
+        updateAuthUI();
+        throw new Error('サインインの有効期限が切れました。もう一度サインインしてください。');
+      });
     }
     if(!res.ok){
       return res.json().catch(function(){ return {}; }).then(function(j){
@@ -3448,14 +3473,42 @@ function tokenNeedsRefresh(){
 }
 function resetSilentRetry(){
   silentRetryCount = 0;
-  silentGaveUp = false;
   if(silentRetryTimer){ clearTimeout(silentRetryTimer); silentRetryTimer = null; }
 }
-/* サイレント再取得を1回試みる（実行中・再試行待ち・打ち切り後は除く）。
+/* トークンの取り直しを待っている処理（401を受けた apiFetch）へ結果を渡す */
+function settleTokenWaiters(ok){
+  var ws = tokenRefreshWaiters;
+  tokenRefreshWaiters = [];
+  for(var i=0;i<ws.length;i++){ try{ ws[i](ok); }catch(e){} }
+}
+/* 裏でトークンを取り直し、成否を Promise で返す。
+   既に認証が実行中なら新たに送らず、その結果に寄せる。
+   失敗しても裏の再試行は続くが、待ちは30秒で打ち切って false を返す */
+function refreshTokenSilent(){
+  return new Promise(function(resolve){
+    var done = false;
+    var finish = function(ok){
+      if(done) return;
+      done = true;
+      resolve(ok);
+    };
+    tokenRefreshWaiters.push(finish);
+    setTimeout(function(){
+      var idx = tokenRefreshWaiters.indexOf(finish);
+      if(idx >= 0) tokenRefreshWaiters.splice(idx, 1);
+      finish(false);
+    }, 30000);
+    if(silentInFlight || authInFlight) return;
+    resetSilentRetry();
+    requestSilentToken();
+    if(!silentInFlight && !authInFlight) settleTokenWaiters(false);
+  });
+}
+/* サイレント再取得を1回試みる（実行中・再試行待ちの間は除く）。
    手動サインインなど認証が実行中（authInFlight）のときも新たに送らず、
    実行中のリクエストに寄せる */
 function requestSilentToken(){
-  if(authInFlight || silentInFlight || silentGaveUp || silentRetryTimer) return;
+  if(authInFlight || silentInFlight || silentRetryTimer) return;
   if(!tokenClient && !initTokenClient()) return;
   if(authInFlight) return;
   authInFlight = true;
@@ -3470,29 +3523,26 @@ function requestSilentToken(){
     onSilentAuthFailure();
   }
 }
-/* サイレント再取得が失敗したとき：すぐにはサインインへ落とさず、
-   間隔を置いて数回まで自動で再試行する。再試行を使い切り、
-   なおトークンが切れている場合に限り従来どおりサインインを求める */
+/* サイレント再取得が失敗したとき：サインインへは落とさず、間隔を置いて
+   自動で再試行し続ける（あきらめる打ち切りはしない）。間隔は
+   SILENT_RETRY_DELAYS を順に使い、最後の間隔で繰り返す。
+   裏に回っている間にタイマーが来た分は捨て、アプリに戻ってきたときの
+   autoRefresh で再開する。トークンが切れている間は、ボタン側だけ
+   サインイン表示に切り替える（トークン自体は消さない） */
 function onSilentAuthFailure(){
   authInFlight = false;
   silentInFlight = false;
+  if(!tokenValid()) updateAuthUI();
   if(silentRetryTimer) return;
-  if(silentRetryCount < SILENT_RETRY_DELAYS.length){
-    var delay = SILENT_RETRY_DELAYS[silentRetryCount];
-    silentRetryCount++;
-    silentRetryTimer = setTimeout(function(){
-      silentRetryTimer = null;
-      /* 非表示のまま失敗が続いた分は、復帰時の autoRefresh に任せる */
-      if(document.hidden) return;
-      requestSilentToken();
-    }, delay);
-    return;
-  }
-  if(!tokenValid()){
-    accessToken = null; tokenExpiry = 0;
-    silentGaveUp = true;
-    updateAuthUI();
-  }
+  var idx = Math.min(silentRetryCount, SILENT_RETRY_DELAYS.length - 1);
+  var delay = SILENT_RETRY_DELAYS[idx];
+  silentRetryCount++;
+  silentRetryTimer = setTimeout(function(){
+    silentRetryTimer = null;
+    /* 非表示のまま失敗が続いた分は、復帰時の autoRefresh に任せる */
+    if(document.hidden) return;
+    requestSilentToken();
+  }, delay);
 }
 function restoreSession(){
   if(sessionRestored) return;
@@ -3531,17 +3581,20 @@ function initTokenClient(){
         tokenExpiry = Date.now() + (parseInt(resp.expires_in, 10) || 3600) * 1000 - 60000;
         persistSession();
         updateAuthUI();
+        settleTokenWaiters(true);
         loadRecords(wasSilent);
         loadBabySettingsFromCal();
       } else if(wasSilent){
         onSilentAuthFailure();
       } else {
+        settleTokenWaiters(false);
         setStatus('サインインできませんでした', true);
       }
     },
     error_callback: function(err){
       if(silentAuth){ silentAuth = false; silentInFlight = false; authInFlight = false; onSilentAuthFailure(); return; }
       authInFlight = false;
+      settleTokenWaiters(false);
       setStatus('サインインでエラーが発生しました' + (err && err.message ? '：' + err.message : ''), true);
     }
   });
@@ -3600,6 +3653,7 @@ $('signoutBtn').addEventListener('click', function(){
   }
   clearSession();
   resetSilentRetry();
+  settleTokenWaiters(false);
   authInFlight = false; silentInFlight = false; silentAuth = false;
   accessToken = null; tokenExpiry = 0; records = [];
   renderAll(); updateAuthUI(); setStatus('');
@@ -3905,6 +3959,10 @@ function setBusy(b){
 /* ================= 自動更新（相手の変更を反映） ================= */
 function autoRefresh(){
   if(document.hidden) return;
+  /* トークンの更新はポップアップ表示中・保存中でも止めない。
+     期限切れのままポップアップを開き続けると、閉じた直後に
+     サインインへ落とされてしまうため、更新だけは先に走らせる */
+  if(tokenNeedsRefresh()) requestSilentToken();
   if(busy) return;
   if(!$('editOverlay').classList.contains('hidden')) return;
   if(!$('dayOverlay').classList.contains('hidden')) return;
@@ -3915,13 +3973,10 @@ function autoRefresh(){
   if(!$('milkOverlay').classList.contains('hidden')) return;
   if(!$('weekOverlay').classList.contains('hidden')) return;
   if(tokenValid()){
-    /* 期限までの残りが少ないときは、切れる前に先に裏で取り直す。
-       その間も今のトークンで読み込みは続ける */
-    if(tokenNeedsRefresh()) requestSilentToken();
+    /* 期限までの残りが少ないときは、上の取り直しと並行して
+       今のトークンで読み込みも続ける */
     loadRecords(true);
     loadBabySettingsFromCal();
-  } else if(tokenClient){
-    requestSilentToken();
   }
 }
 setInterval(autoRefresh, 30000);
