@@ -698,7 +698,7 @@
   .goal-field{flex:1 1 0; min-width:0; display:flex; align-items:center; gap:6px;}
   .goal-field input{flex:1; min-width:0;}
   .goal-field .goal-unit{flex:0 0 auto; font-size:14px; font-weight:800; color:var(--ink-sub);}
-  .toggle-row{display:flex; align-items:center; gap:10px; margin-top:6px; background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:9px 12px;}
+  .toggle-row{display:flex; align-items:center; gap:10px; margin-top:6px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:9px 12px;}
   .toggle-row .t-label{flex:1; min-width:0; font-size:15px; font-weight:700;}
   .toggle-row .t-state{font-size:13px; color:var(--ink-sub); font-weight:700;}
   .switch{flex:0 0 auto; width:50px; height:28px; border-radius:999px; background:#d8dcd8; position:relative; padding:0;}
@@ -958,7 +958,7 @@
 <!-- 赤ちゃん設定シート -->
 <div class="overlay hidden" id="babyOverlay">
   <div class="sheet" role="dialog" aria-modal="true">
-    <h3>赤ちゃん設定<button class="close-x" id="babyCloseBtn" type="button" aria-label="閉じる">×</button></h3>
+    <h3>設定<button class="close-x" id="babyCloseBtn" type="button" aria-label="閉じる">×</button></h3>
 
     <button class="set-row" type="button" data-edit="birthDate">
       <span class="set-label">生年月日</span>
@@ -966,26 +966,7 @@
       <span class="set-chev">›</span>
     </button>
 
-    <button class="set-row" type="button" data-edit="birthWeight">
-      <span class="set-label">出生体重</span>
-      <span class="set-value unset" id="valBirthWeight">未設定</span>
-      <span class="set-chev">›</span>
-    </button>
-
-    <button class="set-row" type="button" data-edit="weight">
-      <span class="set-label">現在の体重</span>
-      <span class="set-value unset" id="valWeight">未設定</span>
-      <span class="set-chev">›</span>
-    </button>
-
-    <p class="sheet-sec-label">ミルクの目標</p>
-    <button class="set-row" type="button" data-edit="goal">
-      <span class="set-label">ミルクの目標</span>
-      <span class="set-value unset" id="valGoal">未設定</span>
-      <span class="set-chev">›</span>
-    </button>
-
-    <p class="sheet-sec-label">お世話の間隔</p>
+    <p class="sheet-sec-label">リマインド</p>
     <button class="set-row" type="button" data-edit="cleanInterval">
       <span class="set-label">洗浄液の交換の間隔</span>
       <span class="set-value" id="valCleanInterval">23時間</span>
@@ -996,16 +977,19 @@
       <span class="set-value" id="valWeightInterval">3日</span>
       <span class="set-chev">›</span>
     </button>
-
-    <p class="sheet-sec-label">月齢別の目安</p>
-    <div class="age-table" id="ageTable"></div>
-
-    <p class="sheet-sec-label">リマインド</p>
     <div class="toggle-row">
-      <span class="t-label">次の授乳のリマインド</span>
+      <span class="t-label">授乳タイミングを通知</span>
       <span class="t-state" id="remindState">OFF</span>
-      <button class="switch" id="remindToggle" type="button" role="switch" aria-checked="false" aria-label="リマインド"><span class="knob"></span></button>
+      <button class="switch" id="remindToggle" type="button" role="switch" aria-checked="false" aria-label="授乳タイミングを通知"><span class="knob"></span></button>
     </div>
+
+    <p class="sheet-sec-label">ミルクの目標</p>
+    <button class="set-row" type="button" data-edit="goal">
+      <span class="set-label">ミルクの目標</span>
+      <span class="set-value unset" id="valGoal">未設定</span>
+      <span class="set-chev">›</span>
+    </button>
+    <div class="age-table" id="ageTable"></div>
 
     <p class="sheet-sec-label">接続設定</p>
     <button class="set-row" type="button" data-edit="conn">
@@ -1333,6 +1317,15 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-16-5', notes:[
     { c:'改善', t:'サインインの有効期限が切れても、裏で自動的に取り直してそのまま使えるようにしました' }
+  ]},
+  { version:'2026-11-16-6', notes:[
+    { c:'設定', t:'設定の画面で、リマインドに関する設定を1か所にまとめました' }
+  ]},
+  { version:'2026-11-16-7', notes:[
+    { c:'設定', t:'設定の画面で、ミルクの目標を1か所にまとめました' }
+  ]},
+  { version:'2026-11-16-8', notes:[
+    { c:'設定', t:'設定の画面を整理しました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
