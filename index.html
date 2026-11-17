@@ -1122,7 +1122,7 @@ var IC = {
   scale: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="7" width="36" height="34" rx="9" fill="#b39ddb"/><rect x="15" y="12" width="18" height="9" rx="3" fill="#ffffff"/><rect x="19.5" y="15.4" width="9" height="2.2" rx="1.1" fill="#b39ddb"/><circle cx="13.5" cy="33.5" r="2.1" fill="#ffffff"/><circle cx="34.5" cy="33.5" r="2.1" fill="#ffffff"/></svg>',
   /* 体重の記録（ログ行・チップ用）：体重計アイコンは scale と同じものを使う */
   weight: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="7" width="36" height="34" rx="9" fill="#b39ddb"/><rect x="15" y="12" width="18" height="9" rx="3" fill="#ffffff"/><rect x="19.5" y="15.4" width="9" height="2.2" rx="1.1" fill="#b39ddb"/><circle cx="13.5" cy="33.5" r="2.1" fill="#ffffff"/><circle cx="34.5" cy="33.5" r="2.1" fill="#ffffff"/></svg>',
-  clean: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M19.5 19v-3.6c0-1.6 1.3-2.9 2.9-2.9h3.2c1.6 0 2.9 1.3 2.9 2.9V19h5.5a9 9 0 0 1 9 9v1a9 9 0 0 1-9 9H14a9 9 0 0 1-9-9v-1a9 9 0 0 1 9-9h5.5Z" fill="#0e7d86"/></svg>',
+  clean: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gClean" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd8de"/><stop offset="1" stop-color="#0e7d86"/></linearGradient></defs><path d="M18 17.5C18 8.8 30 8.8 30 17.5" fill="none" stroke="url(#gClean)" stroke-width="5.2" stroke-linecap="round"/><path d="M11 22a5 5 0 0 1 5-5h16a5 5 0 0 1 5 5v17a5 5 0 0 1-5 5H16a5 5 0 0 1-5-5V22Z" fill="url(#gClean)"/><ellipse cx="17.5" cy="26" rx="2.8" ry="5.5" fill="#ffffff" opacity="0.5" transform="rotate(-12 17.5 26)"/><path d="M16 32.5c2.8-2 5.6-2 8.4 0s5.6 2 8.4 0" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/></svg>',
   diaper: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 8.5h37l-2.5 12.3c-1 4.7-3.9 7.2-7.5 8.9-3.2 1.5-5.2 3.7-6 7.4l-.5 2.4h-4l-.5-2.4c-.8-3.7-2.8-5.9-6-7.4-3.6-1.7-6.5-4.2-7.5-8.9L5.5 8.5Z"/><path d="M6.8 15.8h34.4"/><path d="M13 11.8h.01M35 11.8h.01" stroke-width="3.8"/></svg>',
   bell: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 7.5a13.5 13.5 0 0 1 13.5 13.5c0 5.8 1.7 8.2 3 10.5H7.5c1.3-2.3 3-4.7 3-10.5A13.5 13.5 0 0 1 24 7.5Z"/><path d="M19.2 38.5a5 5 0 0 0 9.6 0"/><path d="M24 7.5V5"/></svg>',
   memo: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5h19l8 8v30H11z"/><path d="M30 5v8h8"/><path d="M18 24h13M18 31h13M18 17h6"/></svg>'
@@ -1329,6 +1329,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-16-9', notes:[
     { c:'改善', t:'再読み込みボタンで、最新版があるときは新しい版に切り替わるようにしました' }
+  ]},
+  { version:'2026-11-17-1', notes:[
+    { c:'デザイン', t:'洗浄液のアイコンを変更しました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
