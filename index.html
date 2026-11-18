@@ -1374,6 +1374,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-18-3', notes:[
     { c:'記録', t:'リマインドにビタミン剤を追加しました' }
+  ]},
+  { version:'2026-11-18-4', notes:[
+    { c:'設定', t:'ビタミン剤の初回の時刻を変更しました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1415,7 +1418,7 @@ var deleteArmed = false;
 var LS_BABY = 'omutsumirulog.babySettings';
 var SETTINGS_TITLE = '赤ちゃん設定（アプリ用）';
 var SETTINGS_MARKER = 'muse-baby-settings:';
-var babySettings = { birthDate:'', birthWeight:'', weight:'', remind:false, weightLog:[], goalMl:'', goalTimes:'', goalBand:'', cleanHours:23, weightDays:3, vitaminDays:1, cleanBaseAt:'2026-11-16T01:00', weightBaseAt:'2026-11-15T20:00', vitaminBaseAt:'2026-11-17T15:00', weightLastAt:'', cats: defaultCats() };
+var babySettings = { birthDate:'', birthWeight:'', weight:'', remind:false, weightLog:[], goalMl:'', goalTimes:'', goalBand:'', cleanHours:23, weightDays:3, vitaminDays:1, cleanBaseAt:'2026-11-16T01:00', weightBaseAt:'2026-11-15T20:00', vitaminBaseAt:'2026-11-17T09:00', weightLastAt:'', cats: defaultCats() };
 try{
   var savedBaby = localStorage.getItem(LS_BABY);
   if(savedBaby){
