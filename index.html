@@ -29,6 +29,7 @@
     --milk-bg:#fdefc0; --milk:#a97b06;
     --weight-bg:#ede7f6; --weight:#7e57c2;
     --clean-bg:#cdeef0; --clean:#0e7d86;
+    --vitamin-bg:#ffe1b8; --vitamin:#d96f06;
     /* 今日の強調は7日間・月間とも緑系で統一する（黄色はミルク専用） */
     --today-tint:rgba(63,191,79,.10); --today-ink:#2ea63e;
     --coral:#e05252;
@@ -316,6 +317,7 @@
     animation:remindPurupuru .8s linear infinite;
   }
   .remind-ic.weight{animation-delay:.4s;}
+  .remind-ic.vitamin{animation-delay:.8s;}
   /* リマインドのアイコンだけ、小刻みに震えるような細かい揺れ（ぷるぷる）を
      速めの周期で繰り返す。強さは「普通」＝中程度の振れ幅で、
      うるさくならない範囲に収める */
@@ -331,6 +333,7 @@
   .remind-ic svg{width:26px; height:26px; display:block;}
   .remind-ic.clean{background:var(--clean-bg);}
   .remind-ic.weight{background:var(--weight-bg);}
+  .remind-ic.vitamin{background:var(--vitamin-bg);}
   .remind-label{font-size:13px; font-weight:800; flex:0 0 auto;}
   .remind-last{
     margin-left:auto; font-size:12px; font-weight:700; color:var(--ink-sub);
@@ -371,6 +374,7 @@
   .badge.memo svg{width:15px; height:15px;}
   .badge.clean{background:var(--clean-bg);}
   .badge.weight{background:var(--weight-bg);}
+  .badge.vitamin{background:var(--vitamin-bg);}
   .rec-title{font-size:13px; font-weight:800; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   /* 記録者名：行の右端に、時間と同じグレーで時間より小さく出す */
   .rec-creator{font-size:10px; font-weight:700; color:var(--ink-sub); white-space:nowrap; line-height:1.2;}
@@ -467,6 +471,7 @@
   .wk-chip.memo{background:#eef0ee; color:#7a8288;}
   .wk-chip.clean{background:var(--clean-bg);}
   .wk-chip.weight{background:var(--weight-bg);}
+  .wk-chip.vitamin{background:var(--vitamin-bg);}
   .wk-chip:active{filter:brightness(.96);}
   /* 7日間ログ：列（見出し・セル）のどこを押してもその日の一覧が開く */
   .wk-head[data-dayts], .wk-cell[data-dayts]{cursor:pointer;}
@@ -993,6 +998,11 @@
       <span class="set-value" id="valWeightInterval">3日</span>
       <span class="set-chev">›</span>
     </button>
+    <button class="set-row" type="button" data-edit="vitaminInterval">
+      <span class="set-label">ビタミン剤の間隔</span>
+      <span class="set-value" id="valVitaminInterval">1日</span>
+      <span class="set-chev">›</span>
+    </button>
     <div class="toggle-row">
       <span class="t-label">授乳タイミングを通知</span>
       <span class="t-state" id="remindState">OFF</span>
@@ -1139,6 +1149,10 @@ var IC = {
   /* 体重の記録（ログ行・チップ用）：体重計アイコンは scale と同じものを使う */
   weight: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="7" width="36" height="34" rx="9" fill="#b39ddb"/><rect x="15" y="12" width="18" height="9" rx="3" fill="#ffffff"/><rect x="19.5" y="15.4" width="9" height="2.2" rx="1.1" fill="#b39ddb"/><circle cx="13.5" cy="33.5" r="2.1" fill="#ffffff"/><circle cx="34.5" cy="33.5" r="2.1" fill="#ffffff"/></svg>',
   clean: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gClean" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd8de"/><stop offset="1" stop-color="#0e7d86"/></linearGradient></defs><path d="M18 17.5C18 8.8 30 8.8 30 17.5" fill="none" stroke="url(#gClean)" stroke-width="5.2" stroke-linecap="round"/><path d="M11 22a5 5 0 0 1 5-5h16a5 5 0 0 1 5 5v17a5 5 0 0 1-5 5H16a5 5 0 0 1-5-5V22Z" fill="url(#gClean)"/><ellipse cx="17.5" cy="26" rx="2.8" ry="5.5" fill="#ffffff" opacity="0.5" transform="rotate(-12 17.5 26)"/><path d="M16 32.5c2.8-2 5.6-2 8.4 0s5.6 2 8.4 0" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/></svg>',
+  /* ビタミン剤：たてななめのカプセル（見本の調整案4）。他の記録アイコンと
+     同じ描き方で、オレンジの縦グラデーション＋左上の白いハイライト＋
+     中央の白い継ぎ目で描く */
+  vitamin: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gVitamin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb84d"/><stop offset="1" stop-color="#e07b1f"/></linearGradient></defs><g transform="rotate(-28 24 24)"><rect x="16" y="6.5" width="16" height="35" rx="8" fill="url(#gVitamin)"/><rect x="16" y="22.6" width="16" height="2.8" fill="#ffffff" opacity="0.85"/><ellipse cx="20.6" cy="13.5" rx="2.5" ry="4.6" fill="#ffffff" opacity="0.55" transform="rotate(-12 20.6 13.5)"/></g></svg>',
   diaper: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 8.5h37l-2.5 12.3c-1 4.7-3.9 7.2-7.5 8.9-3.2 1.5-5.2 3.7-6 7.4l-.5 2.4h-4l-.5-2.4c-.8-3.7-2.8-5.9-6-7.4-3.6-1.7-6.5-4.2-7.5-8.9L5.5 8.5Z"/><path d="M6.8 15.8h34.4"/><path d="M13 11.8h.01M35 11.8h.01" stroke-width="3.8"/></svg>',
   bell: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 7.5a13.5 13.5 0 0 1 13.5 13.5c0 5.8 1.7 8.2 3 10.5H7.5c1.3-2.3 3-4.7 3-10.5A13.5 13.5 0 0 1 24 7.5Z"/><path d="M19.2 38.5a5 5 0 0 0 9.6 0"/><path d="M24 7.5V5"/></svg>',
   memo: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5h19l8 8v30H11z"/><path d="M30 5v8h8"/><path d="M18 24h13M18 31h13M18 17h6"/></svg>'
@@ -1150,7 +1164,8 @@ var KIND = {
   milk:   { label:'ミルク',   cat:'feed' },
   memo:   { label:'メモ',     cat:'memo' },
   clean:  { label:'洗浄液',   cat:'care' },
-  weight: { label:'体重',     cat:'care' }
+  weight: { label:'体重',     cat:'care' },
+  vitamin:{ label:'ビタミン剤', cat:'care' }
 };
 function icon(kind, cls){ return IC[kind]; }
 function escHTML(s){
@@ -1161,6 +1176,7 @@ function escHTML(s){
 function labelOf(rec){
   if(rec.kind==='memo') return escHTML(rec.text || 'メモ');
   if(rec.kind==='clean') return '洗浄液の交換';
+  if(rec.kind==='vitamin') return 'ビタミン剤';
   if(rec.kind==='weight') return rec.amount ? '体重 ' + fmtGram(rec.amount) : '体重';
   if(rec.kind==='milk') return 'ミルク ' + (rec.amount||0) + 'ml';
   return KIND[rec.kind].label;
@@ -1170,6 +1186,7 @@ function titleOf(rec){
   if(rec.kind==='poop') return 'オムツ：うんち';
   if(rec.kind==='breast') return '授乳：母乳';
   if(rec.kind==='clean') return '洗浄液の交換';
+  if(rec.kind==='vitamin') return 'ビタミン剤';
   if(rec.kind==='weight') return '体重：' + (rec.amount||0) + 'g';
   if(rec.kind==='memo') return rec.text ? 'メモ：' + rec.text : 'メモ';
   return '授乳：ミルク ' + (rec.amount||0) + 'ml';
@@ -1354,6 +1371,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-18-2', notes:[
     { c:'デザイン', t:'リマインドのアイコンがぷるぷる動くようになりました' }
+  ]},
+  { version:'2026-11-18-3', notes:[
+    { c:'記録', t:'リマインドにビタミン剤を追加しました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1395,7 +1415,7 @@ var deleteArmed = false;
 var LS_BABY = 'omutsumirulog.babySettings';
 var SETTINGS_TITLE = '赤ちゃん設定（アプリ用）';
 var SETTINGS_MARKER = 'muse-baby-settings:';
-var babySettings = { birthDate:'', birthWeight:'', weight:'', remind:false, weightLog:[], goalMl:'', goalTimes:'', goalBand:'', cleanHours:23, weightDays:3, cleanBaseAt:'2026-11-16T01:00', weightBaseAt:'2026-11-15T20:00', weightLastAt:'', cats: defaultCats() };
+var babySettings = { birthDate:'', birthWeight:'', weight:'', remind:false, weightLog:[], goalMl:'', goalTimes:'', goalBand:'', cleanHours:23, weightDays:3, vitaminDays:1, cleanBaseAt:'2026-11-16T01:00', weightBaseAt:'2026-11-15T20:00', vitaminBaseAt:'2026-11-17T15:00', weightLastAt:'', cats: defaultCats() };
 try{
   var savedBaby = localStorage.getItem(LS_BABY);
   if(savedBaby){
@@ -1410,8 +1430,10 @@ try{
       if(parsedBaby.goalBand !== undefined && parsedBaby.goalBand !== null) babySettings.goalBand = parsedBaby.goalBand;
       if(parsedBaby.cleanHours !== undefined && parsedBaby.cleanHours !== null) babySettings.cleanHours = parsedBaby.cleanHours;
       if(parsedBaby.weightDays !== undefined && parsedBaby.weightDays !== null) babySettings.weightDays = parsedBaby.weightDays;
+      if(parsedBaby.vitaminDays !== undefined && parsedBaby.vitaminDays !== null) babySettings.vitaminDays = parsedBaby.vitaminDays;
       if(typeof parsedBaby.cleanBaseAt === 'string' && parsedBaby.cleanBaseAt) babySettings.cleanBaseAt = parsedBaby.cleanBaseAt;
       if(typeof parsedBaby.weightBaseAt === 'string' && parsedBaby.weightBaseAt) babySettings.weightBaseAt = parsedBaby.weightBaseAt;
+      if(typeof parsedBaby.vitaminBaseAt === 'string' && parsedBaby.vitaminBaseAt) babySettings.vitaminBaseAt = parsedBaby.vitaminBaseAt;
       if(typeof parsedBaby.weightLastAt === 'string') babySettings.weightLastAt = parsedBaby.weightLastAt;
       if(Array.isArray(parsedBaby.weightLog)) babySettings.weightLog = cleanWeightLog(parsedBaby.weightLog);
       if(Array.isArray(parsedBaby.cats)) babySettings.cats = cleanCats(parsedBaby.cats);
@@ -1856,7 +1878,8 @@ function renderGauge(){
    実施するまで出し続ける。各項目は丸いアイコン＋名称＋
    前回実施した時間を1行で出す（期限はTOPに出さない）。
    初回の前回日時は赤ちゃん設定に保存して夫婦で同期し
-   （体重=2026-11-15 20:00、洗浄液=2026-11-16 01:00）、
+   （体重=2026-11-15 20:00、洗浄液=2026-11-16 01:00、
+   ビタミン剤=2026-11-17 15:00）、
    実際の記録が入ったらそちらが新しい前回になる */
 var REMIND_RATIO = 0.04;
 function cleanIntervalHours(){
@@ -1866,6 +1889,10 @@ function cleanIntervalHours(){
 function weightIntervalDays(){
   var n = parseInt(babySettings.weightDays, 10);
   return (n > 0) ? n : 3;
+}
+function vitaminIntervalDays(){
+  var n = parseInt(babySettings.vitaminDays, 10);
+  return (n > 0) ? n : 1;
 }
 function parseLocalDT(s){
   if(typeof s !== 'string' || !s) return null;
@@ -1878,6 +1905,16 @@ function lastCleanDateTime(){
   var src = (typeof logSource === 'function') ? logSource() : records;
   for(var i=0;i<src.length;i++){
     if(src[i].kind !== 'clean') continue;
+    if(!best || src[i].start > best) best = src[i].start;
+  }
+  return best;
+}
+/* ビタミン剤の前回：服用の記録と初回日時（設定）のうち新しい方 */
+function lastVitaminDateTime(){
+  var best = parseLocalDT(babySettings.vitaminBaseAt);
+  var src = (typeof logSource === 'function') ? logSource() : records;
+  for(var i=0;i<src.length;i++){
+    if(src[i].kind !== 'vitamin') continue;
     if(!best || src[i].start > best) best = src[i].start;
   }
   return best;
@@ -1937,6 +1974,16 @@ function renderRemind(){
       '<span class="remind-label">体重</span>' +
       '<span class="remind-last">' + fmtRemindLast(lastW) + '</span></button>';
   }
+  /* ビタミン剤（洗浄液と同じく、記録の読み込みが終わるまでは判定しない） */
+  if(recordsLoaded){
+    var lastV = lastVitaminDateTime();
+    if(remindDue(lastV, vitaminIntervalDays() * 86400000)){
+      html += '<button class="remind-item" type="button" id="remindVitaminBtn">' +
+        '<span class="remind-ic vitamin">' + IC.vitamin + '</span>' +
+        '<span class="remind-label">ビタミン剤</span>' +
+        '<span class="remind-last">' + fmtRemindLast(lastV) + '</span></button>';
+    }
+  }
   list.innerHTML = html;
   panel.classList.toggle('hidden', !html);
   var cb = $('remindCleanBtn');
@@ -1946,6 +1993,11 @@ function renderRemind(){
   });
   var wb = $('remindWeightBtn');
   if(wb) wb.addEventListener('click', function(){ openWeightRecordPop(); });
+  var vb = $('remindVitaminBtn');
+  if(vb) vb.addEventListener('click', function(){
+    if(!accessToken){ setStatus('サインインしてください', true); return; }
+    createRecord('vitamin', 0);
+  });
 }
 /* 今日のログ：既定は新しい順に直近4件まで（記録とメモを合わせて）。
    残りは「もっと見る」でその場に展開して全部見られ、もう一度押すと閉じる。
@@ -1983,9 +2035,10 @@ $('todayMoreBtn').addEventListener('click', function(){
 });
 function dayStats(date){ return dayStatsFrom(records, date); }
 function dayStatsFrom(src, date){
-  /* 洗浄液（clean）は集計の対象外：件数・合計・平均のいずれにも含めず、
-     メモなど他の集計にも合算しない。list には表示用として含める
-     （今日のログ・日一覧・7日間ログのチップ／行としての表示は従来どおり） */
+  /* 洗浄液（clean）とビタミン剤（vitamin）は集計の対象外：件数・合計・
+     平均のいずれにも含めず、メモなど他の集計にも合算しない。list には
+     表示用として含める（今日のログ・日一覧・7日間ログのチップ／行としての
+     表示は従来どおり） */
   var st = { pee:0, poop:0, breast:0, milk:0, memo:0, list:[] };
   src.forEach(function(r){
     if(sameDay(r.start, date)){
@@ -2106,7 +2159,7 @@ function buildWeekGridHTML(days, src, highlightDay, isCurrentWeek){
       }
     }
   });
-  var WK_KIND_ORDER = { pee:0, poop:1, breast:2, milk:3, weight:4, memo:5, clean:6 };
+  var WK_KIND_ORDER = { pee:0, poop:1, breast:2, milk:3, weight:4, memo:5, clean:6, vitamin:7 };
   Object.keys(slots).forEach(function(k){
     slots[k].sort(function(a,b){
       var dd = (WK_KIND_ORDER[a.kind] || 0) - (WK_KIND_ORDER[b.kind] || 0);
@@ -2246,7 +2299,7 @@ function monthStats(y, m){
      （10日以前の記録は合計にも日数にも入れない）。他の月は従来どおり */
   var minDay = (y===2026 && m===10) ? 11 : 1;
   src.forEach(function(r){
-    if(r.kind==='memo' || r.kind==='clean' || r.kind==='weight') return;
+    if(r.kind==='memo' || r.kind==='clean' || r.kind==='weight' || r.kind==='vitamin') return;
     if(r.start.getFullYear()===y && r.start.getMonth()===m){
       var dd = r.start.getDate();
       if(dd < minDay) return;
@@ -2413,7 +2466,7 @@ function renderAllMonths(){
   var seen = {}, list = [], i;
   for(i=0;i<src.length;i++){
     var r = src[i];
-    if(r.kind==='memo' || r.kind==='clean' || r.kind==='weight') continue;
+    if(r.kind==='memo' || r.kind==='clean' || r.kind==='weight' || r.kind==='vitamin') continue;
     var key = r.start.getFullYear() * 12 + r.start.getMonth();
     if(!seen[key]){ seen[key] = true; list.push([r.start.getFullYear(), r.start.getMonth()]); }
   }
@@ -2535,6 +2588,8 @@ function renderBabySettingsUI(){
   if(vci) vci.textContent = cleanIntervalHours() + '時間';
   var vwi = $('valWeightInterval');
   if(vwi) vwi.textContent = weightIntervalDays() + '日';
+  var vvi = $('valVitaminInterval');
+  if(vvi) vvi.textContent = vitaminIntervalDays() + '日';
   var tog = $('remindToggle');
   tog.classList.toggle('on', !!babySettings.remind);
   tog.setAttribute('aria-checked', babySettings.remind ? 'true' : 'false');
@@ -2712,8 +2767,10 @@ function applyBabySettings(obj){
   if(obj.goalBand !== undefined && obj.goalBand !== null) babySettings.goalBand = obj.goalBand;
   if(obj.cleanHours !== undefined && obj.cleanHours !== null) babySettings.cleanHours = obj.cleanHours;
   if(obj.weightDays !== undefined && obj.weightDays !== null) babySettings.weightDays = obj.weightDays;
+  if(obj.vitaminDays !== undefined && obj.vitaminDays !== null) babySettings.vitaminDays = obj.vitaminDays;
   if(typeof obj.cleanBaseAt === 'string' && obj.cleanBaseAt) babySettings.cleanBaseAt = obj.cleanBaseAt;
   if(typeof obj.weightBaseAt === 'string' && obj.weightBaseAt) babySettings.weightBaseAt = obj.weightBaseAt;
+  if(typeof obj.vitaminBaseAt === 'string' && obj.vitaminBaseAt) babySettings.vitaminBaseAt = obj.vitaminBaseAt;
   if(typeof obj.weightLastAt === 'string') babySettings.weightLastAt = obj.weightLastAt;
   if(Array.isArray(obj.weightLog)) babySettings.weightLog = cleanWeightLog(obj.weightLog);
   if(Array.isArray(obj.cats)) babySettings.cats = cleanCats(obj.cats);
@@ -3022,6 +3079,8 @@ function parseEvent(ev){
   if(!kind){
     if(title.indexOf('洗浄液') >= 0){
       kind = 'clean';
+    } else if(title.indexOf('ビタミン') >= 0){
+      kind = 'vitamin';
     } else if(/^体重/.test(title)){
       kind = 'weight';
       var wm = title.match(/(\d[\d,]*)\s*g/);
@@ -3753,6 +3812,7 @@ for(var sr=0; sr<setRowBtns.length; sr++){
     else if(f === 'goal') openGoalPop();
     else if(f === 'cleanInterval') openCleanIntervalPop();
     else if(f === 'weightInterval') openWeightIntervalPop();
+    else if(f === 'vitaminInterval') openVitaminIntervalPop();
     else if(f === 'conn') openConnPop();
   });
 }
@@ -3858,7 +3918,7 @@ function openGoalPop(){
 }
 /* リマインドの間隔の入力：現在の値が入った状態で開き、
    保存したら閉じる（既存の統一ポップアップの作法）。
-   洗浄液は時間単位、体重は日単位で入力する。
+   洗浄液は時間単位、体重とビタミン剤は日単位で入力する。
    設定値は赤ちゃん設定に保存して夫婦で同期する */
 function openIntervalPop(o){
   openPop(o.title,
@@ -3891,6 +3951,12 @@ function openWeightIntervalPop(){
   openIntervalPop({
     title:'体重測定の間隔', unit:'日', max:365, initial: weightIntervalDays(),
     onSave:function(n){ babySettings.weightDays = n; scheduleBabySave(); }
+  });
+}
+function openVitaminIntervalPop(){
+  openIntervalPop({
+    title:'ビタミン剤の間隔', unit:'日', max:365, initial: vitaminIntervalDays(),
+    onSave:function(n){ babySettings.vitaminDays = n; scheduleBabySave(); }
   });
 }
 /* TOPの「今日のミルク」の目標（鉛筆）からも、設定と同じ目標の編集を開く */
