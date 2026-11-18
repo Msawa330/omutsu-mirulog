@@ -312,6 +312,21 @@
   .remind-ic{
     width:34px; height:34px; border-radius:50%; flex:0 0 auto;
     display:flex; align-items:center; justify-content:center;
+    transform-origin:50% 50%;
+    animation:remindPurupuru .8s linear infinite;
+  }
+  .remind-ic.weight{animation-delay:.4s;}
+  /* リマインドのアイコンだけ、小刻みに震えるような細かい揺れ（ぷるぷる）を
+     速めの周期で繰り返す。強さは「普通」＝中程度の振れ幅で、
+     うるさくならない範囲に収める */
+  @keyframes remindPurupuru{
+    0%,100%{ transform:translate(0,0) rotate(0deg); }
+    15%{ transform:translate(.8px,-.6px) rotate(2.2deg); }
+    30%{ transform:translate(-.9px,.4px) rotate(-2.4deg); }
+    45%{ transform:translate(.7px,.6px) rotate(1.8deg); }
+    60%{ transform:translate(-.6px,-.5px) rotate(-1.9deg); }
+    75%{ transform:translate(.5px,-.4px) rotate(1.2deg); }
+    90%{ transform:translate(-.4px,.3px) rotate(-.8deg); }
   }
   .remind-ic svg{width:26px; height:26px; display:block;}
   .remind-ic.clean{background:var(--clean-bg);}
@@ -741,6 +756,7 @@
   @media (prefers-reduced-motion: reduce){
     .anim-pop{ animation:none; }
     .spark-p{ animation:none; }
+    .remind-ic{ animation:none; }
     .round-btn:active .disc{ transform:none; }
   }
 
@@ -1332,6 +1348,12 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-17-1', notes:[
     { c:'デザイン', t:'洗浄液のアイコンを変更しました' }
+  ]},
+  { version:'2026-11-18-1', notes:[
+    { c:'デザイン', t:'リマインドのアイコンがやわらかく動くようになりました' }
+  ]},
+  { version:'2026-11-18-2', notes:[
+    { c:'デザイン', t:'リマインドのアイコンがぷるぷる動くようになりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
