@@ -1377,6 +1377,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-18-4', notes:[
     { c:'設定', t:'ビタミン剤の初回の時刻を変更しました' }
+  ]},
+  { version:'2026-11-19-1', notes:[
+    { c:'修正', t:'連続で記録しても表示に反映されるようにしました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -3123,21 +3126,37 @@ function eventBody(kind, amount, when, text){
     end:   { dateTime: end.toISOString(),  timeZone: 'Asia/Tokyo' }
   };
 }
+/* 読み込みの世代番号：取得が重なったとき、古い取得結果で新しい状態を
+   上書きしないために使う（自動更新と保存後の再取得が重なる場面対策） */
+var loadSeq = 0;
+/* 保存直後にローカル登録した記録（id→record）。一覧取得の結果にまだ
+   映っていない間もここから合流させ、「前回」表示や今日のログから
+   消えないようにする。一覧側で確認できたら登録を解除する */
+var localPending = {};
 function loadRecords(silent){
   if(!accessToken) return Promise.resolve();
+  var seq = ++loadSeq;
   var now = new Date();
   var from = startOfDay(now); from.setDate(from.getDate() - 31);
   var to = startOfDay(now); to.setDate(to.getDate() + 2);
-  var qs = '?timeMin=' + encodeURIComponent(from.toISOString()) +
-           '&timeMax=' + encodeURIComponent(to.toISOString()) +
-           '&maxResults=300&singleEvents=true&orderBy=startTime';
   if(!silent) setStatus('読み込み中…');
-  return apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events' + qs)
-    .then(function(data){
-      var items = (data && data.items) || [];
-      records = items.map(parseEvent).filter(function(r){ return !!r; });
-      records.sort(function(a,b){ return b.start - a.start; });
-      if(records.length > 300) records = records.slice(0, 300);
+  /* 1回だけの取得（上限300件・古い順）だと、期間内の予定が300件を
+     超えたときに今日の新しい記録ほど切り捨てられてしまう。
+     アーカイブと同じページング取得で全件を取り切る */
+  return fetchEventsRange(from, to, 2500)
+    .then(function(list){
+      /* 取得中に別の読み込みが始まっていたら、この結果は古いので捨てる */
+      if(seq !== loadSeq) return;
+      var seen = {};
+      list.forEach(function(r){ seen[r.id] = true; });
+      for(var pid in localPending){
+        if(!Object.prototype.hasOwnProperty.call(localPending, pid)) continue;
+        if(seen[pid]){ delete localPending[pid]; }
+        else list.push(localPending[pid]);
+      }
+      list.sort(function(a,b){ return b.start - a.start; });
+      if(list.length > 600) list = list.slice(0, 600);
+      records = list;
       recordsLoaded = true;
       renderAll();
       scheduleSyncReminder();
@@ -3145,8 +3164,37 @@ function loadRecords(silent){
       if(!silent) setStatus('');
     })
     .catch(function(err){
+      if(seq !== loadSeq) return;
       setStatus('読み込めませんでした：' + err.message, true);
     });
+}
+/* 保存が成功した記録を、サーバーから返ってきたイベントそのもので
+   その場でローカルにも登録する。一覧の再取得を待たずに「前回」表示・
+   今日のログ・ゲージへ即座に反映され、すばやく連続で記録しても
+   表示が取りこぼれない */
+function registerLocalRecord(ev){
+  var r = ev ? parseEvent(ev) : null;
+  if(!r) return;
+  localPending[r.id] = r;
+  var found = false, i;
+  for(i=0;i<records.length;i++){
+    if(records[i].id===r.id){ records[i] = r; found = true; break; }
+  }
+  if(!found){
+    records.push(r);
+    records.sort(function(a,b){ return b.start - a.start; });
+  }
+  if(archiveRecords){
+    var af = false;
+    for(i=0;i<archiveRecords.length;i++){
+      if(archiveRecords[i].id===r.id){ archiveRecords[i] = r; af = true; break; }
+    }
+    if(!af){
+      archiveRecords.push(r);
+      archiveRecords.sort(function(a,b){ return b.start - a.start; });
+    }
+  }
+  renderAll();
 }
 /* ================= ログ用アーカイブ取得（月間集計用・ページネーション） ================= */
 var archiveRecords = null;
@@ -3245,23 +3293,35 @@ function recordWhen(){
 }
 
 function createRecord(kind, amount){
-  if(!accessToken || busy) return;
+  if(!accessToken) return;
+  /* 保存の最中に押された分は捨てず、少し待ってから記録し直す。
+     リマインド項目やミルクの量ポップアップなど、busy中も押せる
+     入口からの記録を取りこぼさないため */
+  if(busy){
+    setTimeout(function(){ createRecord(kind, amount); }, 350);
+    return;
+  }
   ensureAudio();
   setBusy(true);
   setStatus('記録中…');
   var body = eventBody(kind, amount, recordWhen());
   apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events', {
     method: 'POST', body: JSON.stringify(body)
-  }).then(function(){
+  }).then(function(ev){
     playChime();
     setStatus('');
+    /* 保存できた記録はその場で画面へ反映し、busyはここで解除する。
+       一覧の再取得は裏で走らせるので、続けて別のボタンもすぐ押せる */
+    registerLocalRecord(ev);
+    setBusy(false);
     /* リマインド登録は60秒デバウンス後（scheduleDelayedReminderSync）。
        ここでの読み込みは画面表示用で、待機中はリマインド同期しない */
     scheduleDelayedReminderSync();
-    return loadRecords(true);
+    loadRecords(true);
   }).catch(function(err){
     setStatus('記録できませんでした：' + err.message, true);
-  }).then(function(){ setBusy(false); });
+    setBusy(false);
+  });
 }
 /* 体重を保存したときのカレンダー記録：他の記録と同じく「赤ちゃん記録」
    カレンダーへイベントとして残す（時刻は保存した時刻）。記録した人は
@@ -3273,8 +3333,9 @@ function createWeightRecordEvent(w){
   var body = eventBody('weight', w, new Date());
   apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events', {
     method: 'POST', body: JSON.stringify(body)
-  }).then(function(){
-    return loadRecords(true);
+  }).then(function(ev){
+    registerLocalRecord(ev);
+    loadRecords(true);
   }).catch(function(err){
     setStatus('体重をログに残せませんでした：' + err.message, true);
   });
@@ -3283,20 +3344,28 @@ function createWeightRecordEvent(w){
    入力は小さなポップアップで受け、空のメモは理由をポップアップ内に
    出して書き込まない。メモは授乳ではないのでリマインド同期は行わない */
 function createMemo(text){
-  if(!accessToken || busy) return;
+  if(!accessToken) return;
+  /* 保存の最中に書き込まれたメモも捨てず、少し待ってから記録し直す */
+  if(busy){
+    setTimeout(function(){ createMemo(text); }, 350);
+    return;
+  }
   ensureAudio();
   setBusy(true);
   setStatus('記録中…');
   var body = eventBody('memo', 0, new Date(), text);
   apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events', {
     method: 'POST', body: JSON.stringify(body)
-  }).then(function(){
+  }).then(function(ev){
     playChime();
     setStatus('');
-    return loadRecords(true);
+    registerLocalRecord(ev);
+    setBusy(false);
+    loadRecords(true);
   }).catch(function(err){
     setStatus('記録できませんでした：' + err.message, true);
-  }).then(function(){ setBusy(false); });
+    setBusy(false);
+  });
 }
 function openMemoPop(){
   if(!accessToken){ setStatus('サインインしてください', true); return; }
@@ -3330,8 +3399,9 @@ function saveEdit(rec, when, updated){
   var body = eventBody(updated.kind, updated.amount, when, updated.text);
   apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events/' + encodeURIComponent(rec.id), {
     method: 'PUT', body: JSON.stringify(body)
-  }).then(function(){
+  }).then(function(res){
     setStatus('');
+    registerLocalRecord(res);
     closeEdit();
     /* リマインド登録は60秒デバウンス後。ここでの読み込みは画面表示用 */
     scheduleDelayedReminderSync();
@@ -3350,6 +3420,9 @@ function deleteRecord(rec){
   }).then(function(){
     setStatus('');
     closeEdit();
+    /* 保存直後のローカル登録が残っていると、消した記録が合流で
+       復活してしまうため、削除が成功したら登録も外す */
+    if(rec && rec.id && localPending[rec.id]) delete localPending[rec.id];
     /* リマインド登録は60秒デバウンス後。ここでの読み込みは画面表示用 */
     scheduleDelayedReminderSync();
     return loadRecords(true);
