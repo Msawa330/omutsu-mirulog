@@ -907,7 +907,7 @@
   </section>
 
   <!-- リマインド（ゲージとは独立したブロック。普段は丸ごと非表示で、
-       期限までの残り時間が間隔の4％を切った項目だけを出す） -->
+       期限までの残り時間が間隔の6％を切った項目だけを出す） -->
   <section class="panel hidden" id="remindPanel" aria-label="リマインド">
     <div class="card-head">
       <span class="card-title">リマインド</span>
@@ -1386,6 +1386,12 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-21-1', notes:[
     { c:'記録', t:'記録の編集で日時を変える形式を、記録するときと同じにそろえました' }
+  ]},
+  { version:'2026-11-21-2', notes:[
+    { c:'修正', t:'サインインがGoogleのエラー画面で止まってしまったときに、もう一度サインインできるようにしました' }
+  ]},
+  { version:'2026-11-21-3', notes:[
+    { c:'表示', t:'リマインドが少し早めに表示されるようにしました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1417,6 +1423,35 @@ var tokenRefreshWaiters = [];
    どちらが実行中でも、もう一方は requestAccessToken を新たに送らない。
    重なって送ると Google が 400 を返すため、実行中はそちらに寄せる */
 var authInFlight = false;
+/* 認証リクエストの見張りタイマー。ポップアップ（スマホでは別タブ）が
+   Google のエラー画面（400 など）で止まると、成功・失敗どちらの
+   コールバックも呼ばれず、実行中フラグが立ったままになって、サインインも
+   自動再取得も二度と動かなくなる。応答が無いまま一定時間たったリクエストは
+   失敗として扱い、フラグを戻してやり直せるようにする */
+var authWatchdogTimer = null;
+var AUTH_WATCHDOG_SILENT_MS = 60000;
+var AUTH_WATCHDOG_MANUAL_MS = 90000;
+function armAuthWatchdog(){
+  clearAuthWatchdog();
+  var ms = silentAuth ? AUTH_WATCHDOG_SILENT_MS : AUTH_WATCHDOG_MANUAL_MS;
+  authWatchdogTimer = setTimeout(function(){
+    authWatchdogTimer = null;
+    if(!authInFlight && !silentInFlight) return;
+    if(silentAuth || silentInFlight){
+      /* サイレント側は従来の失敗処理（間隔を置いて自動で再試行）に寄せる */
+      silentAuth = false;
+      onSilentAuthFailure();
+      settleTokenWaiters(false);
+    } else {
+      authInFlight = false;
+      settleTokenWaiters(false);
+      setStatus('サインインが完了しませんでした。もう一度お試しください', true);
+    }
+  }, ms);
+}
+function clearAuthWatchdog(){
+  if(authWatchdogTimer){ clearTimeout(authWatchdogTimer); authWatchdogTimer = null; }
+}
 var records = []; /* {id, start:Date, kind, amount} 新しい順 */
 var recordsLoaded = false; /* 初回の記録読み込みが終わるまでリマインド同期をしないためのフラグ */
 var busy = false;
@@ -1886,14 +1921,14 @@ function renderGauge(){
 /* ================= リマインドブロック =================
    ゲージとは独立したブロックで、普段は丸ごと非表示。
    期限は「前回実施した日時＋間隔」で、期限までの残り時間が
-   間隔の4％を切ったら表示する。期限を過ぎても表示は変えず、
+   間隔の6％を切ったら表示する。期限を過ぎても表示は変えず、
    実施するまで出し続ける。各項目は丸いアイコン＋名称＋
    前回実施した時間を1行で出す（期限はTOPに出さない）。
    初回の前回日時は赤ちゃん設定に保存して夫婦で同期し
    （体重=2026-11-15 20:00、洗浄液=2026-11-16 01:00、
    ビタミン剤=2026-11-17 15:00）、
    実際の記録が入ったらそちらが新しい前回になる */
-var REMIND_RATIO = 0.04;
+var REMIND_RATIO = 0.06;
 function cleanIntervalHours(){
   var n = parseInt(babySettings.cleanHours, 10);
   return (n > 0) ? n : 23;
@@ -1956,7 +1991,7 @@ function lastWeightDateTime(){
   }
   return best;
 }
-/* 残り時間が間隔の4％を切っていたら表示する（過ぎても表示し続ける） */
+/* 残り時間が間隔の6％を切っていたら表示する（過ぎても表示し続ける） */
 function remindDue(last, intervalMs){
   if(!last || !(intervalMs > 0)) return false;
   return (last.getTime() + intervalMs - Date.now()) < intervalMs * REMIND_RATIO;
@@ -3694,7 +3729,9 @@ function requestSilentToken(){
   silentAuth = true;
   try{
     tokenClient.requestAccessToken({prompt:''});
+    armAuthWatchdog();
   }catch(e){
+    clearAuthWatchdog();
     authInFlight = false;
     silentInFlight = false;
     silentAuth = false;
@@ -3744,11 +3781,16 @@ function restoreSession(){
   }
 }
 function initTokenClient(){
+  /* クライアントは1つだけ作る。起動時のポーリングとサインイン側の
+     ポーリングがそれぞれ作ると、別々のクライアントから認証リクエストが
+     重なって送られ、Google が 400 を返す原因になる */
+  if(tokenClient) return true;
   if(!clientId || !window.google || !google.accounts || !google.accounts.oauth2) return false;
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: clientId,
     scope: 'https://www.googleapis.com/auth/calendar.events',
     callback: function(resp){
+      clearAuthWatchdog();
       var wasSilent = silentAuth;
       silentAuth = false;
       silentInFlight = false;
@@ -3770,6 +3812,7 @@ function initTokenClient(){
       }
     },
     error_callback: function(err){
+      clearAuthWatchdog();
       if(silentAuth){ silentAuth = false; silentInFlight = false; authInFlight = false; onSilentAuthFailure(); return; }
       authInFlight = false;
       settleTokenWaiters(false);
@@ -3801,11 +3844,18 @@ function signIn(){
       tries++;
       if(initTokenClient()){
         clearInterval(iv);
+        if(silentInFlight){
+          /* 自動の再取得が先に始まっていたら二重に送らず、そちらに任せる */
+          setStatus('サインイン処理中です。画面が変わるまでお待ちください');
+          return;
+        }
         silentAuth = false;
         setStatus('サインイン処理中です。画面が変わるまでお待ちください');
         try{
           tokenClient.requestAccessToken({prompt:''});
+          armAuthWatchdog();
         }catch(e){
+          clearAuthWatchdog();
           authInFlight = false;
           setStatus('サインインでエラーが発生しました' + (e && e.message ? '：' + e.message : ''), true);
         }
@@ -3819,7 +3869,9 @@ function signIn(){
   setStatus('サインイン処理中です。画面が変わるまでお待ちください');
   try{
     tokenClient.requestAccessToken({ prompt: '' });
+    armAuthWatchdog();
   }catch(e){
+    clearAuthWatchdog();
     authInFlight = false;
     setStatus('サインインでエラーが発生しました' + (e && e.message ? '：' + e.message : ''), true);
   }
@@ -3830,6 +3882,7 @@ $('signoutBtn').addEventListener('click', function(){
     google.accounts.oauth2.revoke(accessToken, function(){});
   }
   clearSession();
+  clearAuthWatchdog();
   resetSilentRetry();
   settleTokenWaiters(false);
   authInFlight = false; silentInFlight = false; silentAuth = false;
