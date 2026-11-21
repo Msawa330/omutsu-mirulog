@@ -266,11 +266,8 @@
   .pop-foot{margin-top:14px;}
   .pop-foot .btn-primary{margin-top:0;}
   .pop-foot .btn-sub, .pop-foot .btn-danger{margin-top:8px;}
-  /* 記録の編集：日付と時刻を1行に横並びにし、左右のバランスをそろえる */
-  .edit-datetime-row{display:flex; gap:10px; align-items:flex-start; width:100%;}
-  .edit-dt-field{flex:1 1 0; min-width:0;}
-  .edit-dt-field label{margin:0 0 6px;}
-  .edit-dt-field input{width:100%; text-align:center; padding-left:6px; padding-right:6px;}
+  /* 記録の編集の日時は、記録するときの「指定時間」と同じ部品
+     （.rt-date / .rt-controls / .rt-step / .rt-num）をそのまま使う */
   /* ミルクの量ポップアップの中身 */
   .milk-step-row{display:flex; align-items:center; justify-content:center; gap:18px;}
   .milk-amt{font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; min-width:3ch; text-align:center; line-height:1.1;}
@@ -1069,14 +1066,20 @@
     <div class="pop-head"><span class="pop-title" id="editTitle">記録を編集</span><button class="close-x" id="editCloseXBtn" type="button" aria-label="閉じる">×</button></div>
     <div class="sheet-error hidden" role="alert"></div>
     <div class="edit-fields">
-    <div class="edit-datetime-row">
-      <div class="edit-dt-field">
-        <label for="editTime">時刻</label>
-        <input type="time" id="editTime">
-      </div>
-      <div class="edit-dt-field">
-        <label for="editDate">日付</label>
-        <input type="date" id="editDate">
+    <div class="edit-datetime">
+      <div class="rt-date" id="editRtDateLabel"></div>
+      <div class="rt-controls">
+        <div class="rt-group">
+          <button class="rt-step" id="editRtHourMinus" type="button" aria-label="時間を1時間戻す">−</button>
+          <span class="rt-num" id="editRtHour">--</span>
+          <button class="rt-step" id="editRtHourPlus" type="button" aria-label="時間を1時間進める">＋</button>
+        </div>
+        <span class="rt-colon">:</span>
+        <div class="rt-group">
+          <button class="rt-step" id="editRtMinMinus" type="button" aria-label="分を10分戻す">−</button>
+          <span class="rt-num" id="editRtMin">--</span>
+          <button class="rt-step" id="editRtMinPlus" type="button" aria-label="分を10分進める">＋</button>
+        </div>
       </div>
     </div>
     <div id="editMemoWrap" class="hidden">
@@ -1380,6 +1383,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-19-1', notes:[
     { c:'修正', t:'連続で記録しても表示に反映されるようにしました' }
+  ]},
+  { version:'2026-11-21-1', notes:[
+    { c:'記録', t:'記録の編集で日時を変える形式を、記録するときと同じにそろえました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -2895,6 +2901,25 @@ $('allMonthsCloseBtn').addEventListener('click', function(){ $('allMonthsOverlay
 $('allMonthsOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.add('hidden'); });
 
 /* ================= 編集シート ================= */
+/* 編集ポップアップの日時変更は、記録するときの「指定時間」とまったく同じ
+   形式（日付の行＋時・分の＋／−ステッパー）にする。時は1時間ずつ、
+   分は10分ずつ日時全体を動かし、0時を跨ぐと日付も前日・翌日に変わる */
+var editDateTime = null; /* 編集中の日時（Date） */
+function renderEditTime(){
+  if(!editDateTime) return;
+  $('editRtDateLabel').innerHTML = (editDateTime.getMonth()+1) + '月' + editDateTime.getDate() + '日（' + wdSpan(editDateTime) + '）';
+  $('editRtHour').textContent = pad(editDateTime.getHours());
+  $('editRtMin').textContent = pad(editDateTime.getMinutes());
+}
+function stepEditTime(ms){
+  if(!editDateTime) editDateTime = new Date();
+  editDateTime = new Date(editDateTime.getTime() + ms);
+  renderEditTime();
+}
+$('editRtHourPlus').addEventListener('click', function(){ stepEditTime(3600000); });
+$('editRtHourMinus').addEventListener('click', function(){ stepEditTime(-3600000); });
+$('editRtMinPlus').addEventListener('click', function(){ stepEditTime(10*60000); });
+$('editRtMinMinus').addEventListener('click', function(){ stepEditTime(-10*60000); });
 function openEdit(rec){
   if(!accessToken){ setStatus('サインインしてください', true); return; }
   editing = { rec: rec, kind: rec.kind, amount: rec.amount || 0, text: rec.text || '' };
@@ -2902,16 +2927,15 @@ function openEdit(rec){
   var del = $('editDeleteBtn');
   del.textContent = 'この記録を削除'; del.classList.remove('confirm');
   $('editTitle').textContent = '記録を編集';
-  $('editTime').value = toLocalTimeValue(rec.start);
-  $('editDate').value = toLocalDateValue(rec.start);
+  /* 初期値は記録の現在の日時（「指定時間」と同じく秒は0にそろえる） */
+  editDateTime = new Date(rec.start.getTime());
+  editDateTime.setSeconds(0, 0);
+  renderEditTime();
   renderEditOpts();
   clearSheetError('editOverlay');
   $('dayOverlay').classList.add('hidden');
   $('editOverlay').classList.remove('hidden');
   refreshScrollLock();
-  /* 開いた時点ではフォーカスを移さない。フォーカスするとピッカーが
-     自動で開いてしまうため、ピッカーは時刻・日付の欄をユーザーが
-     タップしたときにだけ出す */
 }
 function renderEditOpts(){
   var wrap = $('editOptsWrap'), box = $('editOpts');
@@ -2971,10 +2995,8 @@ $('editCancelBtn').addEventListener('click', closeEdit);
 $('editOverlay').addEventListener('click', function(e){ if(e.target===this) closeEdit(); });
 $('editSaveBtn').addEventListener('click', function(){
   if(!editing || busy) return;
-  var tv = $('editTime').value, dv = $('editDate').value;
-  if(!tv || !dv){ sheetError('editOverlay', '日付と時刻を入力してください'); return; }
-  var when = new Date(dv + 'T' + tv);
-  if(isNaN(when.getTime())){ sheetError('editOverlay', '日付と時刻が正しくありません'); return; }
+  if(!editDateTime || isNaN(editDateTime.getTime())){ sheetError('editOverlay', '日付と時刻が正しくありません'); return; }
+  var when = new Date(editDateTime.getTime());
   if(editing.rec && editing.rec.kind === 'memo'){
     var memoText = $('editMemoText').value.trim();
     if(!memoText){
