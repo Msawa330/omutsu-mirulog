@@ -1202,6 +1202,12 @@ var LS_CAL = 'omutsumirulog.calendarId';
 var LS_TOKEN = 'omutsumirulog.token';
 var LS_TOKEN_EXPIRY = 'omutsumirulog.tokenExpiry';
 var LS_AUTO = 'omutsumirulog.autoSignIn';
+var LS_DEVICE_KEY = 'omutsumirulog.deviceKey';
+/* 認証サーバー（Google Apps Script）：更新トークンを保管し、
+   deviceKey と引き換えに新しいアクセストークンを発行する。
+   サインインはこのURLを redirect_uri にして Google の認可画面へ遷移し、
+   認可が終わるとサーバーがアプリのURLへ ?deviceKey=... を付けて戻す */
+var AUTH_SERVER_URL = 'https://script.google.com/macros/s/AKfycbyVQDBKHSSoy_7JcP8dN1V63Q2jG4if27My0WAkE4PKw1-ezXtfiaIb5j8DTYj8ORtmQg/exec';
 /* ===== アプリの版（バージョン）と変更履歴 =====
    更新を出すたびに CHANGELOG の末尾へ {version, notes} を1件追加し、
    APP_VERSION をその版の識別子に合わせる。ポップアップには、見る人が
@@ -1392,66 +1398,46 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-21-3', notes:[
     { c:'表示', t:'リマインドが少し早めに表示されるようにしました' }
+  ]},
+  { version:'2026-11-25-1', notes:[
+    { c:'修正', t:'サインインが長持ちするようになりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
 var LS_SEEN_VERSION = 'omutsumirulog.seenVersion';
 var clientId = '';
 var calendarId = DEFAULT_CAL;
+var deviceKey = '';
 try{
   clientId = localStorage.getItem(LS_CID) || '';
   calendarId = localStorage.getItem(LS_CAL) || DEFAULT_CAL;
+  deviceKey = localStorage.getItem(LS_DEVICE_KEY) || '';
 }catch(e){}
-var accessToken = null, tokenExpiry = 0, tokenClient = null;
-var silentAuth = false;
-/* サイレント再取得の先行更新・再試行まわり。
-   期限までの残りが REFRESH_MARGIN_MS 以下になったら、切れる前に裏で取り直す。
-   失敗してもあきらめず、間隔を置いて自動で再試行し続ける（間隔は
-   SILENT_RETRY_DELAYS を順に使い、最後の間隔で繰り返す）。
-   裏に回っている間に止まった分は、アプリに戻ってきたときの
-   autoRefresh で再開する。サインインを求めるのは、API が 401 を返し、
-   裏での取り直し＋再試行でも回復しなかったときだけ */
+/* 認可完了後に認証サーバーから戻ってきたときは、URL の deviceKey を
+   保存してアドレスバーから取り除く（残しておかない） */
+try{
+  var dkParams = new URLSearchParams(window.location.search);
+  var dkFromUrl = dkParams.get('deviceKey');
+  if(dkFromUrl){
+    deviceKey = dkFromUrl;
+    try{ localStorage.setItem(LS_DEVICE_KEY, dkFromUrl); }catch(e){}
+    dkParams.delete('deviceKey');
+    var dkQs = dkParams.toString();
+    history.replaceState(null, '', window.location.pathname + (dkQs ? '?' + dkQs : '') + (window.location.hash || ''));
+  }
+}catch(e){}
+var accessToken = null, tokenExpiry = 0;
+/* トークンの先行更新まわり。
+   期限までの残りが REFRESH_MARGIN_MS 以下になったら、切れる前に
+   認証サーバーから裏で取り直す。サインインを求めるのは、API が 401 を
+   返し、サーバーからの取り直しでも回復しなかったときだけ */
 var REFRESH_MARGIN_MS = 10 * 60 * 1000;
-var SILENT_RETRY_DELAYS = [5000, 15000, 45000, 60000];
-var silentRetryCount = 0;
-var silentRetryTimer = null;
-var silentInFlight = false;
 /* 401 を受けた apiFetch が「裏での取り直しの完了」を待つための待ち行列。
    取り直しが成功したら true、待機がタイムアウトしたら false で呼ぶ */
 var tokenRefreshWaiters = [];
-/* 認証リクエストの1本化ガード：自動のサイレント再取得と手動サインインの
-   どちらが実行中でも、もう一方は requestAccessToken を新たに送らない。
-   重なって送ると Google が 400 を返すため、実行中はそちらに寄せる */
-var authInFlight = false;
-/* 認証リクエストの見張りタイマー。ポップアップ（スマホでは別タブ）が
-   Google のエラー画面（400 など）で止まると、成功・失敗どちらの
-   コールバックも呼ばれず、実行中フラグが立ったままになって、サインインも
-   自動再取得も二度と動かなくなる。応答が無いまま一定時間たったリクエストは
-   失敗として扱い、フラグを戻してやり直せるようにする */
-var authWatchdogTimer = null;
-var AUTH_WATCHDOG_SILENT_MS = 60000;
-var AUTH_WATCHDOG_MANUAL_MS = 90000;
-function armAuthWatchdog(){
-  clearAuthWatchdog();
-  var ms = silentAuth ? AUTH_WATCHDOG_SILENT_MS : AUTH_WATCHDOG_MANUAL_MS;
-  authWatchdogTimer = setTimeout(function(){
-    authWatchdogTimer = null;
-    if(!authInFlight && !silentInFlight) return;
-    if(silentAuth || silentInFlight){
-      /* サイレント側は従来の失敗処理（間隔を置いて自動で再試行）に寄せる */
-      silentAuth = false;
-      onSilentAuthFailure();
-      settleTokenWaiters(false);
-    } else {
-      authInFlight = false;
-      settleTokenWaiters(false);
-      setStatus('サインインが完了しませんでした。もう一度お試しください', true);
-    }
-  }, ms);
-}
-function clearAuthWatchdog(){
-  if(authWatchdogTimer){ clearTimeout(authWatchdogTimer); authWatchdogTimer = null; }
-}
+/* 認証サーバーへのトークン取得が実行中かどうか。同時に何本も
+   送らないよう、実行中はそちらの結果に寄せる */
+var serverTokenInFlight = false;
 var records = []; /* {id, start:Date, kind, amount} 新しい順 */
 var recordsLoaded = false; /* 初回の記録読み込みが終わるまでリマインド同期をしないためのフラグ */
 var busy = false;
@@ -3648,7 +3634,7 @@ function syncReminder(){
   });
 }
 
-/* ================= 認証（Google Identity Services） ================= */
+/* ================= 認証（認証サーバー方式） ================= */
 function updateAuthUI(){
   var signedIn = !!accessToken && Date.now() < tokenExpiry;
   $('signedBox').classList.toggle('hidden', !signedIn);
@@ -3675,7 +3661,7 @@ function clearSession(){
     localStorage.removeItem(LS_AUTO);
   }catch(e){}
 }
-/* ============ サイレント再取得：先行更新と再試行 ============ */
+/* ============ 認証サーバーからのトークン取得 ============ */
 function tokenValid(){
   return !!accessToken && Date.now() < tokenExpiry;
 }
@@ -3684,89 +3670,84 @@ function tokenNeedsRefresh(){
   if(!tokenValid()) return true;
   return (tokenExpiry - Date.now()) <= REFRESH_MARGIN_MS;
 }
-function resetSilentRetry(){
-  silentRetryCount = 0;
-  if(silentRetryTimer){ clearTimeout(silentRetryTimer); silentRetryTimer = null; }
-}
 /* トークンの取り直しを待っている処理（401を受けた apiFetch）へ結果を渡す */
 function settleTokenWaiters(ok){
   var ws = tokenRefreshWaiters;
   tokenRefreshWaiters = [];
   for(var i=0;i<ws.length;i++){ try{ ws[i](ok); }catch(e){} }
 }
-/* 裏でトークンを取り直し、成否を Promise で返す。
-   既に認証が実行中なら新たに送らず、その結果に寄せる。
-   失敗しても裏の再試行は続くが、待ちは30秒で打ち切って false を返す */
-function refreshTokenSilent(){
-  return new Promise(function(resolve){
-    var done = false;
-    var finish = function(ok){
-      if(done) return;
-      done = true;
-      resolve(ok);
-    };
-    tokenRefreshWaiters.push(finish);
-    setTimeout(function(){
-      var idx = tokenRefreshWaiters.indexOf(finish);
-      if(idx >= 0) tokenRefreshWaiters.splice(idx, 1);
-      finish(false);
-    }, 30000);
-    if(silentInFlight || authInFlight) return;
-    resetSilentRetry();
-    requestSilentToken();
-    if(!silentInFlight && !authInFlight) settleTokenWaiters(false);
+/* 認証サーバーからアクセストークンを1回分取得する。
+   成功したら従来と同じ保存先へ入れて true、失敗したら false を返す */
+function fetchTokenFromServer(){
+  if(!deviceKey) return Promise.resolve(false);
+  return fetch(AUTH_SERVER_URL + '?action=token&key=' + encodeURIComponent(deviceKey))
+    .then(function(res){ return res.json(); })
+    .then(function(j){
+      if(j && j.access_token){
+        accessToken = j.access_token;
+        tokenExpiry = Date.now() + (parseInt(j.expires_in, 10) || 3600) * 1000 - 60000;
+        persistSession();
+        return true;
+      }
+      return false;
+    })
+    .catch(function(){ return false; });
+}
+/* 取得に失敗したら、deviceKey は消さず、少し待って1回だけ再試行する */
+function fetchTokenWithRetry(){
+  return fetchTokenFromServer().then(function(ok){
+    if(ok) return true;
+    return new Promise(function(resolve){ setTimeout(resolve, 2000); })
+      .then(function(){ return fetchTokenFromServer(); });
   });
 }
-/* サイレント再取得を1回試みる（実行中・再試行待ちの間は除く）。
-   手動サインインなど認証が実行中（authInFlight）のときも新たに送らず、
-   実行中のリクエストに寄せる */
-function requestSilentToken(){
-  if(authInFlight || silentInFlight || silentRetryTimer) return;
-  if(!tokenClient && !initTokenClient()) return;
-  if(authInFlight) return;
-  authInFlight = true;
-  silentInFlight = true;
-  silentAuth = true;
-  try{
-    tokenClient.requestAccessToken({prompt:''});
-    armAuthWatchdog();
-  }catch(e){
-    clearAuthWatchdog();
-    authInFlight = false;
-    silentInFlight = false;
-    silentAuth = false;
-    onSilentAuthFailure();
+/* 裏でトークンを取り直し、成否を Promise で返す。
+   既に取得が実行中なら新たに送らず、その結果に寄せる（待ちは30秒で打ち切り）。
+   再試行しても失敗した場合はサインイン画面の表示に落とす
+   （deviceKey は残るので、次回の自動取得や再試行で回復できる） */
+function refreshTokenSilent(){
+  if(!deviceKey) return Promise.resolve(false);
+  if(serverTokenInFlight){
+    return new Promise(function(resolve){
+      var done = false;
+      var finish = function(ok){
+        if(done) return;
+        done = true;
+        resolve(ok);
+      };
+      tokenRefreshWaiters.push(finish);
+      setTimeout(function(){
+        var idx = tokenRefreshWaiters.indexOf(finish);
+        if(idx >= 0) tokenRefreshWaiters.splice(idx, 1);
+        finish(false);
+      }, 30000);
+    });
   }
+  serverTokenInFlight = true;
+  return fetchTokenWithRetry().then(function(ok){
+    serverTokenInFlight = false;
+    if(ok || !tokenValid()) updateAuthUI();
+    settleTokenWaiters(ok);
+    return ok;
+  });
 }
-/* サイレント再取得が失敗したとき：サインインへは落とさず、間隔を置いて
-   自動で再試行し続ける（あきらめる打ち切りはしない）。間隔は
-   SILENT_RETRY_DELAYS を順に使い、最後の間隔で繰り返す。
-   裏に回っている間にタイマーが来た分は捨て、アプリに戻ってきたときの
-   autoRefresh で再開する。トークンが切れている間は、ボタン側だけ
-   サインイン表示に切り替える（トークン自体は消さない） */
-function onSilentAuthFailure(){
-  authInFlight = false;
-  silentInFlight = false;
-  if(!tokenValid()) updateAuthUI();
-  if(silentRetryTimer) return;
-  var idx = Math.min(silentRetryCount, SILENT_RETRY_DELAYS.length - 1);
-  var delay = SILENT_RETRY_DELAYS[idx];
-  silentRetryCount++;
-  silentRetryTimer = setTimeout(function(){
-    silentRetryTimer = null;
-    /* 非表示のまま失敗が続いた分は、復帰時の autoRefresh に任せる */
-    if(document.hidden) return;
-    requestSilentToken();
-  }, delay);
+/* 先行更新用：認証サーバーから取り直し、成功したら記録も読み直す */
+function requestSilentToken(){
+  if(!deviceKey || serverTokenInFlight) return;
+  refreshTokenSilent().then(function(ok){
+    if(ok){
+      loadRecords(true);
+      loadBabySettingsFromCal();
+    }
+  });
 }
 function restoreSession(){
   if(sessionRestored) return;
   sessionRestored = true;
-  var savedToken = '', savedExpiry = 0, auto = '';
+  var savedToken = '', savedExpiry = 0;
   try{
     savedToken = localStorage.getItem(LS_TOKEN) || '';
     savedExpiry = parseInt(localStorage.getItem(LS_TOKEN_EXPIRY) || '0', 10) || 0;
-    auto = localStorage.getItem(LS_AUTO) || '';
   }catch(e){}
   if(savedToken && savedExpiry && Date.now() < savedExpiry){
     accessToken = savedToken;
@@ -3776,116 +3757,50 @@ function restoreSession(){
     loadBabySettingsFromCal();
     return;
   }
-  if(auto === '1' && tokenClient){
-    requestSilentToken();
+  /* 保存済みトークンが使えなくても、deviceKey があれば認証サーバーから
+     取り直して自動でサインイン済みの状態にする */
+  if(deviceKey){
+    refreshTokenSilent().then(function(ok){
+      updateAuthUI();
+      if(ok){
+        loadRecords(true);
+        loadBabySettingsFromCal();
+      }
+    });
   }
 }
-function initTokenClient(){
-  /* クライアントは1つだけ作る。起動時のポーリングとサインイン側の
-     ポーリングがそれぞれ作ると、別々のクライアントから認証リクエストが
-     重なって送られ、Google が 400 を返す原因になる */
-  if(tokenClient) return true;
-  if(!clientId || !window.google || !google.accounts || !google.accounts.oauth2) return false;
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: clientId,
-    scope: 'https://www.googleapis.com/auth/calendar.events',
-    callback: function(resp){
-      clearAuthWatchdog();
-      var wasSilent = silentAuth;
-      silentAuth = false;
-      silentInFlight = false;
-      authInFlight = false;
-      if(resp && resp.access_token){
-        resetSilentRetry();
-        accessToken = resp.access_token;
-        tokenExpiry = Date.now() + (parseInt(resp.expires_in, 10) || 3600) * 1000 - 60000;
-        persistSession();
-        updateAuthUI();
-        settleTokenWaiters(true);
-        loadRecords(wasSilent);
-        loadBabySettingsFromCal();
-      } else if(wasSilent){
-        onSilentAuthFailure();
-      } else {
-        settleTokenWaiters(false);
-        setStatus('サインインできませんでした', true);
-      }
-    },
-    error_callback: function(err){
-      clearAuthWatchdog();
-      if(silentAuth){ silentAuth = false; silentInFlight = false; authInFlight = false; onSilentAuthFailure(); return; }
-      authInFlight = false;
-      settleTokenWaiters(false);
-      setStatus('サインインでエラーが発生しました' + (err && err.message ? '：' + err.message : ''), true);
-    }
-  });
-  return true;
-}
+/* サインイン（初回のみ）：ページ全体を Google の認可画面へ遷移させる。
+   認可が終わると認証サーバーが更新トークンを保管し、アプリのURLへ
+   ?deviceKey=... を付けて戻してくる。以後のトークン取得はすべて
+   認証サーバー経由になる */
 function signIn(){
   ensureAudio();
-  /* 認証が既に実行中なら新たに送らない（ボタン連打・自動再取得との重なり防止）。
-     実行中のリクエストに寄せ、処理中であることだけを一時表示する */
-  if(authInFlight || silentInFlight){
-    setStatus('サインイン処理中です。画面が変わるまでお待ちください');
-    return;
-  }
-  resetSilentRetry();
   if(!clientId){
     openBabySettings();
     return;
   }
-  if(!tokenClient && !initTokenClient()){
-    setStatus('Googleの準備中です。数秒待ってからもう一度押してください', true);
-    /* 準備待ちの間も認証実行中として扱い、この間に自動再取得や
-       再度のサインインが重なって送られないようにする */
-    authInFlight = true;
-    var tries = 0;
-    var iv = setInterval(function(){
-      tries++;
-      if(initTokenClient()){
-        clearInterval(iv);
-        if(silentInFlight){
-          /* 自動の再取得が先に始まっていたら二重に送らず、そちらに任せる */
-          setStatus('サインイン処理中です。画面が変わるまでお待ちください');
-          return;
-        }
-        silentAuth = false;
-        setStatus('サインイン処理中です。画面が変わるまでお待ちください');
-        try{
-          tokenClient.requestAccessToken({prompt:''});
-          armAuthWatchdog();
-        }catch(e){
-          clearAuthWatchdog();
-          authInFlight = false;
-          setStatus('サインインでエラーが発生しました' + (e && e.message ? '：' + e.message : ''), true);
-        }
-      }
-      else if(tries > 20){ clearInterval(iv); authInFlight = false; setStatus('Googleに接続できませんでした。通信環境を確認してください', true); }
-    }, 500);
-    return;
-  }
-  authInFlight = true;
-  silentAuth = false;
-  setStatus('サインイン処理中です。画面が変わるまでお待ちください');
-  try{
-    tokenClient.requestAccessToken({ prompt: '' });
-    armAuthWatchdog();
-  }catch(e){
-    clearAuthWatchdog();
-    authInFlight = false;
-    setStatus('サインインでエラーが発生しました' + (e && e.message ? '：' + e.message : ''), true);
-  }
+  var url = 'https://accounts.google.com/o/oauth2/v2/auth' +
+    '?client_id=' + encodeURIComponent(clientId) +
+    '&redirect_uri=' + encodeURIComponent(AUTH_SERVER_URL) +
+    '&response_type=code' +
+    '&scope=' + encodeURIComponent('https://www.googleapis.com/auth/calendar.events openid email') +
+    '&access_type=offline' +
+    '&prompt=consent' +
+    '&include_granted_scopes=true';
+  window.location.href = url;
 }
 $('signinBtn').addEventListener('click', signIn);
 $('signoutBtn').addEventListener('click', function(){
-  if(accessToken && window.google && google.accounts && google.accounts.oauth2){
-    google.accounts.oauth2.revoke(accessToken, function(){});
+  /* サーバー側の保管（更新トークン）も消す。失敗しても
+     サインアウト自体は完了させる */
+  var dk = deviceKey;
+  deviceKey = '';
+  try{ localStorage.removeItem(LS_DEVICE_KEY); }catch(e){}
+  if(dk){
+    try{ fetch(AUTH_SERVER_URL + '?action=revoke&key=' + encodeURIComponent(dk)).catch(function(){}); }catch(e){}
   }
   clearSession();
-  clearAuthWatchdog();
-  resetSilentRetry();
   settleTokenWaiters(false);
-  authInFlight = false; silentInFlight = false; silentAuth = false;
   accessToken = null; tokenExpiry = 0; records = [];
   renderAll(); updateAuthUI(); setStatus('');
 });
@@ -4130,9 +4045,7 @@ function openConnPop(){
           localStorage.setItem(LS_CAL, calendarId);
         }catch(e){}
         clearSession();
-        resetSilentRetry();
-        authInFlight = false; silentInFlight = false; silentAuth = false;
-        accessToken = null; tokenExpiry = 0; tokenClient = null;
+        accessToken = null; tokenExpiry = 0;
         settingsEventId = null; settingsEventRaw = null;
         closeBabySettings();
         updateAuthUI();
@@ -4456,16 +4369,7 @@ setNowLine();
 renderRecTime();
 renderBabyUI();
 updateAuthUI();
-window.addEventListener('load', function(){
-  if(clientId){
-    var tries = 0;
-    var iv = setInterval(function(){
-      tries++;
-      if(initTokenClient()){ clearInterval(iv); restoreSession(); }
-      else if(tries > 20) clearInterval(iv);
-    }, 500);
-  }
-});
+restoreSession();
 document.addEventListener('pointerdown', ensureAudio, { once:false });
 })();
 </script>
