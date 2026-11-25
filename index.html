@@ -17,7 +17,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
     --green:#3fbf4f; --green-dark:#2ea63e; --green-soft:#e8f9ec;
@@ -1203,6 +1202,7 @@ var LS_TOKEN = 'omutsumirulog.token';
 var LS_TOKEN_EXPIRY = 'omutsumirulog.tokenExpiry';
 var LS_AUTO = 'omutsumirulog.autoSignIn';
 var LS_DEVICE_KEY = 'omutsumirulog.deviceKey';
+var LS_RECORDS_CACHE = 'omutsumirulog.recordsCache';
 /* 認証サーバー（Google Apps Script）：更新トークンを保管し、
    deviceKey と引き換えに新しいアクセストークンを発行する。
    サインインはこのURLを redirect_uri にして Google の認可画面へ遷移し、
@@ -1401,6 +1401,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-25-1', notes:[
     { c:'修正', t:'サインインが長持ちするようになりました' }
+  ]},
+  { version:'2026-11-25-2', notes:[
+    { c:'改善', t:'アプリを開いたときの読み込みが速くなりました。前回の記録がすぐ表示され、裏で最新の状態に更新されます' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -2812,11 +2815,13 @@ function applyBabySettings(obj){
   /* 相手がリマインドを切り替えた場合も、この端末から予定を追随させる */
   scheduleSyncReminder();
 }
+var settingsLoadPromise = null;
 function loadBabySettingsFromCal(){
   if(!accessToken) return Promise.resolve();
+  if(settingsLoadPromise) return settingsLoadPromise;
   var path = '/calendars/' + encodeURIComponent(calendarId) + '/events?q=' +
     encodeURIComponent('赤ちゃん設定') + '&maxResults=20&singleEvents=true';
-  return apiFetch(path).then(function(data){
+  var p = apiFetch(path).then(function(data){
     var items = (data && data.items) || [];
     for(var i=0;i<items.length;i++){
       var ev = items[i];
@@ -2832,6 +2837,10 @@ function loadBabySettingsFromCal(){
       break;
     }
   }).catch(function(){});
+  settingsLoadPromise = p;
+  var clearSettingsPromise = function(){ if(settingsLoadPromise === p) settingsLoadPromise = null; };
+  p.then(clearSettingsPromise, clearSettingsPromise);
+  return p;
 }
 function saveBabySettingsToCal(){
   if(!accessToken) return;
@@ -3172,12 +3181,16 @@ function eventBody(kind, amount, when, text){
 /* 読み込みの世代番号：取得が重なったとき、古い取得結果で新しい状態を
    上書きしないために使う（自動更新と保存後の再取得が重なる場面対策） */
 var loadSeq = 0;
+/* 記録取得の実行中Promise：起動時の復元とフォーカス時の自動更新が
+   重なっても、取得は1本だけ走らせる（結果は共有する） */
+var loadRecordsPromise = null;
 /* 保存直後にローカル登録した記録（id→record）。一覧取得の結果にまだ
    映っていない間もここから合流させ、「前回」表示や今日のログから
    消えないようにする。一覧側で確認できたら登録を解除する */
 var localPending = {};
 function loadRecords(silent){
   if(!accessToken) return Promise.resolve();
+  if(loadRecordsPromise) return loadRecordsPromise;
   var seq = ++loadSeq;
   var now = new Date();
   var from = startOfDay(now); from.setDate(from.getDate() - 31);
@@ -3186,7 +3199,7 @@ function loadRecords(silent){
   /* 1回だけの取得（上限300件・古い順）だと、期間内の予定が300件を
      超えたときに今日の新しい記録ほど切り捨てられてしまう。
      アーカイブと同じページング取得で全件を取り切る */
-  return fetchEventsRange(from, to, 2500)
+  var p = fetchEventsRange(from, to, 2500)
     .then(function(list){
       /* 取得中に別の読み込みが始まっていたら、この結果は古いので捨てる */
       if(seq !== loadSeq) return;
@@ -3201,6 +3214,7 @@ function loadRecords(silent){
       if(list.length > 600) list = list.slice(0, 600);
       records = list;
       recordsLoaded = true;
+      saveRecordsCache();
       renderAll();
       scheduleSyncReminder();
       loadArchive(100);
@@ -3210,6 +3224,10 @@ function loadRecords(silent){
       if(seq !== loadSeq) return;
       setStatus('読み込めませんでした：' + err.message, true);
     });
+  loadRecordsPromise = p;
+  var clearLoadPromise = function(){ if(loadRecordsPromise === p) loadRecordsPromise = null; };
+  p.then(clearLoadPromise, clearLoadPromise);
+  return p;
 }
 /* 保存が成功した記録を、サーバーから返ってきたイベントそのもので
    その場でローカルにも登録する。一覧の再取得を待たずに「前回」表示・
@@ -3237,6 +3255,7 @@ function registerLocalRecord(ev){
       archiveRecords.sort(function(a,b){ return b.start - a.start; });
     }
   }
+  saveRecordsCache();
   renderAll();
 }
 /* ================= ログ用アーカイブ取得（月間集計用・ページネーション） ================= */
@@ -3249,7 +3268,7 @@ function fetchEventsRange(from, to, maxItems){
   function page(pageToken){
     var qs = '?timeMin=' + encodeURIComponent(from.toISOString()) +
              '&timeMax=' + encodeURIComponent(to.toISOString()) +
-             '&maxResults=250&singleEvents=true&orderBy=startTime' +
+             '&maxResults=2500&singleEvents=true&orderBy=startTime' +
              (pageToken ? '&pageToken=' + encodeURIComponent(pageToken) : '');
     return apiFetch('/calendars/' + encodeURIComponent(calendarId) + '/events' + qs).then(function(data){
       var items = (data && data.items) || [];
@@ -3266,7 +3285,9 @@ function fetchEventsRange(from, to, maxItems){
 function loadArchive(daysBack){
   if(!accessToken || archiveLoading) return;
   if(archiveSpan >= daysBack && (Date.now() - archiveFetchedAt) < 50000) return;
-  setLoadNotes(true);
+  /* キャッシュ等で既に表示できる記録があるときは、裏での取り直し中に
+     「読み込み中…」を出さない（表示が既にあるのに待たされる印象になるため） */
+  if(!archiveRecords) setLoadNotes(true);
   var span = Math.max(daysBack, archiveSpan);
   archiveLoading = true;
   var now = new Date();
@@ -3277,6 +3298,7 @@ function loadArchive(daysBack){
     archiveRecords = list;
     archiveSpan = span;
     archiveFetchedAt = Date.now();
+    saveRecordsCache();
     renderRemind();
     renderMonths();
     renderDays();
@@ -3284,6 +3306,58 @@ function loadArchive(daysBack){
     if(!$('allMonthsOverlay').classList.contains('hidden')) renderAllMonths();
   }).catch(function(){
   }).then(function(){ archiveLoading = false; setLoadNotes(false); });
+}
+/* ================= 記録の表示キャッシュ =================
+   起動直後の待ち時間をなくすため、最後に取得できた記録を端末内に
+   控えておき、起動時はまずその控えを即座に表示する。最新の記録は
+   裏でカレンダーから取り直して差し替えるので、控えは表示専用で、
+   記録の保存先は従来どおり共有カレンダーだけ（控えが消えても
+   記録自体は消えない）。赤ちゃん設定を localStorage に控える
+   既存の仕組みと同じ考え方 */
+function serializeRec(r){
+  return { id:r.id, s:r.start.toISOString(), k:r.kind, a:r.amount || 0, t:r.text || '', c:r.creator || '' };
+}
+function deserializeRec(o){
+  if(!o || !o.id || !o.s || !o.k) return null;
+  var d = new Date(o.s);
+  if(isNaN(d.getTime())) return null;
+  return { id:o.id, start:d, kind:o.k, amount:o.a || 0, text:o.t || '', creator:o.c || '' };
+}
+function saveRecordsCache(){
+  try{
+    var payload = { t:Date.now(), records: records.slice(0, 600).map(serializeRec) };
+    if(archiveRecords){
+      payload.archive = archiveRecords.slice(0, 1500).map(serializeRec);
+      payload.archiveSpan = archiveSpan;
+      payload.archiveAt = archiveFetchedAt;
+    }
+    localStorage.setItem(LS_RECORDS_CACHE, JSON.stringify(payload));
+  }catch(e){}
+}
+function hydrateRecordsCache(){
+  try{
+    var raw = localStorage.getItem(LS_RECORDS_CACHE);
+    if(!raw) return;
+    var j = JSON.parse(raw);
+    if(!j) return;
+    if(Array.isArray(j.records)){
+      var list = [];
+      j.records.forEach(function(o){ var r = deserializeRec(o); if(r) list.push(r); });
+      if(list.length){ records = list; recordsLoaded = true; }
+    }
+    if(Array.isArray(j.archive)){
+      var alist = [];
+      j.archive.forEach(function(o){ var r = deserializeRec(o); if(r) alist.push(r); });
+      if(alist.length){
+        archiveRecords = alist;
+        archiveSpan = j.archiveSpan || 0;
+        archiveFetchedAt = j.archiveAt || 0;
+      }
+    }
+  }catch(e){}
+}
+function clearRecordsCache(){
+  try{ localStorage.removeItem(LS_RECORDS_CACHE); }catch(e){}
 }
 /* ================= 記録時間ブロック =================
    おむつ・授乳どちらの記録にも効く記録時刻の切り替え。
@@ -3755,6 +3829,9 @@ function restoreSession(){
     updateAuthUI();
     loadRecords(true);
     loadBabySettingsFromCal();
+    /* 期限が近い場合は裏で先に取り直しておき、使っている途中で
+       切れて読み込みが止まるのを防ぐ */
+    if(tokenNeedsRefresh()) requestSilentToken();
     return;
   }
   /* 保存済みトークンが使えなくても、deviceKey があれば認証サーバーから
@@ -3800,8 +3877,9 @@ $('signoutBtn').addEventListener('click', function(){
     try{ fetch(AUTH_SERVER_URL + '?action=revoke&key=' + encodeURIComponent(dk)).catch(function(){}); }catch(e){}
   }
   clearSession();
+  clearRecordsCache();
   settleTokenWaiters(false);
-  accessToken = null; tokenExpiry = 0; records = [];
+  accessToken = null; tokenExpiry = 0; records = []; archiveRecords = null; archiveSpan = 0;
   renderAll(); updateAuthUI(); setStatus('');
 });
 /* ================= 再読み込みボタン（最新版チェック付き） =================
@@ -4367,6 +4445,9 @@ document.addEventListener('click', function(ev){
 checkUpdateNotice();
 setNowLine();
 renderRecTime();
+/* 前回取得した記録の控えがあれば、ネットワークの応答を待たずに
+   そのまま表示する（最新化は restoreSession 側の取得が裏で行う） */
+hydrateRecordsCache();
 renderBabyUI();
 updateAuthUI();
 restoreSession();
