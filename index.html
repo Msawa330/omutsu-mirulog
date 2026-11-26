@@ -272,7 +272,7 @@
   .milk-amt{font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; min-width:3ch; text-align:center; line-height:1.1;}
   .milk-amt .milk-amt-unit{font-size:14px; font-weight:800; margin-left:2px;}
 
-  /* ===== 今日のミルク ゲージ ===== */
+  /* ===== 今日の授乳ゲージ（ミルクと母乳の量の合算） ===== */
   .gauge-top{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;}
   .gauge-main{font-size:13px; font-weight:800;}
   .gauge-main b{font-size:17px; font-variant-numeric:tabular-nums;}
@@ -462,6 +462,11 @@
   .wk-chip.breast{background:var(--breast-bg);}
   .wk-chip.milk{
     background:var(--milk-bg); color:#8a6503; padding:0 3px 0 2px;
+    font-size:9px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  /* 母乳も量がある記録はミルクと同じ形式（アイコン＋量）で出す */
+  .wk-chip.breast.amt{
+    color:var(--breast); padding:0 3px 0 2px;
     font-size:9px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap;
   }
   .wk-chip.memo{background:#eef0ee; color:#7a8288;}
@@ -893,10 +898,10 @@
     </div>
   </section>
 
-  <!-- 今日のミルク ゲージ -->
-  <section class="panel" id="milkGaugeWrap" aria-label="今日のミルク">
+  <!-- 今日の授乳ゲージ（ミルクと母乳の量を合算して表示する） -->
+  <section class="panel" id="milkGaugeWrap" aria-label="今日の授乳">
     <div class="gauge-top">
-      <span class="gauge-main">ミルク <b id="gaugeTotal">0</b>ml</span>
+      <span class="gauge-main">授乳 <b id="gaugeTotal">0</b>ml</span>
       <button class="gauge-goal-btn" id="gaugeGoalBtn" type="button" aria-label="ミルクの目標を編集">
         <span class="gauge-goal" id="gaugeGoal">目標 400ml</span>
         <span class="gauge-goal-pencil" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span>
@@ -1102,10 +1107,10 @@
   </div>
 </div>
 
-<!-- ミルクの量ポップアップ（ステッパーと記録・キャンセルだけ） -->
+<!-- 授乳の量ポップアップ（ミルク・母乳で共用。ステッパーと記録・キャンセルだけ） -->
 <div class="overlay center hidden" id="milkOverlay">
   <div class="pop-sheet" role="dialog" aria-modal="true" aria-label="ミルクの量">
-    <div class="pop-head"><span class="pop-title">ミルクの量</span><button class="close-x" id="milkCloseXBtn" type="button" aria-label="閉じる">×</button></div>
+    <div class="pop-head"><span class="pop-title" id="milkPopTitle">ミルクの量</span><button class="close-x" id="milkCloseXBtn" type="button" aria-label="閉じる">×</button></div>
     <div class="milk-step-row">
       <button class="rt-step" id="milkMinusBtn" type="button" aria-label="10ml減らす">−</button>
       <span class="milk-amt"><span id="milkAmount">50</span><span class="milk-amt-unit">ml</span></span>
@@ -1180,13 +1185,14 @@ function labelOf(rec){
   if(rec.kind==='clean') return '洗浄液の交換';
   if(rec.kind==='vitamin') return 'ビタミン剤';
   if(rec.kind==='weight') return rec.amount ? '体重 ' + fmtGram(rec.amount) : '体重';
+  if(rec.kind==='breast') return rec.amount ? '母乳 ' + rec.amount + 'ml' : '母乳';
   if(rec.kind==='milk') return 'ミルク ' + (rec.amount||0) + 'ml';
   return KIND[rec.kind].label;
 }
 function titleOf(rec){
   if(rec.kind==='pee') return 'オムツ：おしっこ';
   if(rec.kind==='poop') return 'オムツ：うんち';
-  if(rec.kind==='breast') return '授乳：母乳';
+  if(rec.kind==='breast') return rec.amount ? '授乳：母乳 ' + rec.amount + 'ml' : '授乳：母乳';
   if(rec.kind==='clean') return '洗浄液の交換';
   if(rec.kind==='vitamin') return 'ビタミン剤';
   if(rec.kind==='weight') return '体重：' + (rec.amount||0) + 'g';
@@ -1404,6 +1410,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-25-2', notes:[
     { c:'改善', t:'アプリを開いたときの読み込みが速くなりました。前回の記録がすぐ表示され、裏で最新の状態に更新されます' }
+  ]},
+  { version:'2026-11-26-1', notes:[
+    { c:'記録', t:'母乳も量を記録できるようになりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -1895,15 +1904,15 @@ function renderGauge(){
   if(!dg){ wrap.classList.add('hidden'); return; }
   var g = dg.guide;
   var now = new Date();
-  var milkSum = 0;
+  var feedSum = 0;
   records.forEach(function(r){
     if(!sameDay(r.start, now)) return;
-    if(r.kind==='milk') milkSum += (r.amount||0);
+    if(r.kind==='milk' || r.kind==='breast') feedSum += (r.amount||0);
   });
   var goal = g.daily;
-  var pct = goal ? Math.min(milkSum / goal * 100, 100) : 0;
+  var pct = goal ? Math.min(feedSum / goal * 100, 100) : 0;
   $('gaugeFill').style.width = pct + '%';
-  $('gaugeTotal').textContent = milkSum;
+  $('gaugeTotal').textContent = feedSum;
   $('gaugeGoal').textContent = '目標 ' + goal + 'ml';
   wrap.classList.remove('hidden');
 }
@@ -2081,7 +2090,7 @@ function dayStatsFrom(src, date){
       st.list.push(r);
       if(r.kind==='pee') st.pee++;
       else if(r.kind==='poop') st.poop++;
-      else if(r.kind==='breast') st.breast++;
+      else if(r.kind==='breast') st.breast += (r.amount||0);
       else if(r.kind==='milk') st.milk += (r.amount||0);
       else if(r.kind==='memo') st.memo++;
     }
@@ -2122,7 +2131,7 @@ function dayRowHTML(d, st){
     '<span class="dcell"><span class="md">' + fmtMD(d) + '</span><span class="wd' + wdClass(d) + '">（' + WD[d.getDay()] + '）</span>' + dayWeightLineHTML(d) + '</span>' +
     '<span class="num ' + (st.pee ? 'hlp' : '') + '">' + (st.pee || '―') + '</span>' +
     '<span class="num ' + (st.poop ? 'hlpo' : '') + '">' + (st.poop || '―') + '</span>' +
-    '<span class="num ' + (st.breast ? 'hlb' : '') + '">' + (st.breast || '―') + '</span>' +
+    '<span class="num ' + (st.breast ? 'hlb' : '') + '">' + (st.breast ? st.breast + 'ml' : '―') + '</span>' +
     '<span class="num ' + (st.milk ? 'hl' : '') + '">' + (st.milk ? st.milk + 'ml' : '―') + '</span>' +
     '</button>';
 }
@@ -2130,12 +2139,14 @@ function dayRowHTML(d, st){
    日付列（左が6日前・右が今日）×24時間行。左端に時刻軸。
    列ヘッダー：日付・曜日とその日の集計（数値のみ）。集計の種類を示すアイコンは、時刻軸と同じく
    左端の列にだけ縦に並べ、各日の数値と行の高さを揃える（0件は―）。
-   記録チップ：おしっこ・うんち・母乳・メモ・体重はアイコンのみ、ミルクはアイコン＋量。
+   記録チップ：おしっこ・うんち・メモ・体重はアイコンのみ、ミルクと母乳は
+   アイコン＋量（量なしで保存された過去の母乳はアイコンのみ）。
    体重の記録もチップはアイコンのみで、その日の体重の数値は集計の行
    （weightLog由来の従来表示）でのみ出す。
    同じセル内のチップの並びは種類順（おしっこ→うんち→母乳→ミルク→体重→メモ）で固定し、
    同じ種類同士は時刻順。集計の行は上から おしっこ・うんち・母乳・ミルク・
-   体重・メモ の順で、体重はgの数値（記録のない日は空白）、メモは件数を出す。
+   体重・メモ の順で、おしっこ・うんちは回数、母乳・ミルクは量の合計（単位なし）、
+   体重はgの数値（記録のない日は空白）、メモは件数を出す。
    チップをタップすると、その日の記録一覧が開く（他のチップと同じ） */
 function wkSumRowHTML(kind, valHTML){
   return '<div class="wk-sumrow ' + kind + '"><span>' + valHTML + '</span></div>';
@@ -2213,6 +2224,8 @@ function buildWeekGridHTML(days, src, highlightDay, isCurrentWeek){
       list.forEach(function(r){
         if(r.kind==='milk'){
           html += '<button class="wk-chip milk" type="button" data-eid="' + r.id + '">' + IC.milk + '<span>' + (r.amount||0) + '</span></button>';
+        } else if(r.kind==='breast' && r.amount){
+          html += '<button class="wk-chip breast amt" type="button" data-eid="' + r.id + '">' + IC.breast + '<span>' + r.amount + '</span></button>';
         } else {
           html += '<button class="wk-chip ' + r.kind + '" type="button" data-eid="' + r.id + '" aria-label="' + KIND[r.kind].label + '">' + IC[r.kind] + '</button>';
         }
@@ -2326,7 +2339,7 @@ function logSource(){
 }
 function monthStats(y, m){
   var src = logSource();
-  var milk = 0, pee = 0, poop = 0, breast = 0, count = 0;
+  var milk = 0, pee = 0, poop = 0, breastMl = 0, count = 0;
   var firstDay = null;
   var now = new Date();
   var isCurrent = (y===now.getFullYear() && m===now.getMonth());
@@ -2347,7 +2360,7 @@ function monthStats(y, m){
       if(r.kind==='milk') milk += (r.amount||0);
       else if(r.kind==='pee') pee++;
       else if(r.kind==='poop') poop++;
-      else if(r.kind==='breast') breast++;
+      else if(r.kind==='breast') breastMl += (r.amount||0);
     }
   });
   var endDay = isCurrent ? todayDate - 1 : new Date(y, m+1, 0).getDate();
@@ -2368,7 +2381,7 @@ function monthStats(y, m){
     diaperAvg: count ? (pee + poop) / days : null,
     peeAvg: count ? pee / days : null,
     poopAvg: count ? poop / days : null,
-    breastAvg: count ? breast / days : null
+    breastMlAvg: count ? Math.round(breastMl / days) : null
   };
 }
 function monthWeightRange(y, m){
@@ -2415,7 +2428,7 @@ function monthRowHTML(y, m){
     '<span class="mv-stats">' +
     mvStatHTML('pee', 'おしっこ', st.peeAvg === null ? '―' : fmtAvg(st.peeAvg) + '回') +
     mvStatHTML('poop', 'うんち', st.poopAvg === null ? '―' : fmtAvg(st.poopAvg) + '回') +
-    mvStatHTML('breast', '母乳', st.breastAvg === null ? '―' : fmtAvg(st.breastAvg) + '回') +
+    mvStatHTML('breast', '母乳', st.breastMlAvg === null ? '―' : String(st.breastMlAvg) + 'ml') +
     mvStatHTML('milk', 'ミルク', st.milkAvg === null ? '―' : String(st.milkAvg) + 'ml') +
     '</span>' +
     '</div>';
@@ -2470,7 +2483,7 @@ function renderMonths(){
   html += '<div class="month-stats">' +
     mstatHTML('pee', 'おしっこ', fmtAvg(st.peeAvg)) +
     mstatHTML('poop', 'うんち', fmtAvg(st.poopAvg)) +
-    mstatHTML('breast', '母乳', fmtAvg(st.breastAvg)) +
+    mstatHTML('breast', '母乳', st.breastMlAvg === null ? '―' : String(st.breastMlAvg)) +
     mstatHTML('milk', 'ミルク', st.milkAvg === null ? '―' : String(st.milkAvg)) +
     mstatHTML('weight', '体重', fmtMonthWeightDiff(y, m)) +
     '</div>';
@@ -2989,11 +3002,14 @@ function renderEditOpts(){
     }).join('');
     wrap.classList.remove('hidden'); box.innerHTML = html;
     if(milkCustom) milkCustom.classList.add('hidden');
-  } else if(rec.kind==='milk'){
-    $('editOptsLabel').textContent = 'ミルクの量';
+  } else if(rec.kind==='milk' || rec.kind==='breast'){
+    $('editOptsLabel').textContent = KIND[rec.kind].label + 'の量';
     wrap.classList.remove('hidden'); box.innerHTML = '';
     if(milkCustom) milkCustom.classList.remove('hidden');
-    if(milkInput) milkInput.value = editing.amount ? String(editing.amount) : '';
+    if(milkInput){
+      milkInput.value = editing.amount ? String(editing.amount) : '';
+      milkInput.setAttribute('aria-label', KIND[rec.kind].label + 'の量（ml）');
+    }
     return;
   } else {
     wrap.classList.add('hidden'); box.innerHTML = '';
@@ -3012,7 +3028,7 @@ function renderEditOpts(){
   var milkInputEl = $('editMilkAmount');
   if(!milkInputEl) return;
   milkInputEl.addEventListener('input', function(){
-    if(!editing || !editing.rec || editing.rec.kind !== 'milk') return;
+    if(!editing || !editing.rec || (editing.rec.kind !== 'milk' && editing.rec.kind !== 'breast')) return;
     var raw = String(milkInputEl.value || '').trim();
     if(raw === '') return;
     var parsed = Number(raw);
@@ -3035,17 +3051,20 @@ $('editSaveBtn').addEventListener('click', function(){
     }
     editing.text = memoText;
   }
-  if(editing.rec && editing.rec.kind === 'milk'){
-    var milkInputEl = $('editMilkAmount');
-    var raw = milkInputEl ? String(milkInputEl.value || '').trim() : '';
-    if(raw !== ''){
-      var parsed = Number(raw);
-      if(!isFinite(parsed) || Math.floor(parsed) !== parsed || parsed <= 0){
-        sheetError('editOverlay', 'ミルクの量は1以上の整数で入力してください');
+  if(editing.rec && (editing.rec.kind === 'milk' || editing.rec.kind === 'breast')){
+    var amtInputEl = $('editMilkAmount');
+    var amtRaw = amtInputEl ? String(amtInputEl.value || '').trim() : '';
+    var amtName = editing.rec.kind === 'milk' ? 'ミルク' : '母乳';
+    if(amtRaw !== ''){
+      var amtParsed = Number(amtRaw);
+      if(!isFinite(amtParsed) || Math.floor(amtParsed) !== amtParsed || amtParsed <= 0){
+        sheetError('editOverlay', amtName + 'の量は1以上の整数で入力してください');
         return;
       }
-      editing.amount = parsed;
-    } else if(!editing.amount || editing.amount <= 0){
+      editing.amount = amtParsed;
+    } else if(editing.rec.kind === 'milk' && (!editing.amount || editing.amount <= 0)){
+      /* ミルクは量が必須。母乳は、量なしで保存された過去の記録を
+         量なしのまま保存し直せるよう、空欄でも通す */
       sheetError('editOverlay', 'ミルクの量を入力してください');
       return;
     }
@@ -3105,7 +3124,7 @@ function apiFetchAttempt(path, options, retried){
 }
 function markerJSON(kind, amount, text){
   var o = { v:1, kind:kind };
-  if(kind==='milk' || kind==='weight') o.amount = amount;
+  if(kind==='milk' || kind==='breast' || kind==='weight') o.amount = amount;
   if(kind==='memo') o.text = text || '';
   return 'muse-baby-log:' + JSON.stringify(o);
 }
@@ -3151,7 +3170,10 @@ function parseEvent(ev){
       if(title.indexOf('おしっこ') >= 0) kind = 'pee';
       else if(title.indexOf('うんち') >= 0 || title.indexOf('両方') >= 0) kind = 'poop';
     } else if(/^授乳[:：]/.test(title)){
-      if(title.indexOf('母乳') >= 0) kind = 'breast';
+      if(title.indexOf('母乳') >= 0){
+        var bm = title.match(/(\d+)\s*ml/i);
+        kind = 'breast'; amount = bm ? parseInt(bm[1], 10) : 0;
+      }
       else if(title.indexOf('ミルク') >= 0){
         var m = title.match(/(\d+)\s*ml/i);
         kind = 'milk'; amount = m ? parseInt(m[1], 10) : 0;
@@ -3159,7 +3181,7 @@ function parseEvent(ev){
     }
   }
   if(!kind) return null;
-  if(kind==='milk' && !amount){
+  if((kind==='milk' || kind==='breast') && !amount){
     var m2 = title.match(/(\d+)\s*ml/i);
     if(m2) amount = parseInt(m2[1], 10);
   }
@@ -4149,7 +4171,7 @@ $('remindToggle').addEventListener('click', function(){
 
 /* ================= 記録ボタン構築 =================
    おしっこ・うんち・母乳・ミルクの4つを横1行に並べる。
-   おしっこ・うんち・母乳は押したら従来どおり即記録し、ミルクだけは
+   おしっこ・うんちは押したら従来どおり即記録し、母乳・ミルクは
    押してから小さなポップアップで量を決めて記録する */
 $('btnPee').innerHTML = '<span class="disc pee">' + IC.pee + '</span><span class="lbl">おしっこ</span>';
 $('btnPoop').innerHTML = '<span class="disc poop">' + IC.poop + '</span><span class="lbl">うんち</span>';
@@ -4162,7 +4184,7 @@ $('btnMilk').innerHTML = '<span class="disc milk">' + IC.milk + '</span><span cl
    色はパステル背景の上でも見える濃さにする。ボタンのポップ
    （.anim-pop）は従来の共通ハンドラが担当し、こちらは粒だけを出す。
    見た目だけの演出で、記録の保存フローには関与しない。
-   ミルクは丸ボタンのタップで出し、量ポップアップ内の「記録」には付けない */
+   母乳・ミルクは丸ボタンのタップで出し、量ポップアップ内の「記録」には付けない */
 var SPARK_COLORS = {
   pee:    ['#2f9fd8', '#2f83b8', '#6cc3ec'],
   poop:   ['#a5713a', '#96692f', '#c99a5f'],
@@ -4199,20 +4221,34 @@ function burstSparkles(btn, kind){
 
 $('btnPee').addEventListener('click', function(){ burstSparkles(this, 'pee'); createRecord('pee', 0); });
 $('btnPoop').addEventListener('click', function(){ burstSparkles(this, 'poop'); createRecord('poop', 0); });
-$('btnBreast').addEventListener('click', function(){ burstSparkles(this, 'breast'); createRecord('breast', 0); });
-$('btnMilk').addEventListener('click', function(){ burstSparkles(this, 'milk'); openMilkPopup(); });
+$('btnBreast').addEventListener('click', function(){ burstSparkles(this, 'breast'); openFeedPopup('breast'); });
+$('btnMilk').addEventListener('click', function(){ burstSparkles(this, 'milk'); openFeedPopup('milk'); });
 
-/* ================= ミルクの量ポップアップ =================
-   初期値は今の「おすすめ」の量（目標設定があれば目標の1回量、なければ50ml）。
+/* ================= 授乳の量ポップアップ（ミルク・母乳で共用） =================
+   初期値は、ミルクは今の「おすすめ」の量（目標設定があれば目標の1回量、
+   なければ50ml）。母乳は前回の母乳の量で、前回の母乳の記録が無い
+   （または量なしの）ときはミルクと同じおすすめの量にする。
    10ml単位で10〜200ml。「記録」でその量を記録して閉じ、
    「キャンセル」と背景タップでは記録せずに閉じる */
 var milkPopupMl = 50;
+var feedPopupKind = 'milk';
 function renderMilkPopup(){ $('milkAmount').textContent = milkPopupMl; }
-function openMilkPopup(){
+function openFeedPopup(kind){
   if(!accessToken){ setStatus('サインインしてください', true); return; }
-  var dg = displayGuide();
-  var recMl = dg ? dg.guide.perFeed : RECOMMENDED_ML;
-  milkPopupMl = Math.min(200, Math.max(10, recMl));
+  feedPopupKind = kind;
+  $('milkPopTitle').textContent = KIND[kind].label + 'の量';
+  var feedSheet = $('milkOverlay').querySelector('.pop-sheet');
+  if(feedSheet) feedSheet.setAttribute('aria-label', KIND[kind].label + 'の量');
+  var initMl = null;
+  if(kind === 'breast'){
+    var lastBreast = lastRecOfKind('breast');
+    if(lastBreast && lastBreast.amount > 0) initMl = lastBreast.amount;
+  }
+  if(initMl === null){
+    var dg = displayGuide();
+    initMl = dg ? dg.guide.perFeed : RECOMMENDED_ML;
+  }
+  milkPopupMl = Math.min(200, Math.max(10, initMl));
   renderMilkPopup();
   $('milkOverlay').classList.remove('hidden');
   refreshScrollLock();
@@ -4228,8 +4264,9 @@ $('milkCloseXBtn').addEventListener('click', closeMilkPopup);
 $('milkOverlay').addEventListener('click', function(e){ if(e.target===this) closeMilkPopup(); });
 $('milkRecordBtn').addEventListener('click', function(){
   var ml = milkPopupMl;
+  var kind = feedPopupKind;
   closeMilkPopup();
-  createRecord('milk', ml);
+  createRecord(kind, ml);
 });
 
 /* busy制御はこの1本だけ：4つの記録ボタンを対象にする */
