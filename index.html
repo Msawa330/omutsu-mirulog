@@ -1416,6 +1416,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-26-2', notes:[
     { c:'記録', t:'ミルクの量の初期値が40mlになりました' }
+  ]},
+  { version:'2026-11-26-3', notes:[
+    { c:'記録', t:'ミルクの量の初期値が前回のミルクの量になりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -4228,11 +4231,10 @@ $('btnBreast').addEventListener('click', function(){ burstSparkles(this, 'breast
 $('btnMilk').addEventListener('click', function(){ burstSparkles(this, 'milk'); openFeedPopup('milk'); });
 
 /* ================= 授乳の量ポップアップ（ミルク・母乳で共用） =================
-   初期値は、ミルクは40ml固定。1回分の量は母乳とミルクの合計で目標に
-   合わせる使い方のため、ミルク単体のデフォルトは目標の1回量とは
-   切り離して40mlにする（例：母乳40ml＋ミルク40ml＝1回80ml × 8回）。
-   母乳は前回の母乳の量で、前回の母乳の記録が無い
-   （または量なしの）ときは今の「おすすめ」の量にする。
+   初期値は、ミルク・母乳とも前回の同じ種類の量にする。
+   ミルクは前回のミルクの記録が無い（または量なしの）ときは40ml。
+   母乳は前回の母乳の記録が無い（または量なしの）ときは
+   今の「おすすめ」の量にする。
    10ml単位で10〜200ml。「記録」でその量を記録して閉じ、
    「キャンセル」と背景タップでは記録せずに閉じる */
 var MILK_DEFAULT_ML = 40;
@@ -4247,7 +4249,8 @@ function openFeedPopup(kind){
   if(feedSheet) feedSheet.setAttribute('aria-label', KIND[kind].label + 'の量');
   var initMl = null;
   if(kind === 'milk'){
-    initMl = MILK_DEFAULT_ML;
+    var lastMilk = lastRecOfKind('milk');
+    initMl = (lastMilk && lastMilk.amount > 0) ? lastMilk.amount : MILK_DEFAULT_ML;
   } else if(kind === 'breast'){
     var lastBreast = lastRecOfKind('breast');
     if(lastBreast && lastBreast.amount > 0) initMl = lastBreast.amount;
