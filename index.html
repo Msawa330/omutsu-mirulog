@@ -27,7 +27,7 @@
     --breast-bg:#fbe0ec; --breast:#d14f86;
     --milk-bg:#fdefc0; --milk:#a97b06;
     --weight-bg:#ede7f6; --weight:#7e57c2;
-    --clean-bg:#cdeef0; --clean:#0e7d86;
+    --clean-bg:#d7f6e7; --clean:#0b8a64;
     --vitamin-bg:#ffe1b8; --vitamin:#d96f06;
     /* 今日の強調は7日間・月間とも緑系で統一する（黄色はミルク専用） */
     --today-tint:rgba(63,191,79,.10); --today-ink:#2ea63e;
@@ -1155,7 +1155,7 @@ var IC = {
   scale: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="7" width="36" height="34" rx="9" fill="#b39ddb"/><rect x="15" y="12" width="18" height="9" rx="3" fill="#ffffff"/><rect x="19.5" y="15.4" width="9" height="2.2" rx="1.1" fill="#b39ddb"/><circle cx="13.5" cy="33.5" r="2.1" fill="#ffffff"/><circle cx="34.5" cy="33.5" r="2.1" fill="#ffffff"/></svg>',
   /* 体重の記録（ログ行・チップ用）：体重計アイコンは scale と同じものを使う */
   weight: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="7" width="36" height="34" rx="9" fill="#b39ddb"/><rect x="15" y="12" width="18" height="9" rx="3" fill="#ffffff"/><rect x="19.5" y="15.4" width="9" height="2.2" rx="1.1" fill="#b39ddb"/><circle cx="13.5" cy="33.5" r="2.1" fill="#ffffff"/><circle cx="34.5" cy="33.5" r="2.1" fill="#ffffff"/></svg>',
-  clean: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gClean" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd8de"/><stop offset="1" stop-color="#0e7d86"/></linearGradient></defs><path d="M18 17.5C18 8.8 30 8.8 30 17.5" fill="none" stroke="url(#gClean)" stroke-width="5.2" stroke-linecap="round"/><path d="M11 22a5 5 0 0 1 5-5h16a5 5 0 0 1 5 5v17a5 5 0 0 1-5 5H16a5 5 0 0 1-5-5V22Z" fill="url(#gClean)"/><ellipse cx="17.5" cy="26" rx="2.8" ry="5.5" fill="#ffffff" opacity="0.5" transform="rotate(-12 17.5 26)"/><path d="M16 32.5c2.8-2 5.6-2 8.4 0s5.6 2 8.4 0" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/></svg>',
+  clean: '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gClean" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4fe0a8"/><stop offset="1" stop-color="#0da678"/></linearGradient></defs><path d="M18 17.5C18 8.8 30 8.8 30 17.5" fill="none" stroke="url(#gClean)" stroke-width="5.2" stroke-linecap="round"/><path d="M11 22a5 5 0 0 1 5-5h16a5 5 0 0 1 5 5v17a5 5 0 0 1-5 5H16a5 5 0 0 1-5-5V22Z" fill="url(#gClean)"/><ellipse cx="17.5" cy="26" rx="2.8" ry="5.5" fill="#ffffff" opacity="0.5" transform="rotate(-12 17.5 26)"/><path d="M16 32.5c2.8-2 5.6-2 8.4 0s5.6 2 8.4 0" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/></svg>',
   /* ビタミン剤：たてななめのカプセル（見本の調整案4）。他の記録アイコンと
      同じ描き方で、オレンジの縦グラデーション＋左上の白いハイライト＋
      中央の白い継ぎ目で描く */
@@ -1419,6 +1419,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-26-3', notes:[
     { c:'記録', t:'ミルクの量の初期値が前回のミルクの量になりました' }
+  ]},
+  { version:'2026-11-27-1', notes:[
+    { c:'デザイン', t:'洗浄液のアイコンの色を緑にしました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
