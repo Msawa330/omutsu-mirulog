@@ -1113,7 +1113,7 @@
     <div class="pop-head"><span class="pop-title" id="milkPopTitle">ミルクの量</span><button class="close-x" id="milkCloseXBtn" type="button" aria-label="閉じる">×</button></div>
     <div class="milk-step-row">
       <button class="rt-step" id="milkMinusBtn" type="button" aria-label="10ml減らす">−</button>
-      <span class="milk-amt"><span id="milkAmount">50</span><span class="milk-amt-unit">ml</span></span>
+      <span class="milk-amt"><span id="milkAmount">40</span><span class="milk-amt-unit">ml</span></span>
       <button class="rt-step" id="milkPlusBtn" type="button" aria-label="10ml増やす">＋</button>
     </div>
     <div class="pop-foot">
@@ -1413,6 +1413,9 @@ var CHANGELOG = [
   ]},
   { version:'2026-11-26-1', notes:[
     { c:'記録', t:'母乳も量を記録できるようになりました' }
+  ]},
+  { version:'2026-11-26-2', notes:[
+    { c:'記録', t:'ミルクの量の初期値が40mlになりました' }
   ]}
 ];
 var APP_VERSION = CHANGELOG[CHANGELOG.length - 1].version;
@@ -4225,12 +4228,15 @@ $('btnBreast').addEventListener('click', function(){ burstSparkles(this, 'breast
 $('btnMilk').addEventListener('click', function(){ burstSparkles(this, 'milk'); openFeedPopup('milk'); });
 
 /* ================= 授乳の量ポップアップ（ミルク・母乳で共用） =================
-   初期値は、ミルクは今の「おすすめ」の量（目標設定があれば目標の1回量、
-   なければ50ml）。母乳は前回の母乳の量で、前回の母乳の記録が無い
-   （または量なしの）ときはミルクと同じおすすめの量にする。
+   初期値は、ミルクは40ml固定。1回分の量は母乳とミルクの合計で目標に
+   合わせる使い方のため、ミルク単体のデフォルトは目標の1回量とは
+   切り離して40mlにする（例：母乳40ml＋ミルク40ml＝1回80ml × 8回）。
+   母乳は前回の母乳の量で、前回の母乳の記録が無い
+   （または量なしの）ときは今の「おすすめ」の量にする。
    10ml単位で10〜200ml。「記録」でその量を記録して閉じ、
    「キャンセル」と背景タップでは記録せずに閉じる */
-var milkPopupMl = 50;
+var MILK_DEFAULT_ML = 40;
+var milkPopupMl = MILK_DEFAULT_ML;
 var feedPopupKind = 'milk';
 function renderMilkPopup(){ $('milkAmount').textContent = milkPopupMl; }
 function openFeedPopup(kind){
@@ -4240,7 +4246,9 @@ function openFeedPopup(kind){
   var feedSheet = $('milkOverlay').querySelector('.pop-sheet');
   if(feedSheet) feedSheet.setAttribute('aria-label', KIND[kind].label + 'の量');
   var initMl = null;
-  if(kind === 'breast'){
+  if(kind === 'milk'){
+    initMl = MILK_DEFAULT_ML;
+  } else if(kind === 'breast'){
     var lastBreast = lastRecOfKind('breast');
     if(lastBreast && lastBreast.amount > 0) initMl = lastBreast.amount;
   }
